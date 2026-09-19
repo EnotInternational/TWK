@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 
-const BASE_URL = 'http://localhost:5000'; // Укажите IP сервера
+const BASE_URL = 'http://26.192.246.106:5000'; // Укажите IP сервера
 
 export const socket = io(BASE_URL, {
   transports: ['websocket', 'polling']

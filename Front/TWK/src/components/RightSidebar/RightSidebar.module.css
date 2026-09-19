@@ -1,0 +1,103 @@
+.rightSidebar {
+  width: 300px;
+  background: rgba(5, 5, 8, 0.98);
+  border-left: 1px solid rgba(0, 229, 255, 0.2);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease;
+  height: 100vh;
+  box-sizing: border-box;
+  overflow-y: auto;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 10;
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
+}
+
+.rightSidebar h2,
+.rightSidebar h3 {
+  color: #00e5ff;
+  font-size: 1.2rem;
+  margin-top: 0;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+.agentCard {
+  background: rgba(0, 229, 255, 0.05);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  padding: 15px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dataRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+}
+
+.dataRow span {
+  color: #a0aec0;
+}
+
+.dataRow strong {
+  color: #fff;
+  font-family: monospace;
+  font-size: 1rem;
+}
+
+.deadRow {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(255, 51, 68, 0.5);
+}
+
+.deadRow span {
+  color: #ff3344;
+}
+
+.deadRow strong {
+  color: #ff3344;
+}
+
+.emptyState {
+  background: rgba(0, 229, 255, 0.05);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.emptyState p {
+  color: #a0aec0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.rightToggleBtn {
+  position: absolute;
+  right: 320px;
+  top: 20px;
+  padding: 10px 15px;
+  background: rgba(5, 5, 8, 0.9);
+  color: #00e5ff;
+  border: 1px solid #00e5ff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  z-index: 100;
+}
+
+.rightToggleBtn:hover {
+  background: rgba(0, 229, 255, 0.1);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+}
