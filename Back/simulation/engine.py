@@ -33,6 +33,11 @@ class SimulationConfig:
         reproduction_cost: float = 50.0,
         require_partner: bool = True,
         max_ticks: Optional[int] = None,
+        agent_max_age: int = 100,
+        wind_penalty: float = 0.0,
+        rocks_count: int = 0,
+        rocks_coords: Optional[List[Tuple[int, int]]] = None,
+        meteorite_prob: float = 0.0,
     ) -> None:
         self.seed = seed
         self.width = max(10, width)
@@ -49,6 +54,11 @@ class SimulationConfig:
         self.reproduction_cost = max(5.0, reproduction_cost)
         self.require_partner = require_partner
         self.max_ticks = max_ticks
+        self.agent_max_age = max(1, agent_max_age)
+        self.wind_penalty = max(0.0, wind_penalty)
+        self.rocks_count = max(0, rocks_count)
+        self.rocks_coords = rocks_coords if rocks_coords is not None else []
+        self.meteorite_prob = max(0.0, min(1.0, meteorite_prob))
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "SimulationConfig":
@@ -68,6 +78,11 @@ class SimulationConfig:
             reproduction_cost=float(data.get("reproduction_cost", 50.0)),
             require_partner=bool(data.get("require_partner", True)),
             max_ticks=data.get("max_ticks"),
+            agent_max_age=int(data.get("agent_max_age", 100)),
+            wind_penalty=float(data.get("wind_penalty", 0.0)),
+            rocks_count=int(data.get("rocks_count", 0)),
+            rocks_coords=[tuple(c) for c in data.get("rocks_coords", [])],
+            meteorite_prob=float(data.get("meteorite_prob", 0.0)),
         )
 
     def as_dict(self) -> Dict[str, Any]:
@@ -87,6 +102,11 @@ class SimulationConfig:
             "reproduction_cost": self.reproduction_cost,
             "require_partner": self.require_partner,
             "max_ticks": self.max_ticks,
+            "agent_max_age": self.agent_max_age,
+            "wind_penalty": self.wind_penalty,
+            "rocks_count": self.rocks_count,
+            "rocks_coords": self.rocks_coords,
+            "meteorite_prob": self.meteorite_prob,
         }
 
 
@@ -125,12 +145,27 @@ class SimulationEngine:
         self._next_agent_seq = 1
         occupied: Set[Tuple[int, int]] = set()
 
+        # Скалы из конфига
+        rocks = set(self.config.rocks_coords)
         all_coords = [(x, y) for x in range(self.config.width) for y in range(self.config.height)]
         self.rng.shuffle(all_coords)
 
-        count = min(self.config.initial_agents, len(all_coords))
+        # Добавляем случайные скалы
+        rocks_to_add = self.config.rocks_count
+        for pos in all_coords:
+            if rocks_to_add <= 0:
+                break
+            if pos not in rocks:
+                rocks.add(pos)
+                rocks_to_add -= 1
+        self.env.rocks = rocks
+
+        # Клетки, доступные для агентов
+        available_coords = [pos for pos in all_coords if pos not in rocks]
+
+        count = min(self.config.initial_agents, len(available_coords))
         for i in range(count):
-            x, y = all_coords[i]
+            x, y = available_coords[i]
             occupied.add((x, y))
             aid = self._generate_agent_id()
             agent = Agent(
@@ -143,6 +178,7 @@ class SimulationEngine:
                 parent_id=None,
                 w_temp=self.rng.gauss(-1.0, 2.0), # Склонность избегать штрафов (в среднем отрицательная)
                 w_swarm=self.rng.gauss(0.5, 2.0), # Склонность кучковаться (в среднем положительная)
+                max_age=self.config.agent_max_age,
             )
             self.agents[aid] = agent
             self.events.log(
@@ -214,6 +250,20 @@ class SimulationEngine:
         # 1. Трата энергии на жизнь и штрафы зон
         for agent in alive_agents:
             agent.age += 1
+            if agent.age >= agent.max_age:
+                agent.die("Old age", current_tick)
+                deaths_this_tick += 1
+                occupied.pop((agent.x, agent.y), None)
+                self.events.log(
+                    tick=current_tick,
+                    event_type=EventType.DEATH_AGE,
+                    agent_id=agent.id,
+                    x=agent.x,
+                    y=agent.y,
+                    details="Died of old age",
+                )
+                continue
+
             zone = self.env.get_zone(agent.x, agent.y, current_tick)
             
             if zone == Zone.TERMINATOR:
@@ -221,7 +271,7 @@ class SimulationEngine:
                 agent.energy += 3.0
                 
             zone_penalty = self.env.get_energy_penalty(zone)
-            total_consumption = self.config.base_metabolism + zone_penalty
+            total_consumption = self.config.base_metabolism + zone_penalty + self.config.wind_penalty
             agent.consume_energy(total_consumption)
 
             # Проверка смерти от истощения
@@ -252,11 +302,36 @@ class SimulationEngine:
         # Обновленный список выживших
         survivors = [a for a in alive_agents if a.is_alive]
 
+        # 1.5 Метеориты
+        if self.config.meteorite_prob > 0 and self.rng.random() < self.config.meteorite_prob:
+            mx = self.rng.randint(0, self.config.width - 1)
+            my = self.rng.randint(0, self.config.height - 1)
+            
+            self.events.log(
+                tick=current_tick,
+                event_type=EventType.METEORITE_STRIKE,
+                x=mx,
+                y=my,
+                details="Meteorite struck",
+            )
+            
+            for dx in [-1, 0, 1]:
+                for dy in [-1, 0, 1]:
+                    nx, ny = (mx + dx) % self.config.width, my + dy
+                    if 0 <= ny < self.config.height:
+                        if (nx, ny) in occupied:
+                            victim = occupied.pop((nx, ny))
+                            victim.die("Meteorite strike", current_tick)
+                            deaths_this_tick += 1
+
+        # Обновляем выживших после метеоритов
+        survivors = [a for a in alive_agents if a.is_alive]
+
         # 2. Перемещение выживших агентов
         # Детерминированный порядок перемещения
         for agent in survivors:
             neighbors = self._get_neighbors(agent.x, agent.y)
-            free_neighbors = [pos for pos in neighbors if pos not in occupied]
+            free_neighbors = [pos for pos in neighbors if pos not in occupied and pos not in self.env.rocks]
 
             # Агент может остаться на месте или шагнуть на свободную клетку
             options = [(agent.x, agent.y)] + free_neighbors
@@ -306,7 +381,7 @@ class SimulationEngine:
 
             # Ищем свободную соседнюю клетку для потомка
             neighbors = self._get_neighbors(agent.x, agent.y)
-            free_neighbors = [pos for pos in neighbors if pos not in occupied]
+            free_neighbors = [pos for pos in neighbors if pos not in occupied and pos not in self.env.rocks]
 
             if free_neighbors:
                 child_x, child_y = self.rng.choice(free_neighbors)
