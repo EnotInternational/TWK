@@ -1,7 +1,8 @@
-from flask import Blueprint, jsonify, request
+﻿from flask import Blueprint, jsonify, request
 
 from models import create_agents
 from state import field_state
+from extensions import socketio
 
 
 field_bp = Blueprint("field", __name__, url_prefix="/api/field")
@@ -46,6 +47,7 @@ def init_field():
 
     agents = create_agents(agents_count, width, height)
     field_state.init(width, height, agents)
+    socketio.emit("field_update", field_state.as_dict())
     return jsonify(field_state.as_dict()), 200
 
 
@@ -73,4 +75,5 @@ def clear_field():
       200: {description: Поле очищено}
     """
     field_state.clear()
+    socketio.emit("field_update", field_state.as_dict())
     return jsonify({"status": "cleared"}), 200

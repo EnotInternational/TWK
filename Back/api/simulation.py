@@ -1,5 +1,6 @@
-from flask import Blueprint, jsonify
+﻿from flask import Blueprint, jsonify
 from state import field_state
+from extensions import socketio
 
 simulation_bp = Blueprint("simulation", __name__, url_prefix="/api/simulation")
 
@@ -14,4 +15,5 @@ def step():
     """
     for agent in field_state.agents:
         agent["hunger"] = max(0, agent["hunger"] - 1)
+    socketio.emit("field_update", field_state.as_dict())
     return jsonify(field_state.as_dict()), 200

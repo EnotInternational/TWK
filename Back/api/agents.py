@@ -1,6 +1,7 @@
-from flask import Blueprint, jsonify, request
+﻿from flask import Blueprint, jsonify, request
 
 from state import field_state
+from extensions import socketio
 
 
 agents_bp = Blueprint("agents", __name__, url_prefix="/api/agents")
@@ -68,4 +69,5 @@ def update_agent(agent_id: str):
         if key in data and isinstance(data[key], int):
             agent[key] = data[key]
 
+    socketio.emit("field_update", field_state.as_dict())
     return jsonify(agent), 200
