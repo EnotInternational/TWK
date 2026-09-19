@@ -2,10 +2,24 @@ import { useEffect, useRef } from 'react';
 import styles from './AgentGrid.module.css';
 import { socket } from '../../api';
 
-export default function AgentGrid({ onMetricsUpdate, onAgentSelect, gridWidth = 60, gridHeight = 30 }) {
+export default function AgentGrid({ onMetricsUpdate, onAgentSelect, gridWidth = 60, gridHeight = 30, mouseMode, selectedDisaster, disasterParams }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   
+  const mouseModeRef = useRef(mouseMode);
+  const selectedDisasterRef = useRef(selectedDisaster);
+  const disasterParamsRef = useRef(disasterParams);
+
+  useEffect(() => {
+    mouseModeRef.current = mouseMode;
+    selectedDisasterRef.current = selectedDisaster;
+    disasterParamsRef.current = disasterParams;
+    
+    if (containerRef.current) {
+      containerRef.current.style.cursor = mouseMode === 'drag' ? 'grab' : 'crosshair';
+    }
+  }, [mouseMode, selectedDisaster, disasterParams]);
+
   // Refs to hold the latest state without triggering React re-renders on 60FPS ticks
   const latestAgentsRef = useRef([]);
   const latestEnvRef = useRef(null);
@@ -20,7 +34,7 @@ export default function AgentGrid({ onMetricsUpdate, onAgentSelect, gridWidth = 
     const container = containerRef.current;
     const ctx = canvas.getContext('2d');
 
-    container.style.cursor = 'grab';
+    container.style.cursor = mouseModeRef.current === 'drag' ? 'grab' : 'crosshair';
 
     const drawEnvironment = (baseCellSize, actualH, actualW) => {
       const env = latestEnvRef.current;
@@ -168,6 +182,7 @@ export default function AgentGrid({ onMetricsUpdate, onAgentSelect, gridWidth = 
 
     const handleMouseDown = (e) => {
       if (e.button !== 0) return;
+      if (mouseModeRef.current === 'select') return; // Do not drag in select mode
       isDragging.current = true;
       hasDragged.current = false;
       dragStart.current = { 
@@ -193,7 +208,12 @@ export default function AgentGrid({ onMetricsUpdate, onAgentSelect, gridWidth = 
     const handleMouseUp = (e) => {
       if (e.button !== 0) return;
       isDragging.current = false;
-      container.style.cursor = 'grab';
+      
+      const currentMouseMode = mouseModeRef.current;
+      const currentSelectedDisaster = selectedDisasterRef.current;
+      const currentDisasterParams = disasterParamsRef.current;
+      
+      container.style.cursor = currentMouseMode === 'drag' ? 'grab' : 'crosshair';
 
       if (!hasDragged.current) {
         const rect = canvas.getBoundingClientRect();
@@ -227,6 +247,42 @@ export default function AgentGrid({ onMetricsUpdate, onAgentSelect, gridWidth = 
         } else {
            latestAgentsRef.current.forEach(a => a.isSelected = false);
            onAgentSelect(null);
+        }
+
+        if (currentMouseMode === 'select' && currentSelectedDisaster) {
+          // Trigger disaster API
+          console.log(`Triggering ${currentSelectedDisaster} at (${gridX}, ${gridY}) with params`, currentDisasterParams);
+          if (window.triggerDisaster) {
+             window.triggerDisaster(currentSelectedDisaster, gridX, gridY, currentDisasterParams);
+          }
+          
+          // Draw a visual effect
+          ctx.save();
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+          ctx.translate(camera.current.x, camera.current.y);
+          ctx.scale(camera.current.scale, camera.current.scale);
+          
+          if (currentSelectedDisaster === 'meteorite') {
+             ctx.fillStyle = 'rgba(255, 100, 0, 0.7)';
+             const radius = currentDisasterParams.radius || 5;
+             ctx.beginPath();
+             ctx.arc((gridX + 0.5) * baseCellSize, (gridY + 0.5) * baseCellSize, radius * baseCellSize, 0, 2 * Math.PI);
+             ctx.fill();
+          } else if (currentSelectedDisaster === 'rocks') {
+             ctx.fillStyle = 'rgba(150, 150, 150, 0.8)';
+             const size = currentDisasterParams.size || 3;
+             const offset = Math.floor(size / 2);
+             ctx.fillRect((gridX - offset) * baseCellSize, (gridY - offset) * baseCellSize, size * baseCellSize, size * baseCellSize);
+          } else if (currentSelectedDisaster === 'wind') {
+             ctx.fillStyle = 'rgba(100, 200, 255, 0.5)';
+             const size = 7;
+             const offset = Math.floor(size / 2);
+             ctx.fillRect((gridX - offset) * baseCellSize, (gridY - offset) * baseCellSize, size * baseCellSize, size * baseCellSize);
+          }
+          ctx.restore();
+          
+          setTimeout(() => draw(), 500); // redraw after 500ms to clear effect
         }
         draw();
       }

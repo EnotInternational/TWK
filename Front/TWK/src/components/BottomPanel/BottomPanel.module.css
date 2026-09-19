@@ -1,48 +1,51 @@
 .bottomPanel {
-  min-height: 220px;
   background: rgba(11, 16, 26, 0.98);
-  border-top: 2px solid #00e5ff;
-  padding: 20px 30px;
+  border: 1px solid #00e5ff;
+  border-radius: 6px;
+  padding: 10px;
   color: #e2e8f0;
   display: flex;
   flex-direction: column;
+  margin-top: auto;
+  flex-shrink: 0;
 }
 
 .panelTitle {
   color: #00e5ff;
-  font-size: 1rem;
-  margin: 0 0 15px 0;
+  font-size: 0.8rem;
+  margin: 0 0 8px 0;
   text-transform: uppercase;
 }
 
 .chartsContainer {
   display: flex;
-  gap: 20px;
+  gap: 8px;
   flex: 1;
   flex-wrap: wrap;
   overflow-y: auto;
 }
 
 .statBox {
-  flex: 1 1 200px;
+  flex: 1 1 120px;
   min-width: 0;
   background: #1a202c;
   border: 1px solid rgba(0, 229, 255, 0.2);
-  border-radius: 8px;
+  border-radius: 6px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 10px;
+  gap: 4px;
+  padding: 6px 0;
 }
 
 .label {
   color: #a0aec0;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
 }
 
 .value {
-  font-size: 1.8rem;
+  font-size: 1.1rem;
   color: #fff;
   font-weight: bold;
 }

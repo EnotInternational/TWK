@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import styles from './RightSidebar.module.css';
 import { socket } from '../../api';
+import BottomPanel from '../BottomPanel/BottomPanel';
 
-export default function RightSidebar({ isOpen, agent, onToggle }) {
+export default function RightSidebar({ isOpen, agent, onToggle, metrics }) {
   const [agentsList, setAgentsList] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'asc' });
 
@@ -89,6 +90,7 @@ export default function RightSidebar({ isOpen, agent, onToggle }) {
                </table>
              </div>
           </div>
+          <BottomPanel metrics={metrics} />
         </aside>
         <button 
           className={styles.rightToggleBtn} 
@@ -150,6 +152,7 @@ export default function RightSidebar({ isOpen, agent, onToggle }) {
             </div>
           )}
         </div>
+        <BottomPanel metrics={metrics} />
       </aside>
       
       <button 

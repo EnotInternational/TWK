@@ -7,7 +7,6 @@ export default function BottomPanel({ metrics }) {
     <footer className={styles.bottomPanel}>
       <h3 className={styles.panelTitle}>
          Глобальная статистика популяции 
-         {m.hash && <span className={styles.hashInfo}> State Hash: {m.hash}</span>}
       </h3>
       <div className={styles.chartsContainer}>
         <div className={styles.statBox}>
@@ -24,7 +23,7 @@ export default function BottomPanel({ metrics }) {
         </div>
         <div className={styles.statBox}>
            <span className={styles.label}>Смертей за шаг</span>
-           <span className={styles.value}>{m.deaths_last_tick || 0}</span>
+           <span className={styles.value}>{m.deaths !== undefined ? m.deaths : 0}</span>
         </div>
       </div>
     </footer>
