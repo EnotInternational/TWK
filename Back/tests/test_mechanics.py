@@ -21,7 +21,14 @@ def test_agent_reproduction():
     parent = Agent(agent_id="parent_01", x=5, y=5, energy=160.0)
     assert parent.can_reproduce(threshold=150.0) is True
 
-    child = parent.reproduce(child_id="child_01", child_x=5, child_y=6, cost=50.0)
+    import random
+    child = parent.reproduce(
+        child_id="child_01", 
+        child_x=5, 
+        child_y=6, 
+        cost=50.0,
+        rng=random.Random(42)
+    )
     assert parent.energy == 110.0
     assert child.id == "child_01"
     assert child.x == 5

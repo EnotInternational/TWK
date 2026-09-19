@@ -2,8 +2,10 @@
 
 Агент обладает запасом энергии, возрастом, родословной (parent_id, generation),
 тратит энергию на поддержание жизни и гибнет при её истощении.
+Также агент обладает генами поведения (w_temp, w_swarm).
 """
 
+import random
 from typing import Any, Dict, Optional
 
 
@@ -17,6 +19,8 @@ class Agent:
         age: int = 0,
         generation: int = 0,
         parent_id: Optional[str] = None,
+        w_temp: float = 0.0,
+        w_swarm: float = 0.0,
     ) -> None:
         self.id = agent_id
         self.x = x
@@ -28,6 +32,10 @@ class Agent:
         self.is_alive = True
         self.death_reason: Optional[str] = None
         self.death_tick: Optional[int] = None
+        
+        # Гены поведения
+        self.w_temp = float(w_temp)
+        self.w_swarm = float(w_swarm)
 
     def consume_energy(self, amount: float) -> None:
         """Потребление энергии за тик."""
@@ -45,11 +53,18 @@ class Agent:
         child_x: int,
         child_y: int,
         cost: float,
+        rng: random.Random,
     ) -> "Agent":
-        """Создать потомка, передав ему часть энергии."""
+        """Создать потомка, передав ему часть энергии и мутировавшие гены."""
         self.energy -= cost
         if self.energy < 0:
             self.energy = 0.0
+            
+        # Мутация генов (случайное блуждание)
+        mutation_rate = 0.5
+        child_w_temp = self.w_temp + rng.gauss(0, mutation_rate)
+        child_w_swarm = self.w_swarm + rng.gauss(0, mutation_rate)
+        
         return Agent(
             agent_id=child_id,
             x=child_x,
@@ -58,6 +73,8 @@ class Agent:
             age=0,
             generation=self.generation + 1,
             parent_id=self.id,
+            w_temp=child_w_temp,
+            w_swarm=child_w_swarm,
         )
 
     def die(self, reason: str, tick: int) -> None:

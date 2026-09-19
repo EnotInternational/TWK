@@ -1,106 +1,101 @@
-// api.js
-const BASE_URL = 'http://26.192.246.106:5000'; // Актуальный IP вашего бэкенда
+import { io } from 'socket.io-client';
 
-// Вспомогательная функция для обработки ответов
-const fetchApi = async (endpoint, options = {}) => {
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-  if (!response.ok) throw new Error(`Ошибка API: ${response.status}`);
-  return response.json();
-};
+const BASE_URL = 'http://26.192.246.106:5000'; // Укажите IP сервера
 
-export const api = {
-  // === 1. УПРАВЛЕНИЕ СИМУЛЯЦИЕЙ ===
-  simulation: {
-    // Инициализация с новыми научными параметрами
-    init: (config) => fetchApi('/api/simulation/init', { 
-      method: 'POST', 
-      body: JSON.stringify(config) 
-    }),
-    start: (interval_sec) => fetchApi('/api/simulation/start', { 
-      method: 'POST', 
-      body: JSON.stringify({ interval_sec }) 
-    }),
-    pause: () => fetchApi('/api/simulation/pause', { method: 'POST' }),
-    step: () => fetchApi('/api/simulation/step', { method: 'POST' }),
-    reset: () => fetchApi('/api/simulation/reset', { method: 'POST' }),
-    setSpeed: (interval_sec) => fetchApi('/api/simulation/speed', { 
-      method: 'POST', 
-      body: JSON.stringify({ interval_sec }) 
-    }),
-    getStatus: () => fetchApi('/api/simulation/status')
+export const socket = io(BASE_URL, {
+  transports: ['websocket', 'polling']
+});
+
+export const simulationApi = {
+  // Инициализировать симуляцию с параметрами и сидом
+  init: async (params = {}) => {
+    const res = await fetch(`${BASE_URL}/api/simulation/init`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        seed: params.seed ?? 42,
+        width: params.width ?? 60,
+        height: params.height ?? 30,
+        initial_agents: params.initialAgents ?? 40,
+        starting_energy: params.startingEnergy ?? 100,
+        reproduction_threshold: params.reproductionThreshold ?? 140,
+        reproduction_cost: params.reproductionCost ?? 50,
+        cycle_ticks: params.cycleTicks ?? 200,
+        terminator_width: params.terminatorWidth ?? 4,
+      }),
+    });
+    return res.json();
   },
 
-  // === 2. АГЕНТЫ (Формы жизни) ===
-  agents: {
-    // Получение списка с фильтрами по зоне Меркурия (hot, cold, terminator)[cite: 13]
-    getAll: (zone, alive_only = true) => {
-      const params = new URLSearchParams();
-      if (zone) params.append('zone', zone);
-      params.append('alive_only', alive_only);
-      return fetchApi(`/api/agents?${params.toString()}`);
-    },
-    // Детальная инфа по одному агенту[cite: 14]
-    getById: (id) => fetchApi(`/api/agents/${id}`)
+  // Запуск непрерывной авто-симуляции
+  start: async (intervalSec = 0.2) => {
+    const res = await fetch(`${BASE_URL}/api/simulation/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ interval_sec: intervalSec }),
+    });
+    return res.json();
   },
 
-  // === 3. СРЕДА И КЛИМАТ ===
-  environment: {
-    // Координаты Солнца и терминатора[cite: 15]
-    getGlobal: () => fetchApi('/api/environment'),
-    // Инспекция конкретной клетки[cite: 15]
-    getCell: (x, y) => fetchApi(`/api/environment/cell?x=${x}&y=${y}`)
+  // Пауза
+  pause: async () => {
+    const res = await fetch(`${BASE_URL}/api/simulation/pause`, { method: 'POST' });
+    return res.json();
   },
 
-  // === 4. АНАЛИТИКА И МЕТРИКИ ===
-  metrics: {
-    // Сводка за последний тик[cite: 20]
-    getCurrent: () => fetchApi('/api/metrics/current'),
-    // Распределение по температурным зонам[cite: 20]
-    getDistribution: () => fetchApi('/api/metrics/distribution'),
-    // Исторические данные для графиков с шагом прореживания[cite: 21]
-    getHistory: (fromTick = 0, toTick, step = 1) => {
-      const params = new URLSearchParams({ from_tick: fromTick, step });
-      if (toTick) params.append('to_tick', toTick);
-      return fetchApi(`/api/metrics/history?${params.toString()}`);
-    },
-    // Журнал рождений, смертей и вымираний[cite: 16, 17]
-    getEvents: (since_tick, type, limit = 50, offset = 0) => {
-      const params = new URLSearchParams({ limit, offset });
-      if (since_tick) params.append('since_tick', since_tick);
-      if (type) params.append('type', type);
-      return fetchApi(`/api/events?${params.toString()}`);
-    }
+  // Один ручной шаг (покадровый режим)
+  step: async () => {
+    const res = await fetch(`${BASE_URL}/api/simulation/step`, { method: 'POST' });
+    return res.json();
   },
 
-  // === 5. НАУЧНЫЕ ЭКСПЕРИМЕНТЫ ===
-  experiments: {
-    // Запуск N тиков без графики (Headless)[cite: 18]
-    runBatch: (ticks) => fetchApi('/api/experiments/run', { 
-      method: 'POST', 
-      body: JSON.stringify({ ticks }) 
-    }),
-    // Экспорт датасета для Jupyter/pandas[cite: 17]
-    exportData: () => fetchApi('/api/experiments/export'),
-    // Проверка воспроизводимости по сиду[cite: 19]
-    verify: (seed, ticks) => fetchApi('/api/experiments/verify', { 
-      method: 'POST', 
-      body: JSON.stringify({ seed, ticks }) 
-    })
+  // Сброс к тику 0
+  reset: async () => {
+    const res = await fetch(`${BASE_URL}/api/simulation/reset`, { method: 'POST' });
+    return res.json();
   },
 
-  // === 6. ЛЕГАСИ (Оставлено для совместимости, если бэк еще требует) ===
-  field: {
-    init: (width, height, agents_count, seed) => fetchApi('/api/field', { 
-      method: 'POST', 
-      body: JSON.stringify({ width, height, agents_count, seed }) 
-    }),
-    get: () => fetchApi('/api/field'),
-    clear: () => fetchApi('/api/field', { method: 'DELETE' })
-  }
+  // Изменение скорости на лету
+  setSpeed: async (intervalSec) => {
+    const res = await fetch(`${BASE_URL}/api/simulation/speed`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ interval_sec: intervalSec }),
+    });
+    return res.json();
+  },
+
+  // Получить статус
+  getStatus: async () => {
+    const res = await fetch(`${BASE_URL}/api/simulation/status`);
+    return res.json();
+  },
+
+  // История для графиков (численность, энергия, доля в терминаторе)
+  getMetricsHistory: async (fromTick = 0, step = 1) => {
+    const res = await fetch(`${BASE_URL}/api/metrics/history?from_tick=${fromTick}&step=${step}`);
+    return res.json();
+  },
+
+  // Распределение по зонам (Hot/Cold/Terminator)
+  getDistribution: async () => {
+    const res = await fetch(`${BASE_URL}/api/metrics/distribution`);
+    return res.json();
+  },
+
+  // Лента событий (рождения, смерти)
+  getEvents: async (limit = 50) => {
+    const res = await fetch(`${BASE_URL}/api/events?limit=${limit}`);
+    return res.json();
+  },
+
+  // Проверка научной воспроизводимости (одинаковый seed)
+  verifyReproducibility: async (seed = 42, ticks = 50) => {
+    const res = await fetch(`${BASE_URL}/api/experiments/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ seed, ticks }),
+    });
+    return res.json();
+  },
 };

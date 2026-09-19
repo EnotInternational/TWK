@@ -7,35 +7,32 @@ import styles from './App.module.css';
 
 export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(true);
-  const [isRightMenuOpen, setIsRightMenuOpen] = useState(true); // Состояние правой панели
+  const [isRightMenuOpen, setIsRightMenuOpen] = useState(true);
   
-  const [metrics, setMetrics] = useState({ power: 0, latency: 0, efficiency: 0, entropy: 0 });
+  const [metrics, setMetrics] = useState({});
   const [selectedAgent, setSelectedAgent] = useState(null);
-  const [gridConfig, setGridConfig] = useState({ width: 50, height: 50 });
+
+  // We rely on AgentGrid to render the environment and fetch the agents via sockets
 
   return (
     <div className={styles.appLayout}>
-      {/* Левая панель (Терраформирование) */}
       <Sidebar 
         isOpen={isMenuOpen} 
-        onGridUpdate={setGridConfig}
         onToggle={() => setIsMenuOpen(!isMenuOpen)} 
+        status={metrics.status}
+        tick={metrics.tick}
       />
       
-      {/* Центральная рабочая зона[cite: 11] */}
       <main className={styles.mainWorkspace}>
         <div className={styles.gridArea}>
           <AgentGrid 
             onMetricsUpdate={setMetrics} 
             onAgentSelect={setSelectedAgent} 
-            gridWidth={gridConfig.width}   
-            gridHeight={gridConfig.height} 
           />
         </div>
         <BottomPanel metrics={metrics} />
       </main>
 
-      {/* Правая панель (Анализ агента) */}
       <RightSidebar 
         isOpen={isRightMenuOpen} 
         agent={selectedAgent} 
