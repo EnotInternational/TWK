@@ -1,49 +1,38 @@
-﻿"""WebSocket-обработчики для поля агентов.
+"""WebSocket-обработчики для связи фронтенда с ядром симуляции.
 
-События (client -> server):
-  connect          -- сервер сразу шлёт текущее состояние поля
-  disconnect       -- логирование
-  request_field    -- клиент запрашивает снимок поля
-  simulation_step  -- один тик симуляции через WS
-  start_auto       -- запустить авто-симуляцию (data: {"interval": <секунды>})
-  stop_auto        -- остановить авто-симуляцию
+События (клиент -> сервер):
+  connect          -- клиент подключился
+  disconnect       -- клиент отключился
+  request_field    -- клиент запрашивает текущий снимок
+  simulation:step  -- выполнить 1 тик
+  simulation:start -- запустить симуляцию (данные: {"interval_sec": 0.5})
+  simulation:pause -- поставить на паузу
+  simulation:reset -- сбросить состояние
+  simulation:speed -- изменить скорость (данные: {"interval_sec": 0.2})
 
-События (server -> client):
-  field_update     -- broadcast текущего состояния поля всем клиентам
+События (сервер -> клиент):
+  simulation:tick  -- полный пакет каждого тика (Солнце, терминатор, агенты, метрики)
+  field_update     -- обратная совместимость
+  simulation:ended -- сигнал об остановке / вымирании популяции
 """
 
-import threading
 from flask_socketio import emit
-
-from state import field_state
 from extensions import socketio
+from state import sim_manager
 
-# Событие остановки авто-задачи
-_stop_event: threading.Event = threading.Event()
-_auto_thread: threading.Thread | None = None
-
-
-def _broadcast_field():
-    """Разослать текущее состояние поля всем подключённым клиентам."""
-    socketio.emit("field_update", field_state.as_dict())
-
-
-def _run_auto(interval: float, stop: threading.Event):
-    """Фоновый поток: периодически делать шаг симуляции."""
-    while not stop.wait(timeout=interval):
-        for agent in field_state.agents:
-            agent["hunger"] = max(0, agent["hunger"] - 1)
-        _broadcast_field()
-
-
-# ---------------------------------------------------------------------------
-# Handlers
-# ---------------------------------------------------------------------------
 
 @socketio.on("connect")
 def handle_connect():
-    """Клиент подключился - немедленно отправить текущее состояние поля."""
-    emit("field_update", field_state.as_dict())
+    """Клиент подключился - отправить текущий снимок симуляции."""
+    snapshot = sim_manager.get_snapshot()
+    emit("simulation:tick", snapshot)
+    emit("field_update", {
+        "tick": snapshot["tick"],
+        "width": snapshot["environment"]["width"],
+        "height": snapshot["environment"]["height"],
+        "agents": snapshot["agents"],
+        "metrics": snapshot["metrics"],
+    })
 
 
 @socketio.on("disconnect")
@@ -54,41 +43,54 @@ def handle_disconnect():
 
 @socketio.on("request_field")
 def handle_request_field():
-    """Клиент запрашивает актуальный снимок поля."""
-    emit("field_update", field_state.as_dict())
+    """Клиент запросил актуальный снимок."""
+    snapshot = sim_manager.get_snapshot()
+    emit("simulation:tick", snapshot)
 
 
+@socketio.on("simulation:step")
 @socketio.on("simulation_step")
 def handle_simulation_step():
-    """Один тик симуляции: уменьшить голод каждого агента и транслировать результат."""
-    for agent in field_state.agents:
-        agent["hunger"] = max(0, agent["hunger"] - 1)
-    _broadcast_field()
+    """Сделать 1 шаг симуляции."""
+    sim_manager.step()
 
 
+@socketio.on("simulation:start")
 @socketio.on("start_auto")
-def handle_start_auto(data):
-    """Запустить авто-симуляцию.
-
-    data: {"interval": <float, секунды>}  -- по умолчанию 1.0 сек.
-    """
-    global _auto_thread, _stop_event
-    if _auto_thread is not None and _auto_thread.is_alive():
-        return  # уже запущена
-
-    interval = float((data or {}).get("interval", 1.0))
-    interval = max(0.1, min(interval, 60.0))  # clamp [0.1; 60]
-
-    _stop_event = threading.Event()
-    _auto_thread = threading.Thread(
-        target=_run_auto, args=(interval, _stop_event), daemon=True
-    )
-    _auto_thread.start()
+def handle_simulation_start(data=None):
+    """Запустить непрерывную симуляцию."""
+    interval_sec = None
+    if isinstance(data, dict):
+        # Поддержка как interval_sec, так и interval
+        val = data.get("interval_sec", data.get("interval"))
+        if val is not None:
+            try:
+                interval_sec = float(val)
+            except (ValueError, TypeError):
+                pass
+    sim_manager.start_auto(interval_sec)
 
 
+@socketio.on("simulation:pause")
 @socketio.on("stop_auto")
-def handle_stop_auto():
-    """Остановить авто-симуляцию."""
-    global _auto_thread
-    _stop_event.set()
-    _auto_thread = None
+def handle_simulation_pause():
+    """Приостановить симуляцию."""
+    sim_manager.stop_auto()
+
+
+@socketio.on("simulation:reset")
+def handle_simulation_reset():
+    """Сбросить симуляцию."""
+    sim_manager.reset_simulation()
+
+
+@socketio.on("simulation:speed")
+def handle_simulation_speed(data):
+    """Изменить скорость выполнения."""
+    if isinstance(data, dict):
+        val = data.get("interval_sec", data.get("interval"))
+        if val is not None:
+            try:
+                sim_manager.set_interval(float(val))
+            except (ValueError, TypeError):
+                pass
