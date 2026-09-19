@@ -32,6 +32,19 @@ def init_simulation():
             reproduction_cost: {type: number, example: 50.0}
             require_partner: {type: boolean, example: true}
             max_ticks: {type: integer, example: 1000}
+            agent_max_age: {type: integer, example: 100}
+            wind_penalty: {type: number, example: 0.0}
+            rocks_count: {type: integer, example: 0}
+            rocks_coords: {
+              type: array,
+              items: {
+                type: array,
+                items: {type: integer},
+                example: [10, 15]
+              },
+              example: [[10, 15], [12, 18]]
+            }
+            meteorite_prob: {type: number, example: 0.0}
     responses:
       200: {description: Симуляция инициализирована}
     """
