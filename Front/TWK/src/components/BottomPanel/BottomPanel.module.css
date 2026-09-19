@@ -1,0 +1,45 @@
+.bottomPanel {
+  height: 220px;
+  background: rgba(11, 16, 26, 0.98);
+  border-top: 2px solid #00e5ff;
+  padding: 20px 30px;
+  color: #e2e8f0;
+  display: flex;
+  flex-direction: column;
+}
+
+.panelTitle {
+  color: #00e5ff;
+  font-size: 1rem;
+  margin: 0 0 15px 0;
+  text-transform: uppercase;
+}
+
+.chartsContainer {
+  display: flex;
+  gap: 20px;
+  flex: 1;
+}
+
+.statBox {
+  flex: 1;
+  background: #1a202c;
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.label {
+  color: #a0aec0;
+  font-size: 0.9rem;
+}
+
+.value {
+  font-size: 1.8rem;
+  color: #fff;
+  font-weight: bold;
+}

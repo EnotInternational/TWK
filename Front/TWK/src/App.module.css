@@ -1,0 +1,23 @@
+.appLayout {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #050508; /* Самый темный фон позади всех панелей */
+}
+
+.mainWorkspace {
+  display: flex;
+  flex-direction: column;
+  flex: 1; /* Занимает всю ширину, оставшуюся от сайдбара */
+  min-width: 0; /* Обязательно для корректной работы flexbox */
+}
+
+.gridArea {
+  flex: 1; /* Занимает всю высоту до нижней панели */
+  padding: 30px;
+  display: flex;
+  justify-content: center; /* Центрирует квадратную сетку по горизонтали */
+  align-items: center;     /* Центрирует квадратную сетку по вертикали */
+  overflow: hidden;
+}
