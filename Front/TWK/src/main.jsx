@@ -33,6 +33,10 @@ function Root() {
   const navigate = (to) => {
     setRoute(to);
     window.location.hash = to === 'stats' ? '#/stats' : '#/';
+    if (to === 'main') {
+      // Уведомляем canvas о возможном обновлении размеров при возврате
+      window.dispatchEvent(new Event('resize'));
+    }
   };
 
   return (
@@ -103,11 +107,36 @@ function Root() {
         </button>
       </nav>
 
-      {route === 'stats' ? (
-        <StatisticsPage onBack={() => navigate('main')} />
-      ) : (
+      {/* Обе страницы сохраняются в DOM и не размонтируются, 
+          чтобы не сбрасывать введённые пользователем настройки терраформирования, 
+          положение камеры, зум и состояние панелей */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        overflow: 'hidden',
+        visibility: route === 'main' ? 'visible' : 'hidden',
+        pointerEvents: route === 'main' ? 'auto' : 'none',
+        zIndex: route === 'main' ? 10 : 0
+      }}>
         <App />
-      )}
+      </div>
+
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        overflow: 'hidden',
+        visibility: route === 'stats' ? 'visible' : 'hidden',
+        pointerEvents: route === 'stats' ? 'auto' : 'none',
+        zIndex: route === 'stats' ? 10 : 0
+      }}>
+        <StatisticsPage onBack={() => navigate('main')} />
+      </div>
     </>
   );
 }
