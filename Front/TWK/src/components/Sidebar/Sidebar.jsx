@@ -62,15 +62,7 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
     }
   };
 
-  const handleVerify = async () => {
-    try {
-       const res = await simulationApi.verifyReproducibility(spawnParams.seed, 50);
-       alert(res.report || "Проверка завершена");
-    } catch (e) {
-       console.error(e);
-       alert("Ошибка при проверке");
-    }
-  };
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -152,13 +144,6 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
             {isLoading ? 'Генерация...' : 'Инициализировать'}
           </button>
           
-          <button 
-            className={styles.actionBtn} 
-            onClick={handleVerify} 
-            style={{marginTop: '10px', background: '#334466'}}
-          >
-            Верификация (50 шагов)
-          </button>
         </div>
       </aside>
       
