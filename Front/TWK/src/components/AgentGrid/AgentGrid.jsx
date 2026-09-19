@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import styles from './AgentGrid.module.css';
-import { agentApi } from '../../api';
+import { api } from '../../api';
 
 export default function AgentGrid({ onMetricsUpdate, onAgentSelect, gridWidth, gridHeight }) {
   const canvasRef = useRef(null);
@@ -77,14 +77,23 @@ export default function AgentGrid({ onMetricsUpdate, onAgentSelect, gridWidth, g
     };
 
     const fetchState = async () => {
-      try {
-        const data = await agentApi.getField();
-        if (data && data.agents) {
-          latestAgentsRef.current = data.agents;
-          draw(); // Перерисовываем при получении данных
-        }
-      } catch (error) { /* Игнорируем в консоли при поллинге */ }
-    };
+    try {
+      // Обращаемся напрямую к новому эндпоинту агентов[cite: 13]
+      const agents = await api.agents.getAll();
+      
+      // Бэкенд может вернуть либо чистый массив, либо объект с ключом
+      if (Array.isArray(agents)) {
+        latestAgentsRef.current = agents;
+        draw(); 
+      } 
+      else if (agents && agents.agents) {
+        latestAgentsRef.current = agents.agents;
+        draw();
+      }
+    } catch (error) { 
+      // Игнорируем ошибки сети при поллинге
+    }
+  };
 
     pollingInterval = setInterval(fetchState, 300);
     fetchState();

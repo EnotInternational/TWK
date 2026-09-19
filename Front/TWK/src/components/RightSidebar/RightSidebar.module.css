@@ -1,0 +1,12 @@
+.sidebar {
+color:white;
+  width: 320px;
+  height: 100vh;
+  flex-shrink: 0;
+  background: rgba(11, 16, 26, 0.98);
+  /* ... ваши цвета и отступы ... */
+  
+  /* Меняем transform на margin для корректной работы Flexbox */
+  transition: margin 0.3s ease-in-out; 
+  position: relative;
+}
