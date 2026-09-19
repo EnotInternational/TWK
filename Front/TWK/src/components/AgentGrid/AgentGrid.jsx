@@ -138,7 +138,7 @@ export default function AgentGrid({ onMetricsUpdate, onAgentSelect, gridWidth = 
       latestEnvRef.current = data.environment;
       
       if (data.metrics) {
-        onMetricsUpdate({ ...data.metrics, tick: data.tick, status: data.status, hash: data.state_hash });
+        onMetricsUpdate({ ...data.metrics, tick: data.tick, status: data.status, hash: data.state_hash, aliveCount: data.agents ? data.agents.length : 0 });
       }
       draw();
     };

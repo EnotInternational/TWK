@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import styles from './Sidebar.module.css';
-import { simulationApi } from '../../api';
+import { simulationApi, socket } from '../../api';
 
 export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0 }) {
   const [spawnParams, setSpawnParams] = useState({
@@ -26,6 +26,7 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
         cycleTicks: Number(spawnParams.cycleTicks),
         terminatorWidth: Number(spawnParams.terminatorWidth)
       });
+      socket.emit('request_field');
     } catch (error) {
       console.error("Initialization Error:", error);
     } finally {
@@ -35,18 +36,22 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
 
   const handleStart = async () => {
     await simulationApi.start(speed);
+    socket.emit('request_field');
   };
 
   const handlePause = async () => {
     await simulationApi.pause();
+    socket.emit('request_field');
   };
 
   const handleStep = async () => {
     await simulationApi.step();
+    socket.emit('request_field');
   };
 
   const handleReset = async () => {
     await simulationApi.reset();
+    socket.emit('request_field');
   };
 
   const handleSpeedChange = async (e) => {
@@ -76,7 +81,10 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
     <>
       <aside 
         className={styles.sidebar}
-        style={{ transform: isOpen ? 'translateX(0)' : 'translateX(-100%)' }}
+        style={{ 
+          marginLeft: isOpen ? '0' : '-260px',
+          opacity: isOpen ? 1 : 0
+        }}
       >
         <h2>Terra Nova: Mercury</h2>
         <div className={styles.statusBox}>
@@ -154,7 +162,11 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
         </div>
       </aside>
       
-      <button className={styles.toggleBtn} onClick={onToggle}>
+      <button 
+        className={styles.toggleBtn} 
+        style={{ left: isOpen ? '280px' : '20px' }} 
+        onClick={onToggle}
+      >
         {isOpen ? 'Скрыть' : 'Меню'}
       </button>
     </>

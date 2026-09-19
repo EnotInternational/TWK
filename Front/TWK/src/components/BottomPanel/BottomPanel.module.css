@@ -1,5 +1,5 @@
 .bottomPanel {
-  height: 220px;
+  min-height: 220px;
   background: rgba(11, 16, 26, 0.98);
   border-top: 2px solid #00e5ff;
   padding: 20px 30px;
@@ -19,10 +19,13 @@
   display: flex;
   gap: 20px;
   flex: 1;
+  flex-wrap: wrap;
+  overflow-y: auto;
 }
 
 .statBox {
-  flex: 1;
+  flex: 1 1 200px;
+  min-width: 0;
   background: #1a202c;
   border: 1px solid rgba(0, 229, 255, 0.2);
   border-radius: 8px;

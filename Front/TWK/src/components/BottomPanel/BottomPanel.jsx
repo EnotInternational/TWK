@@ -12,7 +12,7 @@ export default function BottomPanel({ metrics }) {
       <div className={styles.chartsContainer}>
         <div className={styles.statBox}>
           <span className={styles.label}>Популяция (Живые)</span>
-          <span className={styles.value}>{m.total_agents || 0}</span>
+          <span className={styles.value}>{m.aliveCount !== undefined ? m.aliveCount : (m.total_agents || 0)}</span>
         </div>
         <div className={styles.statBox}>
           <span className={styles.label}>Средняя энергия</span>
