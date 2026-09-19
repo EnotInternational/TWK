@@ -9,7 +9,7 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
     height: 30,
     initialAgents: 40,
     cycleTicks: 200,
-    terminatorWidth: 4,
+    terminatorWidth: 8,
   });
   
   const [speed, setSpeed] = useState(0.2); // seconds per tick
@@ -129,6 +129,10 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
           <div className={styles.inputGroup}>
             <label>Цикл (тиков):</label>
             <input type="number" name="cycleTicks" value={spawnParams.cycleTicks} onChange={handleInputChange} min="10" />
+          </div>
+          <div className={styles.inputGroup}>
+            <label>Ширина Терминатора:</label>
+            <input type="number" name="terminatorWidth" value={spawnParams.terminatorWidth} onChange={handleInputChange} min="1" />
           </div>
           
           <button 

@@ -141,6 +141,8 @@ class SimulationEngine:
                 age=0,
                 generation=0,
                 parent_id=None,
+                w_temp=self.rng.gauss(-1.0, 2.0), # Склонность избегать штрафов (в среднем отрицательная)
+                w_swarm=self.rng.gauss(0.5, 2.0), # Склонность кучковаться (в среднем положительная)
             )
             self.agents[aid] = agent
             self.events.log(
@@ -213,6 +215,11 @@ class SimulationEngine:
         for agent in alive_agents:
             agent.age += 1
             zone = self.env.get_zone(agent.x, agent.y, current_tick)
+            
+            if zone == Zone.TERMINATOR:
+                # В зоне терминатора агенты получают энергию солнца на рассвете/закате
+                agent.energy += 3.0
+                
             zone_penalty = self.env.get_energy_penalty(zone)
             total_consumption = self.config.base_metabolism + zone_penalty
             agent.consume_energy(total_consumption)
@@ -253,7 +260,27 @@ class SimulationEngine:
 
             # Агент может остаться на месте или шагнуть на свободную клетку
             options = [(agent.x, agent.y)] + free_neighbors
-            target_pos = self.rng.choice(options)
+            
+            best_score = float("-inf")
+            best_pos = (agent.x, agent.y)
+            
+            for pos in options:
+                # 1. Штраф зоны (отрицательный стимул)
+                pos_zone = self.env.get_zone(pos[0], pos[1], current_tick)
+                pos_penalty = self.env.get_energy_penalty(pos_zone)
+                
+                # 2. Плотность соседей (социальный стимул)
+                pos_neighbors = self._get_neighbors(pos[0], pos[1])
+                swarm_count = sum(1 for n in pos_neighbors if n in occupied and occupied[n].id != agent.id)
+                
+                # Функция приспособленности
+                score = (agent.w_temp * pos_penalty) + (agent.w_swarm * swarm_count) + self.rng.gauss(0, 0.5)
+                
+                if score > best_score:
+                    best_score = score
+                    best_pos = pos
+
+            target_pos = best_pos
 
             if target_pos != (agent.x, agent.y):
                 occupied.pop((agent.x, agent.y), None)
@@ -289,6 +316,7 @@ class SimulationEngine:
                     child_x=child_x,
                     child_y=child_y,
                     cost=self.config.reproduction_cost,
+                    rng=self.rng,
                 )
                 new_offspring.append(child)
                 occupied[(child_x, child_y)] = child
@@ -348,6 +376,8 @@ class SimulationEngine:
                     "energy": round(a.energy, 4),
                     "age": a.age,
                     "gen": a.generation,
+                    "wt": round(a.w_temp, 4),
+                    "ws": round(a.w_swarm, 4),
                 }
                 for a in alive_agents
             ],
