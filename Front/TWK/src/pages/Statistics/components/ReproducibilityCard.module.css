@@ -1,31 +1,36 @@
 .card {
-  background: rgba(11, 16, 26, 0.85);
-  border: 1px solid rgba(0, 229, 255, 0.2);
-  border-radius: 8px;
-  padding: 18px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(8px);
+  background: #0d131f;
+  border: 1px solid #1e293b;
+  border-radius: 4px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  height: 100%;
   box-sizing: border-box;
 }
 
 .title {
-  color: #00e5ff;
-  font-size: 0.95rem;
+  color: #f1f5f9;
+  font-size: 0.82rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin: 0 0 14px 0;
+  letter-spacing: 0.06em;
+  margin: 0 0 12px 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.inputsRow {
-  display: flex;
-  gap: 10px;
+.paramTag {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.75rem;
+  color: #38bdf8;
+}
+
+.bodyGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 12px;
+  align-items: flex-end;
   margin-bottom: 12px;
 }
 
@@ -33,51 +38,50 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  flex: 1;
 }
 
-.inputGroup label {
-  font-size: 0.72rem;
-  color: #a0aec0;
+.inputLabel {
+  font-size: 0.68rem;
+  color: #64748b;
   text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05em;
 }
 
 .inputField {
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(0, 229, 255, 0.3);
-  color: #fff;
+  background: #090d16;
+  border: 1px solid #1e293b;
+  color: #f1f5f9;
   padding: 6px 10px;
-  border-radius: 4px;
-  font-family: monospace;
-  font-size: 0.85rem;
+  border-radius: 3px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.8rem;
   outline: none;
-  width: 100%;
-  box-sizing: border-box;
 }
 
 .inputField:focus {
-  border-color: #00e5ff;
-  box-shadow: 0 0 8px rgba(0, 229, 255, 0.3);
+  border-color: #38bdf8;
 }
 
 .btnVerify {
-  background: rgba(0, 229, 255, 0.1);
-  border: 1px solid #00e5ff;
-  color: #00e5ff;
-  padding: 8px 14px;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 700;
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #38bdf8;
+  padding: 7px 16px;
+  border-radius: 3px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  margin-bottom: 14px;
+  transition: all 0.15s ease;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  height: 32px;
 }
 
 .btnVerify:hover:not(:disabled) {
-  background: rgba(0, 229, 255, 0.25);
-  box-shadow: 0 0 12px rgba(0, 229, 255, 0.4);
+  background: #334155;
+  border-color: #38bdf8;
 }
 
 .btnVerify:disabled {
@@ -86,32 +90,36 @@
 }
 
 .resultBox {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 6px;
+  background: #090d16;
+  border: 1px solid #1e293b;
+  border-radius: 3px;
   padding: 10px 12px;
-  font-size: 0.78rem;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: auto;
-}
-
-.hashRow {
+  font-size: 0.74rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-family: monospace;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.hashDisplay {
+  color: #94a3b8;
 }
 
 .hashValue {
-  color: #00e5ff;
+  color: #38bdf8;
+  font-weight: bold;
 }
 
-.statusRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  padding-top: 6px;
+.statusTag {
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+@media (max-width: 800px) {
+  .bodyGrid {
+    grid-template-columns: 1fr;
+  }
 }

@@ -3,10 +3,9 @@ import styles from './EnergyDistributionChart.module.css';
 
 export default function EnergyDistributionChart({ history = [], latestMetric = {}, agents = [] }) {
   const canvasRef = useRef(null);
-
   const avgEnergy = latestMetric?.avgEnergy || 0;
 
-  // Рассчитываем точные процентные доли из реального списка агентов
+  // Точный расчёт по реальным особям
   let lowPct = 0;
   let midPct = 0;
   let highPct = 0;
@@ -18,7 +17,7 @@ export default function EnergyDistributionChart({ history = [], latestMetric = {
     agents.forEach(a => {
       const e = a.energy ?? 0;
       if (e < 60) lowCount++;
-      else if (e > 120) highCount++;
+      else if (e >= 120) highCount++;
       else midCount++;
     });
     const total = agents.length;
@@ -27,7 +26,7 @@ export default function EnergyDistributionChart({ history = [], latestMetric = {
     highPct = Math.round((highCount / total) * 100);
   }
 
-  // Рисуем мини-спарклайн средней энергии за тики
+  // Тренд среднего энергетического уровня
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || !history || history.length < 2) return;
@@ -47,6 +46,16 @@ export default function EnergyDistributionChart({ history = [], latestMetric = {
     const maxE = 180;
     const minE = 0;
 
+    // Контрольная линия порога репродукции E=140
+    const repY = h - ((140 - minE) / (maxE - minE)) * h;
+    ctx.beginPath();
+    ctx.setLineDash([2, 3]);
+    ctx.strokeStyle = '#334155';
+    ctx.moveTo(0, repY);
+    ctx.lineTo(w, repY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
     ctx.beginPath();
     history.forEach((pt, idx) => {
       const val = pt.avgEnergy || 0;
@@ -56,78 +65,69 @@ export default function EnergyDistributionChart({ history = [], latestMetric = {
       else ctx.lineTo(x, y);
     });
 
-    ctx.strokeStyle = '#ffd000';
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 1.4;
     ctx.stroke();
 
-    // Закраска под спарклайном
     ctx.lineTo(w, h);
     ctx.lineTo(0, h);
     ctx.closePath();
-    ctx.fillStyle = 'rgba(255, 208, 0, 0.1)';
+    ctx.fillStyle = 'rgba(245, 158, 11, 0.06)';
     ctx.fill();
   }, [history]);
 
   return (
     <div className={styles.card}>
       <h4 className={styles.title}>
-        <span>⚡ Энергетический баланс</span>
-        <span style={{ fontSize: '0.8rem', color: '#ffd000' }}>
-          {avgEnergy > 0 ? `${avgEnergy.toFixed(1)} E` : '—'}
-        </span>
+        <span>Метаболический профиль</span>
+        <span className={styles.paramTag}>⟨E⟩ = {avgEnergy > 0 ? avgEnergy.toFixed(1) : '0.0'}</span>
       </h4>
 
       <div className={styles.barsList}>
-        {/* Готовы к размножению > 120 */}
+        {/* Репродуктивный резерв E >= 120 */}
         <div className={styles.barItem}>
           <div className={styles.barHeader}>
-            <span className={styles.barLabel}>
-              <span style={{ color: '#00ff88' }}>●</span> Репродукция (&gt; 120 E)
-            </span>
-            <span className={styles.barValue} style={{ color: '#00ff88' }}>
-              {highPct}% <span style={{ color: '#718096', fontSize: '0.7rem' }}>({highCount})</span>
+            <span className={styles.barLabel}>Репродуктивный резерв (E ≥ 120)</span>
+            <span className={styles.barValue}>
+              {highPct}% <span style={{ color: '#64748b', fontSize: '0.68rem' }}>({highCount})</span>
             </span>
           </div>
           <div className={styles.progressTrack}>
             <div 
               className={styles.progressBar} 
-              style={{ width: `${highPct}%`, background: 'linear-gradient(90deg, #00bb66, #00ff88)' }} 
+              style={{ width: `${highPct}%`, background: '#10b981' }} 
             />
           </div>
         </div>
 
-        {/* Стабильное состояние 60 - 120 */}
+        {/* Гомеостатическая норма 60 - 120 */}
         <div className={styles.barItem}>
           <div className={styles.barHeader}>
-            <span className={styles.barLabel}>
-              <span style={{ color: '#ffd000' }}>●</span> Стабильный (60 - 120 E)
-            </span>
-            <span className={styles.barValue} style={{ color: '#ffd000' }}>
-              {midPct}% <span style={{ color: '#718096', fontSize: '0.7rem' }}>({midCount})</span>
+            <span className={styles.barLabel}>Гомеостатический оптимум (60 ≤ E &lt; 120)</span>
+            <span className={styles.barValue}>
+              {midPct}% <span style={{ color: '#64748b', fontSize: '0.68rem' }}>({midCount})</span>
             </span>
           </div>
           <div className={styles.progressTrack}>
             <div 
               className={styles.progressBar} 
-              style={{ width: `${midPct}%`, background: 'linear-gradient(90deg, #d9a800, #ffd000)' }} 
+              style={{ width: `${midPct}%`, background: '#f59e0b' }} 
             />
           </div>
         </div>
 
-        {/* Риск истощения < 60 */}
+        {/* Энергетический дефицит E < 60 */}
         <div className={styles.barItem}>
           <div className={styles.barHeader}>
-            <span className={styles.barLabel}>
-              <span style={{ color: '#ff3344' }}>●</span> Критическое (&lt; 60 E)
-            </span>
-            <span className={styles.barValue} style={{ color: '#ff3344' }}>
-              {lowPct}% <span style={{ color: '#718096', fontSize: '0.7rem' }}>({lowCount})</span>
+            <span className={styles.barLabel}>Критический дефицит (E &lt; 60)</span>
+            <span className={styles.barValue}>
+              {lowPct}% <span style={{ color: '#64748b', fontSize: '0.68rem' }}>({lowCount})</span>
             </span>
           </div>
           <div className={styles.progressTrack}>
             <div 
               className={styles.progressBar} 
-              style={{ width: `${lowPct}%`, background: 'linear-gradient(90deg, #bb2233, #ff3344)' }} 
+              style={{ width: `${lowPct}%`, background: '#ef4444' }} 
             />
           </div>
         </div>
@@ -135,8 +135,8 @@ export default function EnergyDistributionChart({ history = [], latestMetric = {
 
       <div className={styles.miniChartArea}>
         <div className={styles.miniChartHeader}>
-          <span>Тренд средней энергии</span>
-          <span>{history.length > 1 ? `${history.length} тиков` : 'Накопление...'}</span>
+          <span>Динамика среднего потенциала ⟨E(t)⟩</span>
+          <span>E_rep = 140</span>
         </div>
         <canvas ref={canvasRef} className={styles.sparklineCanvas} />
       </div>

@@ -34,14 +34,13 @@ function Root() {
     setRoute(to);
     window.location.hash = to === 'stats' ? '#/stats' : '#/';
     if (to === 'main') {
-      // Уведомляем canvas о возможном обновлении размеров при возврате
       window.dispatchEvent(new Event('resize'));
     }
   };
 
   return (
     <>
-      {/* Футуристичный плавающий HUD-переключатель режимов */}
+      {/* Строгий научный селектор режимов */}
       <nav style={{
         position: 'fixed',
         top: '12px',
@@ -49,67 +48,58 @@ function Root() {
         transform: 'translateX(-50%)',
         zIndex: 9999,
         display: 'flex',
-        gap: '6px',
-        background: 'rgba(5, 5, 8, 0.88)',
-        backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(0, 229, 255, 0.35)',
-        borderRadius: '24px',
-        padding: '4px 6px',
-        boxShadow: '0 0 20px rgba(0, 229, 255, 0.25)',
-        userSelect: 'none'
+        gap: '4px',
+        background: 'rgba(10, 13, 20, 0.92)',
+        backdropFilter: 'blur(8px)',
+        border: '1px solid #1e293b',
+        borderRadius: '6px',
+        padding: '3px',
+        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)',
+        userSelect: 'none',
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
       }}>
         <button
           onClick={() => navigate('main')}
           style={{
-            background: route === 'main' ? 'rgba(0, 229, 255, 0.2)' : 'transparent',
-            color: route === 'main' ? '#00e5ff' : '#a0aec0',
-            border: route === 'main' ? '1px solid #00e5ff' : '1px solid transparent',
-            borderRadius: '18px',
-            padding: '5px 14px',
+            background: route === 'main' ? '#1e293b' : 'transparent',
+            color: route === 'main' ? '#38bdf8' : '#94a3b8',
+            border: route === 'main' ? '1px solid #38bdf8' : '1px solid transparent',
+            borderRadius: '4px',
+            padding: '4px 14px',
             cursor: 'pointer',
-            fontSize: '12px',
-            fontWeight: '700',
-            letterSpacing: '0.8px',
+            fontSize: '11px',
+            fontWeight: '600',
+            letterSpacing: '0.06em',
             textTransform: 'uppercase',
-            transition: 'all 0.2s ease',
-            outline: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px'
+            transition: 'all 0.15s ease',
+            outline: 'none'
           }}
         >
-          <span>🛰️</span>
-          <span>Симуляция</span>
+          Моделирование среды
         </button>
 
         <button
           onClick={() => navigate('stats')}
           style={{
-            background: route === 'stats' ? 'rgba(0, 229, 255, 0.2)' : 'transparent',
-            color: route === 'stats' ? '#00e5ff' : '#a0aec0',
-            border: route === 'stats' ? '1px solid #00e5ff' : '1px solid transparent',
-            borderRadius: '18px',
-            padding: '5px 14px',
+            background: route === 'stats' ? '#1e293b' : 'transparent',
+            color: route === 'stats' ? '#38bdf8' : '#94a3b8',
+            border: route === 'stats' ? '1px solid #38bdf8' : '1px solid transparent',
+            borderRadius: '4px',
+            padding: '4px 14px',
             cursor: 'pointer',
-            fontSize: '12px',
-            fontWeight: '700',
-            letterSpacing: '0.8px',
+            fontSize: '11px',
+            fontWeight: '600',
+            letterSpacing: '0.06em',
             textTransform: 'uppercase',
-            transition: 'all 0.2s ease',
-            outline: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px'
+            transition: 'all 0.15s ease',
+            outline: 'none'
           }}
         >
-          <span>📊</span>
-          <span>Статистика</span>
+          Научная телеметрия
         </button>
       </nav>
 
-      {/* Обе страницы сохраняются в DOM и не размонтируются, 
-          чтобы не сбрасывать введённые пользователем настройки терраформирования, 
-          положение камеры, зум и состояние панелей */}
+      {/* Обе страницы сохраняются в DOM и не размонтируются */}
       <div style={{
         position: 'absolute',
         top: 0,

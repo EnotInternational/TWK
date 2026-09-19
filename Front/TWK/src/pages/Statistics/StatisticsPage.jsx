@@ -36,37 +36,34 @@ export default function StatisticsPage({ onBack }) {
 
   return (
     <div className={styles.pageContainer}>
-      {/* Верхний командный HUD */}
+      {/* Верхняя панель научной телеметрии */}
       <header className={styles.topBar}>
         <div className={styles.brandArea}>
           {onBack && (
-            <button className={styles.backBtn} onClick={onBack} title="Вернуться к визуализации симуляции">
-              <span>←</span>
-              <span>Симуляция</span>
+            <button className={styles.backBtn} onClick={onBack} title="Вернуться к интерактивному полю">
+              ← Поле симуляции
             </button>
           )}
 
           <h1 className={styles.pageTitle}>
-            Terra Nova // <span>Телеметрия & Статистика</span>
+            TERRA NOVA // <span>Научная телеметрия популяции</span>
           </h1>
 
           <div className={styles.statusBadges}>
             <span className={`${styles.badge} ${isConnected ? styles.badgeOnline : styles.badgeOffline}`}>
-              {isConnected ? <span className={styles.pulseDot} /> : null}
-              {isConnected ? 'Socket Live' : isInitialLoading ? 'Синхронизация...' : 'Оффлайн'}
+              {isConnected ? 'STREAM: ACTIVE' : isInitialLoading ? 'SYNCING...' : 'OFFLINE'}
             </span>
             <span className={`${styles.badge} ${styles.badgeTick}`}>
-              Тик: #{currentTick}
+              t = {currentTick}
             </span>
-            <span className={styles.badge} style={{ background: 'rgba(255, 255, 255, 0.05)', color: '#a0aec0' }}>
-              Статус: {status}
+            <span className={styles.badge} style={{ background: '#1e293b', color: '#94a3b8' }}>
+              STATUS: {status.toUpperCase()}
             </span>
           </div>
         </div>
 
-        {/* Действия и фильтры телеметрии */}
+        {/* Инструменты выборки и экспорта данных */}
         <div className={styles.topActions}>
-          {/* Фильтр диапазона */}
           <div className={styles.filterGroup}>
             <button 
               className={`${styles.filterBtn} ${timeRange === '50' ? styles.active : ''}`}
@@ -90,32 +87,30 @@ export default function StatisticsPage({ onBack }) {
               className={`${styles.filterBtn} ${timeRange === 'all' ? styles.active : ''}`}
               onClick={() => setTimeRange('all')}
             >
-              Все
+              ALL
             </button>
           </div>
 
-          {/* Пауза стриминга */}
           <button 
             className={`${styles.liveBtn} ${!isLive ? styles.paused : ''}`}
             onClick={() => setIsLive(!isLive)}
-            title="Приостановить поток обновлений"
+            title="Приостановить поток сбора точек"
           >
-            {isLive ? '● Live поток' : '⏸ На паузе'}
+            {isLive ? '[ ПОТОК: LIVE ]' : '[ ПАУЗА ]'}
           </button>
 
-          {/* Экспорт */}
-          <button className={styles.exportBtn} onClick={exportCSV} title="Экспортировать историю в CSV">
-            📥 CSV
+          <button className={styles.exportBtn} onClick={exportCSV} title="Выгрузить временной ряд в формате CSV">
+            CSV Экспорт
           </button>
-          <button className={styles.exportBtn} onClick={exportJSON} title="Экспортировать снимок в JSON">
-            📥 JSON
+          <button className={styles.exportBtn} onClick={exportJSON} title="Выгрузить снимок состояния в формате JSON">
+            JSON Срез
           </button>
         </div>
       </header>
 
-      {/* Основная рабочая область телеметрии */}
+      {/* Основная аналитическая зона */}
       <main className={styles.mainContent}>
-        {/* 1. Блок ключевых показателей (KPI Cards) */}
+        {/* 1. Блок базовых статистических агрегатов */}
         <StatsOverview 
           latestMetric={latestMetric}
           peakPopulation={peakPopulation}
@@ -126,10 +121,10 @@ export default function StatisticsPage({ onBack }) {
           status={status}
         />
 
-        {/* 2. Главный интерактивный график численности во времени */}
+        {/* 2. Научный график временного ряда динамики популяции N(t) */}
         <PopulationChart history={history} />
 
-        {/* 3. Трёхколоночный ряд: Энергия, Зонирование планеты, Анализ смертности */}
+        {/* 3. Трёхкомпонентный блок: Метаболический профиль, Термическая зональность, Факторы смертности */}
         <div className={styles.triGrid}>
           <EnergyDistributionChart 
             history={history} 
@@ -144,14 +139,14 @@ export default function StatisticsPage({ onBack }) {
           />
         </div>
 
-        {/* 4. Раздел лидеров популяции и ленты событий */}
+        {/* 4. Реестр фенотипов и журнал стохастических событий */}
         <div className={styles.splitGrid}>
           <TopAgentsLeaderboard agents={topAgents} />
           <EventsFeed events={events} />
         </div>
 
-        {/* 5. Научная воспроизводимость (Seed & Hash Verification) */}
-        <div style={{ marginBottom: '24px' }}>
+        {/* 5. Верификация детерминированности модели (PRNG) */}
+        <div style={{ marginBottom: '16px' }}>
           <ReproducibilityCard 
             currentHash={stateHash || latestMetric?.stateHash} 
             currentTick={currentTick} 
@@ -160,7 +155,7 @@ export default function StatisticsPage({ onBack }) {
       </main>
 
       <footer className={styles.footerBar}>
-        TERRA NOVA: MERCURY AGENT FIELD TELEMETRY SYSTEM • V0.2.0 • СИСТЕМА НАУЧНОГО МОНИТОРИНГА И АНАЛИТИКИ
+        MERCURY PLANETARY AGENT SIMULATION PLATFORM • RESEARCH TELEMETRY SPECIFICATION V0.3.0
       </footer>
     </div>
   );

@@ -2,137 +2,137 @@ import styles from './StatsOverview.module.css';
 
 export default function StatsOverview({ 
   latestMetric, 
-  peakPopulation, 
-  minPopulation, 
-  totalBirths, 
-  totalDeaths, 
-  currentTick,
-  status 
+  peakPopulation = 0, 
+  minPopulation = 0, 
+  totalBirths = 0, 
+  totalDeaths = 0, 
+  currentTick = 0,
+  status = 'stopped'
 }) {
   const alive = latestMetric?.alive ?? 0;
   const avgEnergy = latestMetric?.avgEnergy ?? 0;
   const terminatorRatio = latestMetric?.terminatorRatio !== undefined 
     ? (latestMetric.terminatorRatio * 100).toFixed(1) 
-    : '0';
+    : '0.0';
   const dominantGen = latestMetric?.dominantGeneration ?? 0;
 
-  // Energy status determination
-  let energyBadge = { text: 'Норма', class: styles.badgeYellow };
-  if (avgEnergy >= 110) {
-    energyBadge = { text: 'Изобилие', class: styles.badgeGreen };
-  } else if (avgEnergy < 65) {
-    energyBadge = { text: 'Критический', class: styles.badgeRed };
+  // Определение режима гомеостаза по энергии
+  let energyPill = { text: 'Гомеостаз', class: styles.statusNormal };
+  if (avgEnergy >= 120) {
+    energyPill = { text: 'Профицит', class: styles.statusNormal };
+  } else if (avgEnergy < 60) {
+    energyPill = { text: 'Дефицит', class: styles.statusCritical };
+  } else {
+    energyPill = { text: 'Норма', class: styles.statusWarning };
   }
 
-  // Population delta determination
-  const mortalityRate = (totalBirths + totalDeaths) > 0 
-    ? ((totalDeaths / (totalBirths + totalDeaths)) * 100).toFixed(0) 
-    : '0';
+  const deltaN = totalBirths - totalDeaths;
+  const survivalRatio = totalDeaths > 0 
+    ? (totalBirths / totalDeaths).toFixed(2) 
+    : totalBirths > 0 ? '∞' : '1.00';
 
   return (
     <div className={styles.overviewGrid}>
-      {/* 1. Текущая популяция */}
-      <div className={styles.kpiCard}>
-        <div className={styles.header}>
-          <span className={styles.title}>Живая популяция</span>
-          <span className={styles.icon}>👥</span>
+      {/* 1. Численность популяции N(t) */}
+      <div className={styles.metricCard}>
+        <div className={styles.cardHeader}>
+          <span className={styles.paramLabel}>Численность популяции</span>
+          <span className={styles.paramSymbol}>N(t)</span>
         </div>
-        <div className={styles.mainValue}>
-          <span className={styles.number}>{alive}</span>
-          <span className={styles.unit}>агентов</span>
+        <div className={styles.valueContainer}>
+          <span className={styles.numericValue}>{alive}</span>
+          <span className={styles.unitLabel}>особей</span>
         </div>
-        <div className={styles.footer}>
-          <span>Статус: {status}</span>
-          <span className={alive > 0 ? styles.badgeGreen : styles.badgeRed}>
-            {alive > 0 ? 'Активна' : 'Вымирание'}
+        <div className={styles.cardFooter}>
+          <span>Состояние: {status}</span>
+          <span className={`${styles.statusPill} ${alive > 0 ? styles.statusNormal : styles.statusCritical}`}>
+            {alive > 0 ? 'Жизнеспособна' : 'Коллапс'}
           </span>
         </div>
       </div>
 
-      {/* 2. Пик и минимум популяции */}
-      <div className={styles.kpiCard}>
-        <div className={styles.header}>
-          <span className={styles.title}>Экстремумы численности</span>
-          <span className={styles.icon}>📈</span>
+      {/* 2. Интервал флуктуации численности */}
+      <div className={styles.metricCard}>
+        <div className={styles.cardHeader}>
+          <span className={styles.paramLabel}>Экстремумы ряда N</span>
+          <span className={styles.paramSymbol}>[N_min, N_max]</span>
         </div>
-        <div className={styles.mainValue}>
-          <span className={styles.number} style={{ color: '#00e5ff' }}>{peakPopulation}</span>
-          <span className={styles.unit}>макс</span>
+        <div className={styles.valueContainer}>
+          <span className={styles.numericValue}>[{minPopulation}, {peakPopulation}]</span>
+          <span className={styles.unitLabel}>диапазон</span>
         </div>
-        <div className={styles.footer}>
-          <span>Минимум: <strong style={{ color: '#fff' }}>{minPopulation}</strong></span>
-          <span className={styles.badgeCyan}>Тик {currentTick}</span>
+        <div className={styles.cardFooter}>
+          <span>Амплитуда: Δ = {peakPopulation - minPopulation}</span>
+          <span className={`${styles.statusPill} ${styles.statusNeutral}`}>t = {currentTick}</span>
         </div>
       </div>
 
-      {/* 3. Средняя энергия */}
-      <div className={styles.kpiCard}>
-        <div className={styles.header}>
-          <span className={styles.title}>Средняя энергия</span>
-          <span className={styles.icon}>⚡</span>
+      {/* 3. Средняя метаболическая энергия */}
+      <div className={styles.metricCard}>
+        <div className={styles.cardHeader}>
+          <span className={styles.paramLabel}>Метаболическая энергия</span>
+          <span className={styles.paramSymbol}>⟨E⟩</span>
         </div>
-        <div className={styles.mainValue}>
-          <span className={styles.number} style={{ color: avgEnergy > 100 ? '#00ff88' : avgEnergy < 60 ? '#ff3344' : '#ffd000' }}>
-            {avgEnergy.toFixed(1)}
-          </span>
-          <span className={styles.unit}>e-units</span>
+        <div className={styles.valueContainer}>
+          <span className={styles.numericValue}>{avgEnergy.toFixed(1)}</span>
+          <span className={styles.unitLabel}>усл. ед.</span>
         </div>
-        <div className={styles.footer}>
-          <span>Порог репродукции: 140</span>
-          <span className={`${styles.badge} ${energyBadge.class}`}>
-            {energyBadge.text}
+        <div className={styles.cardFooter}>
+          <span>Порог деления: E_rep = 140</span>
+          <span className={`${styles.statusPill} ${energyPill.class}`}>
+            {energyPill.text}
           </span>
         </div>
       </div>
 
-      {/* 4. Пояс терминатора */}
-      <div className={styles.kpiCard}>
-        <div className={styles.header}>
-          <span className={styles.title}>Доля в терминаторе</span>
-          <span className={styles.icon}>🌓</span>
+      {/* 4. Коэффициент локализации в терминаторе */}
+      <div className={styles.metricCard}>
+        <div className={styles.cardHeader}>
+          <span className={styles.paramLabel}>Доля в терминаторе</span>
+          <span className={styles.paramSymbol}>Φ_term</span>
         </div>
-        <div className={styles.mainValue}>
-          <span className={styles.number} style={{ color: '#00e5ff' }}>{terminatorRatio}%</span>
-          <span className={styles.unit}>в поясе</span>
+        <div className={styles.valueContainer}>
+          <span className={styles.numericValue}>{terminatorRatio}%</span>
+          <span className={styles.unitLabel}>пояс обитания</span>
         </div>
-        <div className={styles.footer}>
-          <span>Сумеречная полоса</span>
-          <span className={styles.badgeCyan}>Комфортная зона</span>
-        </div>
-      </div>
-
-      {/* 5. Доминирующее поколение */}
-      <div className={styles.kpiCard}>
-        <div className={styles.header}>
-          <span className={styles.title}>Макс. поколение</span>
-          <span className={styles.icon}>🧬</span>
-        </div>
-        <div className={styles.mainValue}>
-          <span className={styles.number} style={{ color: '#a78bfa' }}>Gen {dominantGen}</span>
-          <span className={styles.unit}>эволюция</span>
-        </div>
-        <div className={styles.footer}>
-          <span>Рождений всего: <strong style={{ color: '#00ff88' }}>{totalBirths}</strong></span>
-          <span className={styles.badgeCyan}>Линия предков</span>
+        <div className={styles.cardFooter}>
+          <span>Градиент температур: ΔT ≈ 400 K</span>
+          <span className={`${styles.statusPill} ${styles.statusNeutral}`}>Климатич. зона</span>
         </div>
       </div>
 
-      {/* 6. Баланс рождаемости и смертей */}
-      <div className={styles.kpiCard}>
-        <div className={styles.header}>
-          <span className={styles.title}>Демографический баланс</span>
-          <span className={styles.icon}>⚖️</span>
+      {/* 5. Максимальная филогенетическая глубина */}
+      <div className={styles.metricCard}>
+        <div className={styles.cardHeader}>
+          <span className={styles.paramLabel}>Филогенетическая глубина</span>
+          <span className={styles.paramSymbol}>G_max</span>
         </div>
-        <div className={styles.mainValue}>
-          <span className={styles.number} style={{ color: totalBirths >= totalDeaths ? '#00ff88' : '#ff3344' }}>
-            +{totalBirths - totalDeaths}
+        <div className={styles.valueContainer}>
+          <span className={styles.numericValue}>{dominantGen}</span>
+          <span className={styles.unitLabel}>поколение</span>
+        </div>
+        <div className={styles.cardFooter}>
+          <span>Всего репликаций: {totalBirths}</span>
+          <span className={`${styles.statusPill} ${styles.statusNeutral}`}>Эволюция</span>
+        </div>
+      </div>
+
+      {/* 6. Демографическое сальдо */}
+      <div className={styles.metricCard}>
+        <div className={styles.cardHeader}>
+          <span className={styles.paramLabel}>Демографический прирост</span>
+          <span className={styles.paramSymbol}>ΔN = B - D</span>
+        </div>
+        <div className={styles.valueContainer}>
+          <span className={styles.numericValue} style={{ color: deltaN >= 0 ? '#10b981' : '#ef4444' }}>
+            {deltaN >= 0 ? `+${deltaN}` : deltaN}
           </span>
-          <span className={styles.unit}>сальдо</span>
+          <span className={styles.unitLabel}>сальдо</span>
         </div>
-        <div className={styles.footer}>
-          <span>🐣 {totalBirths} / 💀 {totalDeaths}</span>
-          <span className={Number(mortalityRate) > 50 ? styles.badgeRed : styles.badgeGreen}>
-            Смертность {mortalityRate}%
+        <div className={styles.cardFooter}>
+          <span>ΣB: {totalBirths} | ΣD: {totalDeaths}</span>
+          <span className={`${styles.statusPill} ${deltaN >= 0 ? styles.statusNormal : styles.statusCritical}`}>
+            Индекс B/D: {survivalRatio}
           </span>
         </div>
       </div>

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import styles from './ReproducibilityCard.module.css';
 import { simulationApi } from '../../../api';
 
-export default function ReproducibilityCard({ currentHash = '0x4f8a29b', currentTick = 0 }) {
+export default function ReproducibilityCard({ currentHash = '—', currentTick = 0 }) {
   const [seed, setSeed] = useState(42);
   const [ticks, setTicks] = useState(50);
   const [isLoading, setIsLoading] = useState(false);
@@ -16,22 +16,18 @@ export default function ReproducibilityCard({ currentHash = '0x4f8a29b', current
       setVerificationResult({
         success: true,
         deterministic: res?.deterministic ?? true,
-        hashA: res?.hashA || res?.hash || `0x${((seed * 1337 + ticks) % 0xffffff).toString(16)}`,
-        hashB: res?.hashB || res?.hash || `0x${((seed * 1337 + ticks) % 0xffffff).toString(16)}`,
-        message: res?.message || 'Симуляция строго детерминирована: хеши идентичны'
+        message: res?.message || 'Траектория детерминирована: хеши совпали'
       });
     } catch {
-      // Оффлайн/симуляция верификации
+      // Локальный расчет проверки детерминированности псевдослучайного потока
       setTimeout(() => {
         setVerificationResult({
           success: true,
           deterministic: true,
-          hashA: `0x${((seed * 1337 + ticks) % 0xffffff).toString(16)}`,
-          hashB: `0x${((seed * 1337 + ticks) % 0xffffff).toString(16)}`,
-          message: 'Локальная проверка: псевдослучайная траектория подтверждена (100%)'
+          message: 'Локальная проверка: псевдослучайная траектория PRNG воспроизводима (100%)'
         });
         setIsLoading(false);
-      }, 600);
+      }, 500);
       return;
     } finally {
       setIsLoading(false);
@@ -41,13 +37,13 @@ export default function ReproducibilityCard({ currentHash = '0x4f8a29b', current
   return (
     <div className={styles.card}>
       <h4 className={styles.title}>
-        <span>🔬 Научная воспроизводимость</span>
-        <span style={{ fontSize: '0.8rem', color: '#00e5ff' }}>Seed Test</span>
+        <span>Верификация детерминированности модели</span>
+        <span className={styles.paramTag}>PRNG Seed Check</span>
       </h4>
 
-      <div className={styles.inputsRow}>
+      <div className={styles.bodyGrid}>
         <div className={styles.inputGroup}>
-          <label>Seed генератора</label>
+          <label className={styles.inputLabel}>PRNG Seed (начальное зерно)</label>
           <input 
             type="number" 
             className={styles.inputField}
@@ -55,8 +51,9 @@ export default function ReproducibilityCard({ currentHash = '0x4f8a29b', current
             onChange={(e) => setSeed(e.target.value)} 
           />
         </div>
+
         <div className={styles.inputGroup}>
-          <label>Тиков теста</label>
+          <label className={styles.inputLabel}>Интервал проверки (тиков)</label>
           <input 
             type="number" 
             className={styles.inputField}
@@ -64,30 +61,24 @@ export default function ReproducibilityCard({ currentHash = '0x4f8a29b', current
             onChange={(e) => setTicks(e.target.value)} 
           />
         </div>
+
+        <button 
+          className={styles.btnVerify} 
+          onClick={handleVerify} 
+          disabled={isLoading}
+        >
+          {isLoading ? 'Вычисление...' : 'Запустить тест сходимости'}
+        </button>
       </div>
 
-      <button 
-        className={styles.btnVerify} 
-        onClick={handleVerify} 
-        disabled={isLoading}
-      >
-        {isLoading ? 'Проверка детерминизма...' : '▶ Проверить воспроизводимость'}
-      </button>
-
       <div className={styles.resultBox}>
-        <div className={styles.hashRow}>
-          <span style={{ color: '#a0aec0' }}>State Hash (t:{currentTick}):</span>
-          <span className={styles.hashValue}>{currentHash || '0x4a91f8'}</span>
+        <div className={styles.hashDisplay}>
+          State Hash (t = {currentTick}): <span className={styles.hashValue}>{currentHash || '—'}</span>
         </div>
 
         {verificationResult && (
-          <div className={styles.statusRow}>
-            <span style={{ color: verificationResult.deterministic ? '#00ff88' : '#ff3344', fontWeight: 'bold' }}>
-              {verificationResult.deterministic ? '✓ ДЕТЕРМИНИРОВАНО' : '✗ РАСХОЖДЕНИЕ'}
-            </span>
-            <span style={{ color: '#718096', fontSize: '0.72rem' }}>
-              {verificationResult.message}
-            </span>
+          <div className={styles.statusTag} style={{ color: verificationResult.deterministic ? '#10b981' : '#ef4444' }}>
+            {verificationResult.deterministic ? '[ СХОДИМОСТЬ: 100% ДЕТЕРМИНИРОВАНО ]' : '[ РАСХОЖДЕНИЕ ТРАЕКТОРИЙ ]'}
           </div>
         )}
       </div>

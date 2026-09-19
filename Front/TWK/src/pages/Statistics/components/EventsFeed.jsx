@@ -19,20 +19,30 @@ export default function EventsFeed({ events = [] }) {
     }
   };
 
-  const getEventIcon = (type) => {
+  const getTagLabel = (type) => {
     switch (type) {
-      case 'birth': return '🐣';
-      case 'death': return '💀';
-      case 'disaster': return '⚡';
-      case 'evolution': return '🧬';
-      default: return '📡';
+      case 'birth': return '[REPL]';
+      case 'death': return '[ELIM]';
+      case 'disaster': return '[ENVR]';
+      case 'evolution': return '[EVOL]';
+      default: return '[SYS]';
+    }
+  };
+
+  const getTagColor = (type) => {
+    switch (type) {
+      case 'birth': return '#10b981';
+      case 'death': return '#ef4444';
+      case 'disaster': return '#f59e0b';
+      case 'evolution': return '#a78bfa';
+      default: return '#38bdf8';
     }
   };
 
   return (
     <div className={styles.card}>
       <div className={styles.header}>
-        <h4 className={styles.title}>📜 Хроника событий</h4>
+        <h4 className={styles.title}>Журнал стохастических событий</h4>
         <div className={styles.filterChips}>
           <button 
             className={`${styles.chip} ${filter === 'all' ? styles.active : ''}`}
@@ -44,19 +54,19 @@ export default function EventsFeed({ events = [] }) {
             className={`${styles.chip} ${filter === 'birth' ? styles.active : ''}`}
             onClick={() => setFilter('birth')}
           >
-            🐣 Рождения
+            Репликация
           </button>
           <button 
             className={`${styles.chip} ${filter === 'death' ? styles.active : ''}`}
             onClick={() => setFilter('death')}
           >
-            💀 Гибель
+            Элиминация
           </button>
           <button 
             className={`${styles.chip} ${filter === 'disaster' ? styles.active : ''}`}
             onClick={() => setFilter('disaster')}
           >
-            ⚡ Аномалии
+            Флуктуации
           </button>
         </div>
       </div>
@@ -65,19 +75,20 @@ export default function EventsFeed({ events = [] }) {
         {filteredEvents.length > 0 ? (
           filteredEvents.map((ev, idx) => (
             <div key={ev.id || idx} className={`${styles.eventItem} ${getEventClass(ev.type)}`}>
-              <span className={styles.eventIcon}>{getEventIcon(ev.type)}</span>
-              <div className={styles.eventContent}>
-                <span className={styles.eventText}>{ev.text || ev.message || JSON.stringify(ev)}</span>
-                <div className={styles.eventMeta}>
-                  <span className={styles.tickBadge}>Тик #{ev.tick ?? '—'}</span>
-                  <span>{ev.time || 'недавно'}</span>
-                </div>
-              </div>
+              <span className={styles.tagLabel} style={{ color: getTagColor(ev.type) }}>
+                {getTagLabel(ev.type)}
+              </span>
+              <span className={styles.eventText}>
+                {ev.text || ev.message || JSON.stringify(ev)}
+              </span>
+              <span className={styles.eventMeta}>
+                t={ev.tick ?? '—'}
+              </span>
             </div>
           ))
         ) : (
-          <div style={{ textAlign: 'center', color: '#718096', padding: '20px', fontSize: '0.8rem' }}>
-            Нет событий по заданному фильтру
+          <div style={{ textAlign: 'center', color: '#64748b', padding: '24px', fontSize: '0.72rem', fontFamily: 'Courier New, monospace' }}>
+            [ Нет зарегистрированных событий ]
           </div>
         )}
       </div>

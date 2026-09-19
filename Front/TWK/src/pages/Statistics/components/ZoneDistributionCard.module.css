@@ -1,10 +1,8 @@
 .card {
-  background: rgba(11, 16, 26, 0.85);
-  border: 1px solid rgba(0, 229, 255, 0.2);
-  border-radius: 8px;
-  padding: 18px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(8px);
+  background: #0d131f;
+  border: 1px solid #1e293b;
+  border-radius: 4px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -12,56 +10,59 @@
 }
 
 .title {
-  color: #00e5ff;
-  font-size: 0.95rem;
+  color: #f1f5f9;
+  font-size: 0.82rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin: 0 0 14px 0;
+  letter-spacing: 0.06em;
+  margin: 0 0 12px 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.planetStrip {
-  display: flex;
-  height: 24px;
-  border-radius: 6px;
-  overflow: hidden;
-  margin-bottom: 16px;
-  border: 1px solid rgba(0, 229, 255, 0.3);
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.15);
+.paramTag {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.75rem;
+  color: #38bdf8;
 }
 
-.zoneSegment {
+.spectrumBar {
+  display: flex;
+  height: 16px;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 14px;
+  border: 1px solid #334155;
+}
+
+.segment {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
-  font-weight: bold;
-  color: #fff;
-  transition: width 0.4s ease;
-  position: relative;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  font-size: 0.65rem;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 700;
+  color: #ffffff;
+  transition: width 0.3s ease;
 }
 
-.zoneHot {
-  background: linear-gradient(90deg, #ff7700, #ff4400);
+.segmentHot {
+  background: #ea580c;
 }
 
-.zoneTerminator {
-  background: linear-gradient(90deg, #0099cc, #00e5ff);
-  box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.5);
+.segmentTerminator {
+  background: #0284c7;
 }
 
-.zoneCold {
-  background: linear-gradient(90deg, #1e3a8a, #3b82f6);
+.segmentCold {
+  background: #1e3a8a;
 }
 
 .zonesList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .zoneRow {
@@ -69,51 +70,45 @@
   justify-content: space-between;
   align-items: center;
   padding: 8px 10px;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: #090d16;
+  border-radius: 3px;
+  border: 1px solid #1e293b;
 }
 
 .zoneInfo {
   display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.zoneIcon {
-  font-size: 1.1rem;
-}
-
-.zoneTexts {
-  display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
 .zoneName {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #e2e8f0;
 }
 
 .zoneDesc {
-  font-size: 0.7rem;
-  color: #718096;
+  font-size: 0.68rem;
+  color: #64748b;
+  font-family: 'Courier New', Courier, monospace;
 }
 
 .zoneStats {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  gap: 1px;
 }
 
 .zonePercent {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 700;
-  font-family: monospace;
+  font-family: 'Courier New', Courier, monospace;
+  color: #f1f5f9;
 }
 
-.zoneHabitability {
-  font-size: 0.68rem;
-  text-transform: uppercase;
+.zoneStatus {
+  font-size: 0.65rem;
   font-weight: 600;
+  text-transform: uppercase;
 }

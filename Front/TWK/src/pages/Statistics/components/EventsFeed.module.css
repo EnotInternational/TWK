@@ -1,10 +1,8 @@
 .card {
-  background: rgba(11, 16, 26, 0.85);
-  border: 1px solid rgba(0, 229, 255, 0.2);
-  border-radius: 8px;
-  padding: 18px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(8px);
+  background: #0d131f;
+  border: 1px solid #1e293b;
+  border-radius: 4px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -21,101 +19,91 @@
 }
 
 .title {
-  color: #00e5ff;
-  font-size: 0.95rem;
+  color: #f1f5f9;
+  font-size: 0.82rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.06em;
   margin: 0;
 }
 
 .filterChips {
   display: flex;
-  gap: 6px;
+  gap: 4px;
 }
 
 .chip {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(0, 229, 255, 0.2);
-  color: #a0aec0;
+  background: #1e293b;
+  border: 1px solid transparent;
+  color: #94a3b8;
   padding: 3px 8px;
-  border-radius: 12px;
-  font-size: 0.7rem;
+  border-radius: 3px;
+  font-size: 0.68rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
+  font-family: 'Courier New', Courier, monospace;
 }
 
 .chip:hover {
-  background: rgba(0, 229, 255, 0.1);
-  color: #00e5ff;
+  color: #38bdf8;
+  border-color: #334155;
 }
 
 .chip.active {
-  background: rgba(0, 229, 255, 0.2);
-  color: #fff;
-  border-color: #00e5ff;
+  background: #334155;
+  color: #38bdf8;
+  border-color: #38bdf8;
 }
 
 .eventsList {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  max-height: 260px;
+  gap: 6px;
+  max-height: 280px;
   overflow-y: auto;
   padding-right: 4px;
 }
 
 .eventItem {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 8px 10px;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 6px;
-  border-left: 3px solid #00e5ff;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 8px;
+  background: #090d16;
+  border-radius: 3px;
+  border-left: 2px solid #38bdf8;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.72rem;
 }
 
 .eventBirth {
-  border-left-color: #00ff88;
+  border-left-color: #10b981;
 }
 
 .eventDeath {
-  border-left-color: #ff3344;
+  border-left-color: #ef4444;
 }
 
 .eventDisaster {
-  border-left-color: #ffd000;
+  border-left-color: #f59e0b;
 }
 
 .eventEvolution {
   border-left-color: #a78bfa;
 }
 
-.eventIcon {
-  font-size: 1rem;
-  line-height: 1;
-}
-
-.eventContent {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+.tagLabel {
+  font-weight: 700;
+  font-size: 0.65rem;
 }
 
 .eventText {
-  color: #e2e8f0;
-  font-size: 0.78rem;
+  color: #cbd5e1;
+  flex: 1;
 }
 
 .eventMeta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.7rem;
-  color: #718096;
-}
-
-.tickBadge {
-  font-family: monospace;
-  color: #00e5ff;
+  color: #64748b;
+  font-size: 0.68rem;
+  white-space: nowrap;
 }

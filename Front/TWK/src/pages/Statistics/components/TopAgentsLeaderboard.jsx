@@ -22,25 +22,25 @@ export default function TopAgentsLeaderboard({ agents = [] }) {
   return (
     <div className={styles.card}>
       <div className={styles.header}>
-        <h4 className={styles.title}>🏆 Зал славы: Топ выживших агентов</h4>
+        <h4 className={styles.title}>Реестр адаптированных фенотипов (Top-10)</h4>
         <div className={styles.sortTabs}>
           <button 
             className={`${styles.sortBtn} ${sortBy === 'age' ? styles.active : ''}`}
             onClick={() => setSortBy('age')}
           >
-            По возрасту (тики)
+            t_life (возраст)
           </button>
           <button 
             className={`${styles.sortBtn} ${sortBy === 'energy' ? styles.active : ''}`}
             onClick={() => setSortBy('energy')}
           >
-            По энергии
+            E (энергия)
           </button>
           <button 
             className={`${styles.sortBtn} ${sortBy === 'generation' ? styles.active : ''}`}
             onClick={() => setSortBy('generation')}
           >
-            Поколение
+            G (поколение)
           </button>
         </div>
       </div>
@@ -49,53 +49,51 @@ export default function TopAgentsLeaderboard({ agents = [] }) {
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>#</th>
-              <th>Agent ID</th>
-              <th>Возраст</th>
-              <th>Энергия</th>
-              <th>Поколение</th>
-              <th>Зона</th>
-              <th>Предок</th>
+              <th>№</th>
+              <th>Идентификатор [ID]</th>
+              <th>t_life [тики]</th>
+              <th>E [энергия]</th>
+              <th>Поколение G</th>
+              <th>Локализация</th>
+              <th>Parent Taxon</th>
             </tr>
           </thead>
           <tbody>
             {sortedList.length > 0 ? (
               sortedList.map((agent, index) => (
                 <tr key={agent.id || index}>
-                  <td style={{ color: index < 3 ? '#ffd000' : '#718096', fontWeight: 'bold' }}>
-                    {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}`}
+                  <td style={{ color: '#64748b' }}>
+                    {String(index + 1).padStart(2, '0')}
                   </td>
-                  <td style={{ fontFamily: 'monospace', color: '#00e5ff', fontWeight: 600 }}>
+                  <td style={{ color: '#38bdf8', fontWeight: 600 }}>
                     {agent.id}
                   </td>
                   <td>
-                    <strong style={{ color: '#fff' }}>{agent.age || 0}</strong>{' '}
-                    <span style={{ color: '#718096', fontSize: '0.7rem' }}>тиков</span>
+                    <strong style={{ color: '#f1f5f9' }}>{agent.age || 0}</strong>
                   </td>
                   <td style={{ 
-                    color: (agent.energy || 0) > 120 ? '#00ff88' : (agent.energy || 0) < 60 ? '#ff3344' : '#ffd000',
-                    fontFamily: 'monospace',
+                    color: (agent.energy || 0) >= 120 ? '#10b981' : (agent.energy || 0) < 60 ? '#ef4444' : '#f59e0b',
                     fontWeight: 'bold'
                   }}>
                     {typeof agent.energy === 'number' ? agent.energy.toFixed(1) : agent.energy}
                   </td>
                   <td>
-                    <span className={styles.badgeGen}>Gen {agent.generation || 0}</span>
+                    <span className={styles.badgeGen}>G{agent.generation || 0}</span>
                   </td>
                   <td>
                     <span className={`${styles.zoneTag} ${getZoneClass(agent.zone)}`}>
                       {agent.zone || 'terminator'}
                     </span>
                   </td>
-                  <td style={{ color: '#a0aec0', fontSize: '0.75rem', fontFamily: 'monospace' }}>
-                    {agent.parent_id || 'Первичное'}
+                  <td style={{ color: '#64748b' }}>
+                    {agent.parent_id || 'Root_0'}
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="7" style={{ textAlign: 'center', color: '#718096', padding: '20px' }}>
-                  Нет данных об агентах
+                <td colSpan="7" style={{ textAlign: 'center', color: '#64748b', padding: '24px' }}>
+                  [ Нет данных: выборка популяции пуста ]
                 </td>
               </tr>
             )}

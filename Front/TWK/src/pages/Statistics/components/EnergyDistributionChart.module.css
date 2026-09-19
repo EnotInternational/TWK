@@ -1,10 +1,8 @@
 .card {
-  background: rgba(11, 16, 26, 0.85);
-  border: 1px solid rgba(0, 229, 255, 0.2);
-  border-radius: 8px;
-  padding: 18px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(8px);
+  background: #0d131f;
+  border: 1px solid #1e293b;
+  border-radius: 4px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -12,79 +10,86 @@
 }
 
 .title {
-  color: #00e5ff;
-  font-size: 0.95rem;
+  color: #f1f5f9;
+  font-size: 0.82rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin: 0 0 14px 0;
+  letter-spacing: 0.06em;
+  margin: 0 0 12px 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.paramTag {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.75rem;
+  color: #38bdf8;
 }
 
 .barsList {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
 .barItem {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .barHeader {
   display: flex;
   justify-content: space-between;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
 }
 
 .barLabel {
-  color: #a0aec0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  color: #94a3b8;
+  font-size: 0.73rem;
+  font-weight: 500;
 }
 
 .barValue {
-  font-family: monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-weight: 700;
-  color: #fff;
+  color: #e2e8f0;
 }
 
 .progressTrack {
-  height: 8px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 4px;
+  height: 6px;
+  background: #1e293b;
+  border-radius: 2px;
   overflow: hidden;
 }
 
 .progressBar {
   height: 100%;
-  border-radius: 4px;
-  transition: width 0.4s ease;
+  border-radius: 2px;
+  transition: width 0.3s ease;
 }
 
 .miniChartArea {
   margin-top: auto;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 10px;
+  border-top: 1px solid #1e293b;
 }
 
 .miniChartHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.75rem;
-  color: #718096;
+  font-size: 0.7rem;
+  color: #64748b;
   margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .sparklineCanvas {
   width: 100%;
-  height: 60px;
+  height: 55px;
   display: block;
 }
