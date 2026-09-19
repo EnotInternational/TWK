@@ -26,6 +26,7 @@ class MercuryEnvironment:
         penalty_hot: float = 3.0,
         penalty_cold: float = 3.0,
         penalty_terminator: float = 0.0,
+        rocks: Optional[Set[Tuple[int, int]]] = None,
     ) -> None:
         self.width = width
         self.height = height
@@ -34,6 +35,7 @@ class MercuryEnvironment:
         self.penalty_hot = penalty_hot
         self.penalty_cold = penalty_cold
         self.penalty_terminator = penalty_terminator
+        self.rocks = rocks if rocks is not None else set()
 
     def get_sun_x(self, tick: int) -> float:
         """Координата подсолнечной точки (зенита) на текущем тике."""
@@ -119,4 +121,5 @@ class MercuryEnvironment:
                 "cold": self.penalty_cold,
                 "terminator": self.penalty_terminator,
             },
+            "rocks": [{"x": r[0], "y": r[1]} for r in self.rocks],
         }

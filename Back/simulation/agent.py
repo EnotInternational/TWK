@@ -21,12 +21,14 @@ class Agent:
         parent_id: Optional[str] = None,
         w_temp: float = 0.0,
         w_swarm: float = 0.0,
+        max_age: int = 100,
     ) -> None:
         self.id = agent_id
         self.x = x
         self.y = y
         self.energy = float(energy)
         self.age = age
+        self.max_age = max_age
         self.generation = generation
         self.parent_id = parent_id
         self.is_alive = True
@@ -75,6 +77,7 @@ class Agent:
             parent_id=self.id,
             w_temp=child_w_temp,
             w_swarm=child_w_swarm,
+            max_age=self.max_age,
         )
 
     def die(self, reason: str, tick: int) -> None:
@@ -91,6 +94,7 @@ class Agent:
             "y": self.y,
             "energy": round(self.energy, 2),
             "age": self.age,
+            "max_age": self.max_age,
             "generation": self.generation,
             "parent_id": self.parent_id,
             "is_alive": self.is_alive,
