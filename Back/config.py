@@ -1,12 +1,12 @@
 class Config:
-    """Базовые настройки приложения."""
+    """Базовые настройки приложения Terra Nova: Mercury."""
     DEBUG = True
     HOST = "0.0.0.0"
     PORT = 5000
 
     SWAGGER = {
-        "title": "Agent Field API",
+        "title": "Terra Nova: Mercury Scientific API",
         "uiversion": 3,
-        "description": "API для работы с полем агентов",
-        "version": "0.1.0",
+        "description": "API научной симуляции самоорганизации агентов на поверхности Меркурия",
+        "version": "1.0.0",
     }

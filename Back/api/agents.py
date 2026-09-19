@@ -1,8 +1,5 @@
-﻿from flask import Blueprint, jsonify, request
-
-from state import field_state
-from extensions import socketio
-
+from flask import Blueprint, jsonify, request
+from state import sim_manager
 
 agents_bp = Blueprint("agents", __name__, url_prefix="/api/agents")
 
@@ -12,62 +9,49 @@ def get_agents():
     """
     Получить список агентов.
     ---
-    tags:
-      - agents
+    tags: [agents]
+    parameters:
+      - name: zone
+        in: query
+        type: string
+        required: false
+        description: Фильтр по зоне (hot, cold, terminator)
+      - name: alive_only
+        in: query
+        type: boolean
+        required: false
+        default: true
+        description: Только живые агенты
     responses:
       200: {description: Список агентов}
     """
-    return jsonify(field_state.agents), 200
+    zone = request.args.get("zone")
+    alive_only_param = request.args.get("alive_only", "true").lower()
+    alive_only = alive_only_param not in ("false", "0", "no")
+
+    agents = sim_manager.get_agents(zone=zone, alive_only=alive_only)
+    return jsonify({
+        "count": len(agents),
+        "agents": agents,
+    }), 200
 
 
 @agents_bp.route("/<agent_id>", methods=["GET"])
 def get_agent(agent_id: str):
     """
-    Получить одного агента по id.
+    Получить подробные данные об агенте по id.
     ---
-    tags:
-      - agents
+    tags: [agents]
     parameters:
-      - {name: agent_id, in: path, type: string, required: true}
+      - name: agent_id
+        in: path
+        type: string
+        required: true
     responses:
-      200: {description: Агент найден}
+      200: {description: Данные агента}
       404: {description: Агент не найден}
     """
-    agent = field_state.get_agent(agent_id)
+    agent = sim_manager.get_agent(agent_id)
     if agent is None:
-        return jsonify({"error": "агент не найден"}), 404
-    return jsonify(agent), 200
-
-
-@agents_bp.route("/<agent_id>", methods=["PATCH"])
-def update_agent(agent_id: str):
-    """
-    Обновить параметры агента (голод, координаты).
-    ---
-    tags:
-      - agents
-    parameters:
-      - {name: agent_id, in: path, type: string, required: true}
-      - name: body
-        in: body
-        schema:
-          type: object
-          properties:
-            hunger: {type: integer, example: 42}
-            x: {type: integer, example: 3}
-            y: {type: integer, example: 4}
-    responses:
-      200: {description: Агент обновлён}
-      404: {description: Агент не найден}
-    """
-    agent = field_state.get_agent(agent_id)
-    if agent is None:
-        return jsonify({"error": "агент не найден"}), 404
-
-    data = request.get_json(silent=True) or {}
-    for key in ("hunger", "x", "y"):
-        if key in data and isinstance(data[key], int):
-            agent[key] = data[key]
-
-    socketio.emit("field_update", field_state.as_dict())
+        return jsonify({"error": "Агент не найден"}), 404
     return jsonify(agent), 200
