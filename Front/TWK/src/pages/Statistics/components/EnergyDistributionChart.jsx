@@ -1,26 +1,30 @@
 import { useEffect, useRef } from 'react';
 import styles from './EnergyDistributionChart.module.css';
 
-export default function EnergyDistributionChart({ history = [], latestMetric = {} }) {
+export default function EnergyDistributionChart({ history = [], latestMetric = {}, agents = [] }) {
   const canvasRef = useRef(null);
 
-  // Категории энергии на основе последних данных
-  const avgEnergy = latestMetric?.avgEnergy || 85;
+  const avgEnergy = latestMetric?.avgEnergy || 0;
 
-  // Оценочное распределение по группам (в идеале из live agents)
-  // При средней 90: <60: 15%, 60-120: 60%, >120: 25%
-  let lowPct = 20;
-  let midPct = 55;
-  let highPct = 25;
+  // Рассчитываем точные процентные доли из реального списка агентов
+  let lowPct = 0;
+  let midPct = 0;
+  let highPct = 0;
+  let lowCount = 0;
+  let midCount = 0;
+  let highCount = 0;
 
-  if (avgEnergy > 115) {
-    highPct = 50;
-    midPct = 40;
-    lowPct = 10;
-  } else if (avgEnergy < 65) {
-    lowPct = 60;
-    midPct = 30;
-    highPct = 10;
+  if (agents && agents.length > 0) {
+    agents.forEach(a => {
+      const e = a.energy ?? 0;
+      if (e < 60) lowCount++;
+      else if (e > 120) highCount++;
+      else midCount++;
+    });
+    const total = agents.length;
+    lowPct = Math.round((lowCount / total) * 100);
+    midPct = Math.round((midCount / total) * 100);
+    highPct = Math.round((highCount / total) * 100);
   }
 
   // Рисуем мини-спарклайн средней энергии за тики
@@ -41,11 +45,11 @@ export default function EnergyDistributionChart({ history = [], latestMetric = {
     ctx.clearRect(0, 0, w, h);
 
     const maxE = 180;
-    const minE = 20;
+    const minE = 0;
 
     ctx.beginPath();
     history.forEach((pt, idx) => {
-      const val = pt.avgEnergy || 80;
+      const val = pt.avgEnergy || 0;
       const x = (idx / (history.length - 1)) * w;
       const y = h - ((val - minE) / (maxE - minE)) * h;
       if (idx === 0) ctx.moveTo(x, y);
@@ -68,7 +72,9 @@ export default function EnergyDistributionChart({ history = [], latestMetric = {
     <div className={styles.card}>
       <h4 className={styles.title}>
         <span>⚡ Энергетический баланс</span>
-        <span style={{ fontSize: '0.8rem', color: '#ffd000' }}>{avgEnergy.toFixed(1)} E</span>
+        <span style={{ fontSize: '0.8rem', color: '#ffd000' }}>
+          {avgEnergy > 0 ? `${avgEnergy.toFixed(1)} E` : '—'}
+        </span>
       </h4>
 
       <div className={styles.barsList}>
@@ -78,7 +84,9 @@ export default function EnergyDistributionChart({ history = [], latestMetric = {
             <span className={styles.barLabel}>
               <span style={{ color: '#00ff88' }}>●</span> Репродукция (&gt; 120 E)
             </span>
-            <span className={styles.barValue} style={{ color: '#00ff88' }}>{highPct}%</span>
+            <span className={styles.barValue} style={{ color: '#00ff88' }}>
+              {highPct}% <span style={{ color: '#718096', fontSize: '0.7rem' }}>({highCount})</span>
+            </span>
           </div>
           <div className={styles.progressTrack}>
             <div 
@@ -94,7 +102,9 @@ export default function EnergyDistributionChart({ history = [], latestMetric = {
             <span className={styles.barLabel}>
               <span style={{ color: '#ffd000' }}>●</span> Стабильный (60 - 120 E)
             </span>
-            <span className={styles.barValue} style={{ color: '#ffd000' }}>{midPct}%</span>
+            <span className={styles.barValue} style={{ color: '#ffd000' }}>
+              {midPct}% <span style={{ color: '#718096', fontSize: '0.7rem' }}>({midCount})</span>
+            </span>
           </div>
           <div className={styles.progressTrack}>
             <div 
@@ -110,7 +120,9 @@ export default function EnergyDistributionChart({ history = [], latestMetric = {
             <span className={styles.barLabel}>
               <span style={{ color: '#ff3344' }}>●</span> Критическое (&lt; 60 E)
             </span>
-            <span className={styles.barValue} style={{ color: '#ff3344' }}>{lowPct}%</span>
+            <span className={styles.barValue} style={{ color: '#ff3344' }}>
+              {lowPct}% <span style={{ color: '#718096', fontSize: '0.7rem' }}>({lowCount})</span>
+            </span>
           </div>
           <div className={styles.progressTrack}>
             <div 
@@ -124,7 +136,7 @@ export default function EnergyDistributionChart({ history = [], latestMetric = {
       <div className={styles.miniChartArea}>
         <div className={styles.miniChartHeader}>
           <span>Тренд средней энергии</span>
-          <span>Запас популяции</span>
+          <span>{history.length > 1 ? `${history.length} тиков` : 'Накопление...'}</span>
         </div>
         <canvas ref={canvasRef} className={styles.sparklineCanvas} />
       </div>

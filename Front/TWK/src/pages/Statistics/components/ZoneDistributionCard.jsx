@@ -1,40 +1,51 @@
 import styles from './ZoneDistributionCard.module.css';
 
-export default function ZoneDistributionCard({ zoneDistribution = { hot: 15, terminator: 65, cold: 20 } }) {
-  const hot = zoneDistribution.hot ?? 15;
-  const terminator = zoneDistribution.terminator ?? 65;
-  const cold = zoneDistribution.cold ?? 20;
+export default function ZoneDistributionCard({ zoneDistribution }) {
+  const hot = zoneDistribution?.hot ?? 0;
+  const terminator = zoneDistribution?.terminator ?? 0;
+  const cold = zoneDistribution?.cold ?? 0;
+  const total = hot + terminator + cold;
 
   return (
     <div className={styles.card}>
       <h4 className={styles.title}>
         <span>🪐 Планетарные зоны (Меркурий)</span>
-        <span style={{ fontSize: '0.8rem', color: '#00e5ff' }}>Обитаемость</span>
+        <span style={{ fontSize: '0.8rem', color: '#00e5ff' }}>
+          {total > 0 ? 'Обитаемость' : 'Ожидание данных'}
+        </span>
       </h4>
 
       {/* Градиентная полоса зон планеты */}
       <div className={styles.planetStrip}>
-        <div 
-          className={`${styles.zoneSegment} ${styles.zoneHot}`} 
-          style={{ width: `${hot}%` }}
-          title={`Дневная сторона (Hot): ${hot}%`}
-        >
-          {hot > 10 ? `${hot}%` : ''}
-        </div>
-        <div 
-          className={`${styles.zoneSegment} ${styles.zoneTerminator}`} 
-          style={{ width: `${terminator}%` }}
-          title={`Пояс терминатора: ${terminator}%`}
-        >
-          {terminator > 10 ? `Терминатор ${terminator}%` : ''}
-        </div>
-        <div 
-          className={`${styles.zoneSegment} ${styles.zoneCold}`} 
-          style={{ width: `${cold}%` }}
-          title={`Ночная сторона (Cold): ${cold}%`}
-        >
-          {cold > 10 ? `${cold}%` : ''}
-        </div>
+        {total > 0 ? (
+          <>
+            <div 
+              className={`${styles.zoneSegment} ${styles.zoneHot}`} 
+              style={{ width: `${hot}%` }}
+              title={`Дневная сторона (Hot): ${hot}%`}
+            >
+              {hot > 10 ? `${hot}%` : ''}
+            </div>
+            <div 
+              className={`${styles.zoneSegment} ${styles.zoneTerminator}`} 
+              style={{ width: `${terminator}%` }}
+              title={`Пояс терминатора: ${terminator}%`}
+            >
+              {terminator > 10 ? `Терминатор ${terminator}%` : ''}
+            </div>
+            <div 
+              className={`${styles.zoneSegment} ${styles.zoneCold}`} 
+              style={{ width: `${cold}%` }}
+              title={`Ночная сторона (Cold): ${cold}%`}
+            >
+              {cold > 10 ? `${cold}%` : ''}
+            </div>
+          </>
+        ) : (
+          <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#718096', fontSize: '0.75rem' }}>
+            Калибровка орбитальных сенсоров...
+          </div>
+        )}
       </div>
 
       <div className={styles.zonesList}>
@@ -49,7 +60,9 @@ export default function ZoneDistributionCard({ zoneDistribution = { hot: 15, ter
           </div>
           <div className={styles.zoneStats}>
             <span className={styles.zonePercent} style={{ color: '#00e5ff' }}>{terminator}%</span>
-            <span className={styles.zoneHabitability} style={{ color: '#00ff88' }}>Идеально</span>
+            <span className={styles.zoneHabitability} style={{ color: terminator > 0 ? '#00ff88' : '#718096' }}>
+              {terminator > 0 ? 'Идеально' : '0 агентов'}
+            </span>
           </div>
         </div>
 
@@ -64,7 +77,9 @@ export default function ZoneDistributionCard({ zoneDistribution = { hot: 15, ter
           </div>
           <div className={styles.zoneStats}>
             <span className={styles.zonePercent} style={{ color: '#ff7700' }}>{hot}%</span>
-            <span className={styles.zoneHabitability} style={{ color: '#ff3344' }}>Опасно</span>
+            <span className={styles.zoneHabitability} style={{ color: hot > 0 ? '#ff3344' : '#718096' }}>
+              {hot > 0 ? 'Опасно' : '0 агентов'}
+            </span>
           </div>
         </div>
 
@@ -79,7 +94,9 @@ export default function ZoneDistributionCard({ zoneDistribution = { hot: 15, ter
           </div>
           <div className={styles.zoneStats}>
             <span className={styles.zonePercent} style={{ color: '#3b82f6' }}>{cold}%</span>
-            <span className={styles.zoneHabitability} style={{ color: '#3b82f6' }}>Низкая t°</span>
+            <span className={styles.zoneHabitability} style={{ color: cold > 0 ? '#3b82f6' : '#718096' }}>
+              {cold > 0 ? 'Низкая t°' : '0 агентов'}
+            </span>
           </div>
         </div>
       </div>

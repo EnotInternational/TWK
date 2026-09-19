@@ -19,14 +19,17 @@ export default function StatisticsPage({ onBack }) {
     setIsLive,
     timeRange,
     setTimeRange,
+    isInitialLoading,
     latestMetric,
     peakPopulation,
     minPopulation,
     totalBirths,
     totalDeaths,
+    agents,
     zoneDistribution,
     topAgents,
     events,
+    stateHash,
     exportJSON,
     exportCSV
   } = useStatisticsData();
@@ -50,7 +53,7 @@ export default function StatisticsPage({ onBack }) {
           <div className={styles.statusBadges}>
             <span className={`${styles.badge} ${isConnected ? styles.badgeOnline : styles.badgeOffline}`}>
               {isConnected ? <span className={styles.pulseDot} /> : null}
-              {isConnected ? 'Socket Live' : 'Оффлайн / Автономный'}
+              {isConnected ? 'Socket Live' : isInitialLoading ? 'Синхронизация...' : 'Оффлайн'}
             </span>
             <span className={`${styles.badge} ${styles.badgeTick}`}>
               Тик: #{currentTick}
@@ -131,6 +134,7 @@ export default function StatisticsPage({ onBack }) {
           <EnergyDistributionChart 
             history={history} 
             latestMetric={latestMetric} 
+            agents={agents}
           />
           <ZoneDistributionCard 
             zoneDistribution={zoneDistribution} 
@@ -149,7 +153,7 @@ export default function StatisticsPage({ onBack }) {
         {/* 5. Научная воспроизводимость (Seed & Hash Verification) */}
         <div style={{ marginBottom: '24px' }}>
           <ReproducibilityCard 
-            currentHash={latestMetric?.stateHash} 
+            currentHash={stateHash || latestMetric?.stateHash} 
             currentTick={currentTick} 
           />
         </div>
