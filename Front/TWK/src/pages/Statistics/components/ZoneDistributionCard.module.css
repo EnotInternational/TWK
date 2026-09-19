@@ -1,0 +1,119 @@
+.card {
+  background: rgba(11, 16, 26, 0.85);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  border-radius: 8px;
+  padding: 18px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.title {
+  color: #00e5ff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin: 0 0 14px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.planetStrip {
+  display: flex;
+  height: 24px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.15);
+}
+
+.zoneSegment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #fff;
+  transition: width 0.4s ease;
+  position: relative;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.zoneHot {
+  background: linear-gradient(90deg, #ff7700, #ff4400);
+}
+
+.zoneTerminator {
+  background: linear-gradient(90deg, #0099cc, #00e5ff);
+  box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+.zoneCold {
+  background: linear-gradient(90deg, #1e3a8a, #3b82f6);
+}
+
+.zonesList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.zoneRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.zoneInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.zoneIcon {
+  font-size: 1.1rem;
+}
+
+.zoneTexts {
+  display: flex;
+  flex-direction: column;
+}
+
+.zoneName {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.zoneDesc {
+  font-size: 0.7rem;
+  color: #718096;
+}
+
+.zoneStats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.zonePercent {
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: monospace;
+}
+
+.zoneHabitability {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  font-weight: 600;
+}
