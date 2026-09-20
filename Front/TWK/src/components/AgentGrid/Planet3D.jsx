@@ -412,26 +412,62 @@ export default function Planet3D({
     let lastRenderedTerminators = null;
     let lastRenderedDepressions = null;
 
+    let smoothedSunX = null;
+    let smoothedTerminators = null;
+
+    const lerpWrap = (current, target, w, factor = 0.05) => {
+      let diff = target - current;
+      if (diff > w / 2) diff -= w;
+      if (diff < -w / 2) diff += w;
+      return (current + diff * factor + w) % w;
+    };
+
     const updatePlanetTexture = () => {
       const env = envRef.current;
       const w = env?.width || gridWidth;
       const h = env?.height || gridHeight;
 
-      const sunX = env?.sun_x ?? 0;
-      const terminators = env?.terminator_bands || [];
+      const targetSunX = env?.sun_x ?? 0;
+      if (smoothedSunX === null) smoothedSunX = targetSunX;
+      smoothedSunX = lerpWrap(smoothedSunX, targetSunX, w);
+
+      const targetTerminators = env?.terminator_bands || [];
+      if (!smoothedTerminators || smoothedTerminators.length !== targetTerminators.length) {
+        smoothedTerminators = targetTerminators.map(t => ({ ...t }));
+      } else {
+        targetTerminators.forEach((tTarget, i) => {
+          let tSmooth = smoothedTerminators[i];
+          tSmooth.min_x = lerpWrap(tSmooth.min_x, tTarget.min_x, w);
+          tSmooth.width += (tTarget.width - tSmooth.width) * 0.05;
+          if (tTarget.center_x !== undefined) {
+             if (tSmooth.center_x === undefined) tSmooth.center_x = tTarget.center_x;
+             tSmooth.center_x = lerpWrap(tSmooth.center_x, tTarget.center_x, w);
+          }
+        });
+      }
+
+      const sunX = smoothedSunX;
+      const terminators = smoothedTerminators;
       const depressions = env?.depressions || [];
       const depressionsKey = depressions.map(d => `${d.x},${d.y},${d.level}`).join('|');
 
+      const renderedSunX = Math.round(sunX * 100);
+      const renderedTerm = JSON.stringify(terminators.map(t => ({
+          min_x: Math.round(t.min_x * 100),
+          width: Math.round(t.width * 100),
+          center_x: t.center_x !== undefined ? Math.round(t.center_x * 100) : undefined
+      })));
+
       if (
-        sunX === lastRenderedSunX &&
-        JSON.stringify(terminators) === lastRenderedTerminators &&
+        renderedSunX === lastRenderedSunX &&
+        renderedTerm === lastRenderedTerminators &&
         depressionsKey === lastRenderedDepressions
       ) {
         return;
       }
 
-      lastRenderedSunX = sunX;
-      lastRenderedTerminators = JSON.stringify(terminators);
+      lastRenderedSunX = renderedSunX;
+      lastRenderedTerminators = renderedTerm;
       lastRenderedDepressions = depressionsKey;
 
       const tw = textureCanvas.width;
