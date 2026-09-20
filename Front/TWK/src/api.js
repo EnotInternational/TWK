@@ -1,9 +1,17 @@
 import { io } from 'socket.io-client';
 
-const BASE_URL = 'http://26.192.246.106:5000'; // Укажите IP сервера
+// На Windows localhost часто резолвится в IPv6 [::1], что приводит к ERR_CONNECTION_REFUSED,
+// когда Flask слушает на IPv4 (0.0.0.0 / 127.0.0.1). Для локального окружения явно используем 127.0.0.1.
+const hostname = typeof window !== 'undefined' && window.location.hostname ? window.location.hostname : '127.0.0.1';
+const BASE_URL = (hostname === 'localhost' || hostname === '127.0.0.1')
+  ? 'http://127.0.0.1:5000'
+  : `http://${hostname}:5000`;
 
 export const socket = io(BASE_URL, {
-  transports: ['websocket', 'polling']
+  transports: ['polling', 'websocket'],
+  reconnection: true,
+  reconnectionAttempts: 20,
+  reconnectionDelay: 1000,
 });
 
 export const simulationApi = {

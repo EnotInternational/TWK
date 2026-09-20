@@ -23,6 +23,36 @@ class TickMetrics:
         cold_count: int,
         terminator_count: int,
         terminator_ratio: float,
+        avg_aggression: float = 0.0,
+        avg_fear: float = 0.0,
+        avg_carnivore: float = 0.0,
+        avg_altruism: float = 0.0,
+        avg_territorial: float = 0.0,
+        fights: int = 0,
+        cumulative_fights: int = 0,
+        combat_deaths: int = 0,
+        cumulative_combat_deaths: int = 0,
+        energy_shared: float = 0.0,
+        cumulative_energy_shared: float = 0.0,
+        predation_energy: float = 0.0,
+        cumulative_predation_energy: float = 0.0,
+        archetype_counts: Optional[Dict[str, int]] = None,
+        bribes: int = 0,
+        cumulative_bribes: int = 0,
+        flees: int = 0,
+        cumulative_flees: int = 0,
+        retaliations: int = 0,
+        cumulative_retaliations: int = 0,
+        friendships: int = 0,
+        cumulative_friendships: int = 0,
+        predator_count: int = 0,
+        peaceful_count: int = 0,
+        avg_ferocity: float = 0.0,
+        avg_friendliness: float = 0.0,
+        avg_courage: float = 0.0,
+        avg_diplomacy: float = 0.0,
+        avg_caution: float = 0.0,
+        character_titles: Optional[Dict[str, int]] = None,
     ) -> None:
         self.tick = tick
         self.alive_count = alive_count
@@ -37,6 +67,43 @@ class TickMetrics:
         self.cold_count = cold_count
         self.terminator_count = terminator_count
         self.terminator_ratio = round(terminator_ratio, 4)
+        self.avg_aggression = round(avg_aggression, 3)
+        self.avg_fear = round(avg_fear, 3)
+        self.avg_carnivore = round(avg_carnivore, 3)
+        self.avg_altruism = round(avg_altruism, 3)
+        self.avg_territorial = round(avg_territorial, 3)
+        self.fights = fights
+        self.cumulative_fights = cumulative_fights
+        self.combat_deaths = combat_deaths
+        self.cumulative_combat_deaths = cumulative_combat_deaths
+        self.energy_shared = round(energy_shared, 2)
+        self.cumulative_energy_shared = round(cumulative_energy_shared, 2)
+        self.predation_energy = round(predation_energy, 2)
+        self.cumulative_predation_energy = round(cumulative_predation_energy, 2)
+        self.archetype_counts = archetype_counts or {
+            "predator": 0,
+            "grazer": 0,
+            "altruist_swarm": 0,
+            "oasis_guardian": 0,
+            "fleeing_prey": 0,
+            "opportunist": 0,
+        }
+        self.bribes = bribes
+        self.cumulative_bribes = cumulative_bribes
+        self.flees = flees
+        self.cumulative_flees = cumulative_flees
+        self.retaliations = retaliations
+        self.cumulative_retaliations = cumulative_retaliations
+        self.friendships = friendships
+        self.cumulative_friendships = cumulative_friendships
+        self.predator_count = predator_count
+        self.peaceful_count = peaceful_count
+        self.avg_ferocity = round(avg_ferocity, 3)
+        self.avg_friendliness = round(avg_friendliness, 3)
+        self.avg_courage = round(avg_courage, 3)
+        self.avg_diplomacy = round(avg_diplomacy, 3)
+        self.avg_caution = round(avg_caution, 3)
+        self.character_titles = character_titles or {}
 
     def as_dict(self) -> Dict[str, Any]:
         return {
@@ -55,6 +122,40 @@ class TickMetrics:
                 "terminator": self.terminator_count,
             },
             "terminator_ratio": self.terminator_ratio,
+            "avg_aggression": self.avg_aggression,
+            "avg_fear": self.avg_fear,
+            "avg_carnivore": self.avg_carnivore,
+            "avg_altruism": self.avg_altruism,
+            "avg_territorial": self.avg_territorial,
+            "fights": self.fights,
+            "cumulative_fights": self.cumulative_fights,
+            "combat_deaths": self.combat_deaths,
+            "cumulative_combat_deaths": self.cumulative_combat_deaths,
+            "energy_shared": self.energy_shared,
+            "cumulative_energy_shared": self.cumulative_energy_shared,
+            "predation_energy": self.predation_energy,
+            "cumulative_predation_energy": self.cumulative_predation_energy,
+            "archetypes": self.archetype_counts,
+            "bribes": self.bribes,
+            "cumulative_bribes": self.cumulative_bribes,
+            "flees": self.flees,
+            "cumulative_flees": self.cumulative_flees,
+            "retaliations": self.retaliations,
+            "cumulative_retaliations": self.cumulative_retaliations,
+            "friendships": self.friendships,
+            "cumulative_friendships": self.cumulative_friendships,
+            "castes": {
+                "predator": self.predator_count,
+                "peaceful": self.peaceful_count,
+            },
+            "character": {
+                "avg_ferocity": self.avg_ferocity,
+                "avg_friendliness": self.avg_friendliness,
+                "avg_courage": self.avg_courage,
+                "avg_diplomacy": self.avg_diplomacy,
+                "avg_caution": self.avg_caution,
+            },
+            "character_titles": self.character_titles,
         }
 
 
@@ -66,6 +167,14 @@ class MetricsCollector:
         self._history: List[TickMetrics] = []
         self._cum_births = 0
         self._cum_deaths = 0
+        self._cum_fights = 0
+        self._cum_combat_deaths = 0
+        self._cum_energy_shared = 0.0
+        self._cum_predation_energy = 0.0
+        self._cum_bribes = 0
+        self._cum_flees = 0
+        self._cum_retaliations = 0
+        self._cum_friendships = 0
 
     def record(
         self,
@@ -74,9 +183,25 @@ class MetricsCollector:
         environment: Any,
         births: int = 0,
         deaths: int = 0,
+        fights: int = 0,
+        combat_deaths: int = 0,
+        energy_shared: float = 0.0,
+        predation_energy: float = 0.0,
+        bribes: int = 0,
+        flees: int = 0,
+        retaliations: int = 0,
+        friendships: int = 0,
     ) -> TickMetrics:
         self._cum_births += births
         self._cum_deaths += deaths
+        self._cum_fights += fights
+        self._cum_combat_deaths += combat_deaths
+        self._cum_energy_shared += energy_shared
+        self._cum_predation_energy += predation_energy
+        self._cum_bribes += bribes
+        self._cum_flees += flees
+        self._cum_retaliations += retaliations
+        self._cum_friendships += friendships
 
         alive_agents = [a for a in agents if a.is_alive]
         alive_count = len(alive_agents)
@@ -86,14 +211,46 @@ class MetricsCollector:
             avg_energy = sum(energies) / alive_count
             min_energy = min(energies)
             max_energy = max(energies)
+            avg_aggr = sum(getattr(a, "aggression", 0.0) for a in alive_agents) / alive_count
+            avg_fr = sum(getattr(a, "fear", 0.0) for a in alive_agents) / alive_count
+            avg_carn = sum(getattr(a, "carnivore", 0.0) for a in alive_agents) / alive_count
+            avg_altr = sum(getattr(a, "altruism", 0.0) for a in alive_agents) / alive_count
+            avg_terr = sum(getattr(a, "territorial", 0.0) for a in alive_agents) / alive_count
+            
+            avg_ferocity = sum(getattr(a, "ferocity", getattr(a, "aggression", 0.0)) for a in alive_agents) / alive_count
+            avg_friendliness = sum(getattr(a, "friendliness", getattr(a, "altruism", 0.0)) for a in alive_agents) / alive_count
+            avg_courage = sum(getattr(a, "courage", 0.5) for a in alive_agents) / alive_count
+            avg_diplomacy = sum(getattr(a, "diplomacy", 0.3) for a in alive_agents) / alive_count
+            avg_caution = sum(getattr(a, "caution", getattr(a, "fear", 0.5)) for a in alive_agents) / alive_count
         else:
             avg_energy = 0.0
             min_energy = 0.0
             max_energy = 0.0
+            avg_aggr = 0.0
+            avg_fr = 0.0
+            avg_carn = 0.0
+            avg_altr = 0.0
+            avg_terr = 0.0
+            avg_ferocity = 0.0
+            avg_friendliness = 0.0
+            avg_courage = 0.0
+            avg_diplomacy = 0.0
+            avg_caution = 0.0
 
         hot_cnt = 0
         cold_cnt = 0
         term_cnt = 0
+        pred_cnt = 0
+        peace_cnt = 0
+        archetypes = {
+            "predator": 0,
+            "grazer": 0,
+            "altruist_swarm": 0,
+            "oasis_guardian": 0,
+            "fleeing_prey": 0,
+            "opportunist": 0,
+        }
+        character_titles: Dict[str, int] = {}
 
         for a in alive_agents:
             z = environment.get_zone(a.x, a.y, tick)
@@ -103,6 +260,18 @@ class MetricsCollector:
                 cold_cnt += 1
             elif z.value == "terminator":
                 term_cnt += 1
+
+            caste = getattr(a, "caste", "peaceful")
+            if caste == "predator":
+                pred_cnt += 1
+            else:
+                peace_cnt += 1
+
+            arch = getattr(a, "archetype", "opportunist")
+            archetypes[arch] = archetypes.get(arch, 0) + 1
+
+            ctitle = getattr(a, "character_title", "Мирный обыватель")
+            character_titles[ctitle] = character_titles.get(ctitle, 0) + 1
 
         term_ratio = (term_cnt / alive_count) if alive_count > 0 else 0.0
 
@@ -120,6 +289,36 @@ class MetricsCollector:
             cold_count=cold_cnt,
             terminator_count=term_cnt,
             terminator_ratio=term_ratio,
+            avg_aggression=avg_aggr,
+            avg_fear=avg_fr,
+            avg_carnivore=avg_carn,
+            avg_altruism=avg_altr,
+            avg_territorial=avg_terr,
+            fights=fights,
+            cumulative_fights=self._cum_fights,
+            combat_deaths=combat_deaths,
+            cumulative_combat_deaths=self._cum_combat_deaths,
+            energy_shared=energy_shared,
+            cumulative_energy_shared=self._cum_energy_shared,
+            predation_energy=predation_energy,
+            cumulative_predation_energy=self._cum_predation_energy,
+            archetype_counts=archetypes,
+            bribes=bribes,
+            cumulative_bribes=self._cum_bribes,
+            flees=flees,
+            cumulative_flees=self._cum_flees,
+            retaliations=retaliations,
+            cumulative_retaliations=self._cum_retaliations,
+            friendships=friendships,
+            cumulative_friendships=self._cum_friendships,
+            predator_count=pred_cnt,
+            peaceful_count=peace_cnt,
+            avg_ferocity=avg_ferocity,
+            avg_friendliness=avg_friendliness,
+            avg_courage=avg_courage,
+            avg_diplomacy=avg_diplomacy,
+            avg_caution=avg_caution,
+            character_titles=character_titles,
         )
 
         self._history.append(m)
@@ -151,3 +350,7 @@ class MetricsCollector:
         self._history.clear()
         self._cum_births = 0
         self._cum_deaths = 0
+        self._cum_fights = 0
+        self._cum_combat_deaths = 0
+        self._cum_energy_shared = 0.0
+        self._cum_predation_energy = 0.0

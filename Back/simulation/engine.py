@@ -162,15 +162,38 @@ class SimulationEngine:
         )
         occupied.update(self.rocks)
 
-        # 2. Спавн агентов на свободных клетках
+        # 2. Спавн агентов на свободных клетках (2 биологические касты: Хищники и Мирные)
         free_coords = [c for c in all_coords if c not in occupied]
         self.rng.shuffle(free_coords)
 
         agents_to_spawn = min(self.config.initial_agents, len(free_coords))
-        for i in range(agents_to_spawn):
-            x, y = free_coords[i]
+        predators_count = max(1, int(agents_to_spawn * 0.25))
+
+        for idx in range(agents_to_spawn):
+            x, y = free_coords[idx]
             occupied.add((x, y))
             aid = self._generate_agent_id()
+
+            is_predator = (idx < predators_count)
+            caste = "predator" if is_predator else "peaceful"
+
+            if is_predator:
+                fer = max(0.0, min(1.0, self.rng.gauss(0.70, 0.15)))
+                fr = max(0.0, min(1.0, self.rng.gauss(0.25, 0.15)))
+                crg = max(0.0, min(1.0, self.rng.gauss(0.65, 0.15)))
+                dip = max(0.0, min(1.0, self.rng.gauss(0.15, 0.10)))
+                caut = max(0.0, min(1.0, self.rng.gauss(0.20, 0.10)))
+                carn = max(0.6, min(1.0, self.rng.gauss(0.85, 0.10)))
+            else:
+                fer = max(0.0, min(1.0, self.rng.gauss(0.10, 0.10)))
+                fr = max(0.0, min(1.0, self.rng.gauss(0.65, 0.15)))
+                crg = max(0.0, min(1.0, self.rng.gauss(0.30, 0.15)))
+                dip = max(0.0, min(1.0, self.rng.gauss(0.50, 0.20)))
+                caut = max(0.0, min(1.0, self.rng.gauss(0.60, 0.20)))
+                carn = max(0.0, min(0.2, self.rng.gauss(0.05, 0.05)))
+
+            terr = max(-1.0, min(1.0, self.rng.gauss(0.0, 0.35)))
+
             agent = Agent(
                 agent_id=aid,
                 x=x,
@@ -179,8 +202,16 @@ class SimulationEngine:
                 age=0,
                 generation=0,
                 parent_id=None,
-                w_temp=self.rng.gauss(-1.0, 2.0), # Склонность избегать штрафов (в среднем отрицательная)
-                w_swarm=self.rng.gauss(0.5, 2.0), # Склонность кучковаться (в среднем положительная)
+                w_temp=self.rng.gauss(-1.0, 2.0),
+                w_swarm=self.rng.gauss(0.5, 2.0),
+                caste=caste,
+                ferocity=fer,
+                friendliness=fr,
+                courage=crg,
+                diplomacy=dip,
+                caution=caut,
+                carnivore=carn,
+                territorial=terr,
             )
             self.agents[aid] = agent
             self.events.log(
@@ -189,7 +220,7 @@ class SimulationEngine:
                 agent_id=aid,
                 x=x,
                 y=y,
-                details=f"Spawned with energy {self.config.starting_energy}",
+                details=f"Spawned {caste} ({agent.character_title}) with energy {self.config.starting_energy}, fer={round(fer, 2)}, fr={round(fr, 2)}, crg={round(crg, 2)}, dip={round(dip, 2)}, caut={round(caut, 2)}",
             )
 
         # Запись метрики для тика 0
@@ -199,6 +230,14 @@ class SimulationEngine:
             environment=self.env,
             births=0,
             deaths=0,
+            fights=0,
+            combat_deaths=0,
+            energy_shared=0.0,
+            predation_energy=0.0,
+            bribes=0,
+            flees=0,
+            retaliations=0,
+            friendships=0,
         )
 
     def reset(self, new_config: Optional[SimulationConfig] = None) -> None:
@@ -241,6 +280,14 @@ class SimulationEngine:
         current_tick = self.tick
         births_this_tick = 0
         deaths_this_tick = 0
+        fights_this_tick = 0
+        combat_deaths_this_tick = 0
+        energy_shared_this_tick = 0.0
+        predation_energy_this_tick = 0.0
+        bribes_this_tick = 0
+        flees_this_tick = 0
+        retaliations_this_tick = 0
+        friendships_this_tick = 0
 
         alive_agents = [a for a in self.agents.values() if a.is_alive]
         # Сортируем по ID для строгой детерминированности обработки
@@ -258,9 +305,12 @@ class SimulationEngine:
                 # В зоне терминатора или освещенном углублении агенты получают солнечную энергию
                 dep_lvl = self.depressions.get((agent.x, agent.y), 0)
                 if dep_lvl == 1:
-                    agent.energy += 1.5
+                    base_solar = 1.5
                 else:
-                    agent.energy += 3.0
+                    base_solar = 3.0
+                # Трофическая адаптация: хищники получают значительно меньше энергии от солнца (стимул охотиться)
+                solar_efficiency = max(0.05, 1.0 - 0.85 * agent.carnivore)
+                agent.energy += base_solar * solar_efficiency
                 
             zone_penalty = self.env.get_energy_penalty(zone)
             total_consumption = self.config.base_metabolism + zone_penalty + self.config.wind_penalty
@@ -294,37 +344,659 @@ class SimulationEngine:
         # Обновленный список выживших
         survivors = [a for a in alive_agents if a.is_alive]
 
-        # 2. Перемещение выживших агентов
-        # Детерминированный порядок перемещения
+        # 1.5. Фаза альтруизма и взаимопомощи
+        # Агенты с высоким altruism делятся избытком энергии с умирающими сородичами до перемещения
         for agent in survivors:
+            if not agent.is_alive or agent.energy < 55.0 or agent.altruism < 0.3:
+                continue
+
+            neighbors = self._get_neighbors(agent.x, agent.y)
+            needy_neighbors = [
+                occupied[pos] for pos in neighbors
+                if pos in occupied and occupied[pos].is_alive and occupied[pos].id != agent.id and occupied[pos].energy < 25.0
+            ]
+            if needy_neighbors:
+                needy_neighbors.sort(key=lambda n: (n.energy, n.id))
+                recipient = needy_neighbors[0]
+
+                share_amount = min(8.0, agent.energy - 45.0)
+                if share_amount >= 3.0:
+                    agent.consume_energy(share_amount)
+                    transferred = share_amount * 0.9
+                    recipient.energy += transferred
+
+                    agent.energy_shared += share_amount
+                    recipient.energy_received += transferred
+                    energy_shared_this_tick += share_amount
+
+                    self.events.log(
+                        tick=current_tick,
+                        event_type=EventType.SHARE_ENERGY,
+                        agent_id=agent.id,
+                        parent_id=recipient.id,
+                        x=agent.x,
+                        y=agent.y,
+                        details=f"{agent.id} shared {round(share_amount, 1)} energy with starving {recipient.id}",
+                    )
+
+        # 2. Перемещение и поведенческий выбор выживших агентов
+        for agent in survivors:
+            if not agent.is_alive:
+                continue
+
             neighbors = self._get_neighbors(agent.x, agent.y)
             free_neighbors = [pos for pos in neighbors if pos not in occupied and pos not in self.rocks]
+            occupied_neighbors = [
+                pos for pos in neighbors 
+                if pos in occupied and occupied[pos].id != agent.id and pos not in self.rocks
+            ]
 
-            # Агент может остаться на месте или шагнуть на свободную клетку
+            # Варианты: остаться на месте, шагнуть на свободную клетку или напасть на соседа
             options = [(agent.x, agent.y)] + free_neighbors
-            
+            if agent.aggression >= 0.25 or agent.carnivore >= 0.3:
+                options += occupied_neighbors
+
             best_score = float("-inf")
             best_pos = (agent.x, agent.y)
-            
+
             for pos in options:
-                # 1. Штраф зоны (отрицательный стимул)
-                pos_zone = self.get_effective_zone(pos[0], pos[1], current_tick)
-                pos_penalty = self.env.get_energy_penalty(pos_zone)
-                
-                # 2. Плотность соседей (социальный стимул)
-                pos_neighbors = self._get_neighbors(pos[0], pos[1])
-                swarm_count = sum(1 for n in pos_neighbors if n in occupied and occupied[n].id != agent.id)
-                
-                # Функция приспособленности
-                score = (agent.w_temp * pos_penalty) + (agent.w_swarm * swarm_count) + self.rng.gauss(0, 0.5)
-                
+                is_attack = (pos in occupied and occupied[pos].id != agent.id)
+                if is_attack:
+                    target = occupied[pos]
+                    target_zone = self.get_effective_zone(target.x, target.y, current_tick)
+                    zone_bonus = 2.0 if target_zone == Zone.TERMINATOR else 0.0
+                    energy_diff = (agent.energy - target.energy) / 50.0
+
+                    # Голодный стимул хищника: чем выше carnivore и ниже энергия, тем сильнее тяга атаковать
+                    hunger_drive = agent.carnivore * max(0.0, (90.0 - agent.energy) / 25.0) * 2.0
+
+                    # Территориальный стимул: стремление занять оазис/кратер
+                    pos_dep = self.depressions.get(pos, 0)
+                    territorial_incentive = 2.0 * agent.territorial if pos_dep > 0 and agent.territorial > 0 else 0.0
+
+                    combat_incentive = (
+                        (agent.aggression * 3.0) 
+                        + energy_diff 
+                        + zone_bonus 
+                        + hunger_drive 
+                        + territorial_incentive 
+                        - (agent.fear * target.aggression * 3.0)
+                    )
+
+                    if combat_incentive <= 0.4:
+                        continue
+                    score = combat_incentive + self.rng.gauss(0, 0.3)
+                else:
+                    pos_zone = self.get_effective_zone(pos[0], pos[1], current_tick)
+                    pos_penalty = self.env.get_energy_penalty(pos_zone)
+                    pos_neighbors = self._get_neighbors(pos[0], pos[1])
+                    swarm_count = sum(1 for n in pos_neighbors if n in occupied and occupied[n].id != agent.id)
+
+                    # Учет страха: избегание клеток рядом с агрессивными соседями
+                    threat_sum = sum(
+                        occupied[n].aggression for n in pos_neighbors
+                        if n in occupied and occupied[n].id != agent.id and occupied[n].aggression > 0.4
+                    )
+                    fear_penalty = agent.fear * threat_sum * 3.0
+
+                    # Территориальная привязка к кратеру
+                    pos_dep = self.depressions.get(pos, 0)
+                    stay_dep_bonus = 3.0 * agent.territorial if pos_dep > 0 and agent.territorial > 0 else (
+                        -1.0 * abs(agent.territorial) if pos_dep == 0 and agent.territorial > 0 and (agent.x, agent.y) in self.depressions else 0.0
+                    )
+
+                    score = (
+                        (agent.w_temp * pos_penalty) 
+                        + (agent.w_swarm * swarm_count) 
+                        - fear_penalty 
+                        + stay_dep_bonus 
+                        + self.rng.gauss(0, 0.5)
+                    )
+
                 if score > best_score:
                     best_score = score
                     best_pos = pos
 
             target_pos = best_pos
 
-            if target_pos != (agent.x, agent.y):
+            if target_pos == (agent.x, agent.y):
+                continue
+            elif target_pos in occupied and occupied[target_pos].id != agent.id:
+                # Встреча двух агентов: выбор стратегии в зависимости от каст и характера
+                attacker = agent
+                defender = occupied[target_pos]
+
+                # ВАРИАНТ 1: Хищник атакует Мирного
+                if attacker.caste == "predator" and defender.caste == "peaceful":
+                    # Хищник решает: Дружить или Воевать
+                    fw = attacker.friendliness * max(0.2, attacker.energy / 80.0)
+                    hw = attacker.ferocity * max(0.5, (120.0 - attacker.energy) / 40.0)
+                    p_friend = fw / max(0.01, fw + hw)
+
+                    if self.rng.random() < p_friend:
+                        # Хищник выбрал дружбу / мирное сосуществование
+                        attacker.reinforce_friendship(success=True)
+                        defender.reinforce_friendship(success=True)
+                        friendships_this_tick += 1
+
+                        attacker.record_choice(
+                            tick=current_tick,
+                            choice="friend",
+                            opponent_id=defender.id,
+                            opponent_caste=defender.caste,
+                            opponent_title=defender.character_title,
+                            outcome="pact",
+                            energy_delta=0.0,
+                            details=f"Заключил пакт о дружбе с мирным {defender.id}",
+                            trait_deltas={"friendliness": "+0.05", "ferocity": "-0.03"},
+                        )
+                        defender.record_choice(
+                            tick=current_tick,
+                            choice="friend",
+                            opponent_id=attacker.id,
+                            opponent_caste=attacker.caste,
+                            opponent_title=attacker.character_title,
+                            outcome="pact",
+                            energy_delta=0.0,
+                            details=f"Принял мирное сосуществование от хищника {attacker.id}",
+                            trait_deltas={"friendliness": "+0.05", "ferocity": "-0.03"},
+                        )
+
+                        self.events.log(
+                            tick=current_tick,
+                            event_type=EventType.ENCOUNTER_FRIEND,
+                            agent_id=attacker.id,
+                            parent_id=defender.id,
+                            x=defender.x,
+                            y=defender.y,
+                            details=f"Хищник {attacker.id} проявил дружелюбие к {defender.id}: мирное сосуществование",
+                        )
+                        continue
+                    else:
+                        # Хищник выбрал воевать / охоту
+                        # Мирный решает: Откупиться, Убежать или Дать отпор
+                        can_bribe = (defender.energy >= 16.0)
+                        bribe_score = (defender.diplomacy * 2.2 + self.rng.gauss(0, 0.2)) if can_bribe else float("-inf")
+
+                        def_neighbors = self._get_neighbors(defender.x, defender.y)
+                        retreat_options = [p for p in def_neighbors if p not in occupied and p not in self.rocks]
+                        can_flee = len(retreat_options) > 0
+                        flee_score = (defender.caution * 2.2 + self.rng.gauss(0, 0.2)) if can_flee else float("-inf")
+
+                        retaliate_score = defender.courage * 2.0 + (defender.energy / 90.0) + self.rng.gauss(0, 0.2)
+
+                        best_choice = "retaliate"
+                        max_s = retaliate_score
+                        if bribe_score > max_s:
+                            best_choice = "bribe"
+                            max_s = bribe_score
+                        if flee_score > max_s:
+                            best_choice = "flee"
+
+                        if best_choice == "bribe":
+                            # Мирный откупается данью энергией
+                            bribe_amt = min(22.0, max(8.0, defender.energy * 0.25))
+                            defender.consume_energy(bribe_amt)
+                            absorbed = bribe_amt * 0.85
+                            attacker.energy += absorbed
+                            attacker.predation_energy += absorbed
+                            predation_energy_this_tick += absorbed
+
+                            defender.reinforce_bribe(as_predator=False)
+                            attacker.reinforce_bribe(as_predator=True)
+                            bribes_this_tick += 1
+                            fights_this_tick += 1
+
+                            defender.record_choice(
+                                tick=current_tick,
+                                choice="bribe",
+                                opponent_id=attacker.id,
+                                opponent_caste=attacker.caste,
+                                opponent_title=attacker.character_title,
+                                outcome="paid_bribe",
+                                energy_delta=-bribe_amt,
+                                details=f"Откупился данью {round(bribe_amt, 1)} HP от {attacker.id}, сохранив жизнь",
+                                trait_deltas={"diplomacy": "+0.08", "caution": "+0.02"},
+                            )
+                            attacker.record_choice(
+                                tick=current_tick,
+                                choice="fight",
+                                opponent_id=defender.id,
+                                opponent_caste=defender.caste,
+                                opponent_title=defender.character_title,
+                                outcome="received_bribe",
+                                energy_delta=absorbed,
+                                details=f"Принял откуп {round(absorbed, 1)} HP от {defender.id} без боя",
+                                trait_deltas={"diplomacy": "+0.04", "friendliness": "+0.04"},
+                            )
+
+                            self.events.log(
+                                tick=current_tick,
+                                event_type=EventType.ENCOUNTER_BRIBE,
+                                agent_id=defender.id,
+                                parent_id=attacker.id,
+                                x=defender.x,
+                                y=defender.y,
+                                details=f"{defender.id} ({defender.character_title}) откупился данью {round(bribe_amt, 1)} HP от {attacker.id}",
+                            )
+                            continue
+
+                        elif best_choice == "flee":
+                            # Проверяем, удалось ли уклониться (сильно истощенная жертва <= 12 HP не может убежать от быстрого хищника)
+                            flee_success = True
+                            if defender.energy <= 12.0 and (attacker.carnivore >= 0.6 or attacker.ferocity >= 0.6):
+                                flee_success = False
+
+                            if flee_success:
+                                # Мирный успешно спасается бегством
+                                retreat_pos = self.rng.choice(retreat_options)
+                                occupied.pop((defender.x, defender.y), None)
+                                defender.x, defender.y = retreat_pos
+                                occupied[retreat_pos] = defender
+
+                                # Хищник занимает оставленную клетку
+                                occupied.pop((attacker.x, attacker.y), None)
+                                attacker.x, attacker.y = target_pos
+                                occupied[target_pos] = attacker
+
+                                defender.reinforce_flee(escaped=True)
+                                flees_this_tick += 1
+                                fights_this_tick += 1
+
+                                defender.record_choice(
+                                    tick=current_tick,
+                                    choice="flee",
+                                    opponent_id=attacker.id,
+                                    opponent_caste=attacker.caste,
+                                    opponent_title=attacker.character_title,
+                                    outcome="escaped",
+                                    energy_delta=0.0,
+                                    details=f"Успешно уклонился от атаки {attacker.id} и спасся на ({retreat_pos[0]}, {retreat_pos[1]})",
+                                    trait_deltas={"caution": "+0.06", "courage": "-0.03"},
+                                )
+                                attacker.record_choice(
+                                    tick=current_tick,
+                                    choice="fight",
+                                    opponent_id=defender.id,
+                                    opponent_caste=defender.caste,
+                                    opponent_title=defender.character_title,
+                                    outcome="prey_escaped",
+                                    energy_delta=0.0,
+                                    details=f"Жертва {defender.id} уклонилась бегством, занята ее клетка",
+                                    trait_deltas={},
+                                )
+
+                                self.events.log(
+                                    tick=current_tick,
+                                    event_type=EventType.FLEE,
+                                    agent_id=defender.id,
+                                    parent_id=attacker.id,
+                                    x=defender.x,
+                                    y=defender.y,
+                                    details=f"{defender.id} ({defender.character_title}) уклонился от атаки {attacker.id} и спасся бегством на ({retreat_pos[0]}, {retreat_pos[1]})",
+                                )
+                                continue
+                            else:
+                                defender.reinforce_flee(escaped=False)
+                                defender.record_choice(
+                                    tick=current_tick,
+                                    choice="flee",
+                                    opponent_id=attacker.id,
+                                    opponent_caste=attacker.caste,
+                                    opponent_title=attacker.character_title,
+                                    outcome="caught",
+                                    energy_delta=0.0,
+                                    details=f"Попытка бегства не удалась — настигнут хищником {attacker.id}",
+                                    trait_deltas={"caution": "+0.03"},
+                                )
+                                # Истощенная жертва настигнута хищником, переходим к схватке!
+
+                        # Реакция: Дать отпор или вынужденный бой настигнутой жертвы
+                        retaliations_this_tick += 1
+                        fights_this_tick += 1
+
+                        attacker.consume_energy(2.5)
+                        defender.consume_energy(2.5)
+
+                        att_power = attacker.energy * (0.6 + attacker.ferocity)
+                        def_dep = self.depressions.get(target_pos, 0)
+                        dep_defense_mult = (1.0 + defender.territorial * 0.6) if def_dep > 0 and defender.territorial > 0 else 1.0
+                        def_power = defender.energy * (0.6 + defender.courage) * dep_defense_mult
+                        total_power = max(0.1, att_power + def_power)
+                        win_prob = att_power / total_power
+
+                        attacker_wins = (self.rng.random() < win_prob)
+
+                        if attacker_wins:
+                            attacker.fights_won += 1
+                            defender.fights_lost += 1
+                            attacker.reinforce_fight(won=True)
+                            defender.reinforce_retaliate(won=False)
+
+                            steal_pct = 0.20 + 0.40 * attacker.carnivore
+                            absorption_efficiency = 0.40 + 0.50 * attacker.carnivore
+                            dmg = min(defender.energy, max(6.0, defender.energy * steal_pct))
+                            defender.consume_energy(dmg)
+                            gained_energy = dmg * absorption_efficiency
+                            attacker.energy += gained_energy
+                            attacker.predation_energy += gained_energy
+                            predation_energy_this_tick += gained_energy
+
+                            if defender.energy <= 0.0:
+                                defender.die(f"Хищник {attacker.id} сломил сопротивление и поглотил {defender.id}", current_tick)
+                                attacker.kills += 1
+                                deaths_this_tick += 1
+                                combat_deaths_this_tick += 1
+                                occupied.pop((defender.x, defender.y), None)
+                                occupied.pop((attacker.x, attacker.y), None)
+                                attacker.x, attacker.y = target_pos
+                                occupied[target_pos] = attacker
+
+                                defender.record_choice(
+                                    tick=current_tick,
+                                    choice="retaliate",
+                                    opponent_id=attacker.id,
+                                    opponent_caste=attacker.caste,
+                                    opponent_title=attacker.character_title,
+                                    outcome="died_combat",
+                                    energy_delta=-dmg - 2.5,
+                                    details=f"Давал отпор, но погиб в неравной схватке с {attacker.id}",
+                                    trait_deltas={"courage": "-0.10", "caution": "+0.08"},
+                                )
+                                attacker.record_choice(
+                                    tick=current_tick,
+                                    choice="fight",
+                                    opponent_id=defender.id,
+                                    opponent_caste=defender.caste,
+                                    opponent_title=defender.character_title,
+                                    outcome="killed_prey",
+                                    energy_delta=gained_energy - 2.5,
+                                    details=f"Сломил сопротивление {defender.id} и поглотил жертву (+{round(gained_energy, 1)} HP)",
+                                    trait_deltas={"ferocity": "+0.07", "courage": "+0.04"},
+                                )
+
+                                self.events.log(
+                                    tick=current_tick,
+                                    event_type=EventType.PREDATION,
+                                    agent_id=defender.id,
+                                    parent_id=attacker.id,
+                                    x=defender.x,
+                                    y=defender.y,
+                                    details=f"{defender.id} дал отпор, но погиб в схватке с {attacker.id} (+{round(gained_energy, 1)} HP)",
+                                )
+                            else:
+                                if retreat_options:
+                                    retreat_pos = self.rng.choice(retreat_options)
+                                    occupied.pop((defender.x, defender.y), None)
+                                    defender.x, defender.y = retreat_pos
+                                    occupied[retreat_pos] = defender
+                                    occupied.pop((attacker.x, attacker.y), None)
+                                    attacker.x, attacker.y = target_pos
+                                    occupied[target_pos] = attacker
+
+                                defender.record_choice(
+                                    tick=current_tick,
+                                    choice="retaliate",
+                                    opponent_id=attacker.id,
+                                    opponent_caste=attacker.caste,
+                                    opponent_title=attacker.character_title,
+                                    outcome="counter_loss",
+                                    energy_delta=-dmg - 2.5,
+                                    details=f"Давал отпор {attacker.id}, но уступил в силе (-{round(dmg + 2.5, 1)} HP)",
+                                    trait_deltas={"courage": "-0.10", "caution": "+0.08"},
+                                )
+                                attacker.record_choice(
+                                    tick=current_tick,
+                                    choice="fight",
+                                    opponent_id=defender.id,
+                                    opponent_caste=defender.caste,
+                                    opponent_title=defender.character_title,
+                                    outcome="fight_win",
+                                    energy_delta=gained_energy - 2.5,
+                                    details=f"Сломил отпор {defender.id} и отобрал {round(gained_energy, 1)} HP",
+                                    trait_deltas={"ferocity": "+0.07", "courage": "+0.04"},
+                                )
+
+                                self.events.log(
+                                    tick=current_tick,
+                                    event_type=EventType.FIGHT,
+                                    agent_id=attacker.id,
+                                    parent_id=defender.id,
+                                    x=target_pos[0],
+                                    y=target_pos[1],
+                                    details=f"Схватка: {attacker.id} сломил отпор {defender.id} (-{round(dmg, 1)} HP)",
+                                )
+                        else:
+                            # Мирный обратил хищника в бегство!
+                            defender.fights_won += 1
+                            attacker.fights_lost += 1
+                            defender.reinforce_retaliate(won=True)
+                            attacker.reinforce_fight(won=False)
+
+                            counter_dmg = min(attacker.energy, max(6.0, attacker.energy * 0.25))
+                            attacker.consume_energy(counter_dmg)
+
+                            defender.record_choice(
+                                tick=current_tick,
+                                choice="retaliate",
+                                opponent_id=attacker.id,
+                                opponent_caste=attacker.caste,
+                                opponent_title=attacker.character_title,
+                                outcome="counter_win",
+                                energy_delta=-2.5,
+                                details=f"Дал яростный отпор {attacker.id} и обратил его в бегство (-{round(counter_dmg, 1)} HP врагу)",
+                                trait_deltas={"courage": "+0.15", "caution": "-0.08", "ferocity": "+0.05"},
+                            )
+                            attacker.record_choice(
+                                tick=current_tick,
+                                choice="fight",
+                                opponent_id=defender.id,
+                                opponent_caste=defender.caste,
+                                opponent_title=defender.character_title,
+                                outcome="countered",
+                                energy_delta=-counter_dmg - 2.5,
+                                details=f"Получил сокрушительный отпор от {defender.id} и был обращен в бегство (-{round(counter_dmg + 2.5, 1)} HP)",
+                                trait_deltas={"ferocity": "-0.08", "caution": "+0.06"},
+                            )
+
+                            if attacker.energy <= 0.0:
+                                attacker.die(f"Погиб при отпоре храброго {defender.id}", current_tick)
+                                defender.kills += 1
+                                deaths_this_tick += 1
+                                combat_deaths_this_tick += 1
+                                occupied.pop((attacker.x, attacker.y), None)
+
+                                self.events.log(
+                                    tick=current_tick,
+                                    event_type=EventType.DEATH_COMBAT,
+                                    agent_id=attacker.id,
+                                    parent_id=defender.id,
+                                    x=attacker.x,
+                                    y=attacker.y,
+                                    details=f"Хищник {attacker.id} погиб от сокрушительного отпора {defender.id}",
+                                )
+
+                            self.events.log(
+                                tick=current_tick,
+                                event_type=EventType.ENCOUNTER_RETALIATE,
+                                agent_id=defender.id,
+                                parent_id=attacker.id,
+                                x=target_pos[0],
+                                y=target_pos[1],
+                                details=f"Храбрый {defender.id} ({defender.character_title}) дал яростный отпор {attacker.id} и обратил его в бегство (-{round(counter_dmg, 1)} HP)",
+                            )
+                        continue
+
+                # ВАРИАНТ 2: Хищник встречает Хищника
+                elif attacker.caste == "predator" and defender.caste == "predator":
+                    p1_friend = attacker.friendliness / max(0.01, attacker.friendliness + attacker.ferocity)
+                    p2_friend = defender.friendliness / max(0.01, defender.friendliness + defender.ferocity)
+
+                    if self.rng.random() < p1_friend and self.rng.random() < p2_friend:
+                        # Стайный союз двух хищников
+                        attacker.reinforce_friendship(success=True)
+                        defender.reinforce_friendship(success=True)
+                        friendships_this_tick += 1
+
+                        attacker.record_choice(
+                            tick=current_tick,
+                            choice="friend",
+                            opponent_id=defender.id,
+                            opponent_caste=defender.caste,
+                            opponent_title=defender.character_title,
+                            outcome="pact",
+                            energy_delta=0.0,
+                            details=f"Стайный союз: заключен пакт о ненападении с хищником {defender.id}",
+                            trait_deltas={"friendliness": "+0.05", "ferocity": "-0.03"},
+                        )
+                        defender.record_choice(
+                            tick=current_tick,
+                            choice="friend",
+                            opponent_id=attacker.id,
+                            opponent_caste=attacker.caste,
+                            opponent_title=attacker.character_title,
+                            outcome="pact",
+                            energy_delta=0.0,
+                            details=f"Стайный союз: взаимный пакт о ненападении с хищником {attacker.id}",
+                            trait_deltas={"friendliness": "+0.05", "ferocity": "-0.03"},
+                        )
+
+                        self.events.log(
+                            tick=current_tick,
+                            event_type=EventType.ENCOUNTER_FRIEND,
+                            agent_id=attacker.id,
+                            parent_id=defender.id,
+                            x=defender.x,
+                            y=defender.y,
+                            details=f"Стайный союз: хищники {attacker.id} и {defender.id} заключили пакт о ненападении",
+                        )
+                        continue
+                    else:
+                        # Территориальная битва хищников
+                        fights_this_tick += 1
+                        attacker.consume_energy(3.0)
+                        defender.consume_energy(3.0)
+
+                        att_power = attacker.energy * (0.6 + attacker.ferocity)
+                        def_dep = self.depressions.get(target_pos, 0)
+                        dep_defense_mult = (1.0 + defender.territorial * 0.6) if def_dep > 0 and defender.territorial > 0 else 1.0
+                        def_power = defender.energy * (0.6 + defender.ferocity) * dep_defense_mult
+                        total_power = max(0.1, att_power + def_power)
+                        win_prob = att_power / total_power
+
+                        attacker_wins = (self.rng.random() < win_prob)
+
+                        if attacker_wins:
+                            attacker.fights_won += 1
+                            defender.fights_lost += 1
+                            attacker.reinforce_fight(won=True)
+                            defender.reinforce_fight(won=False)
+
+                            dmg = min(defender.energy, max(8.0, defender.energy * 0.35))
+                            defender.consume_energy(dmg)
+                            gained = dmg * 0.6
+                            attacker.energy += gained
+                            attacker.predation_energy += gained
+                            predation_energy_this_tick += gained
+
+                            attacker.record_choice(
+                                tick=current_tick,
+                                choice="fight",
+                                opponent_id=defender.id,
+                                opponent_caste=defender.caste,
+                                opponent_title=defender.character_title,
+                                outcome="fight_win",
+                                energy_delta=gained - 3.0,
+                                details=f"Одолел соперника-хищника {defender.id} в битве за территорию (+{round(gained, 1)} HP)",
+                                trait_deltas={"ferocity": "+0.07", "courage": "+0.04"},
+                            )
+                            defender.record_choice(
+                                tick=current_tick,
+                                choice="fight",
+                                opponent_id=attacker.id,
+                                opponent_caste=attacker.caste,
+                                opponent_title=attacker.character_title,
+                                outcome="died_combat" if defender.energy - dmg <= 0.0 else "counter_loss",
+                                energy_delta=-dmg - 3.0,
+                                details=f"Уступил в территориальной схватке хищнику {attacker.id} (-{round(dmg + 3.0, 1)} HP)",
+                                trait_deltas={"ferocity": "-0.08", "caution": "+0.06"},
+                            )
+
+                            if defender.energy <= 0.0:
+                                defender.die(f"Пал в территориальной схватке с хищником {attacker.id}", current_tick)
+                                attacker.kills += 1
+                                deaths_this_tick += 1
+                                combat_deaths_this_tick += 1
+                                occupied.pop((defender.x, defender.y), None)
+                                occupied.pop((attacker.x, attacker.y), None)
+                                attacker.x, attacker.y = target_pos
+                                occupied[target_pos] = attacker
+                            self.events.log(
+                                tick=current_tick,
+                                event_type=EventType.FIGHT,
+                                agent_id=attacker.id,
+                                parent_id=defender.id,
+                                x=target_pos[0],
+                                y=target_pos[1],
+                                details=f"Территориальная битва хищников: {attacker.id} одолел {defender.id}",
+                            )
+                        else:
+                            defender.fights_won += 1
+                            attacker.fights_lost += 1
+                            defender.reinforce_fight(won=True)
+                            attacker.reinforce_fight(won=False)
+
+                            counter_dmg = min(attacker.energy, max(6.0, attacker.energy * 0.25))
+                            attacker.consume_energy(counter_dmg)
+
+                            defender.record_choice(
+                                tick=current_tick,
+                                choice="fight",
+                                opponent_id=attacker.id,
+                                opponent_caste=attacker.caste,
+                                opponent_title=attacker.character_title,
+                                outcome="fight_win",
+                                energy_delta=-3.0,
+                                details=f"Отразил территориальное нападение соперника {attacker.id}",
+                                trait_deltas={"ferocity": "+0.07", "courage": "+0.04"},
+                            )
+                            attacker.record_choice(
+                                tick=current_tick,
+                                choice="fight",
+                                opponent_id=defender.id,
+                                opponent_caste=defender.caste,
+                                opponent_title=defender.character_title,
+                                outcome="died_combat" if attacker.energy <= 0.0 else "countered",
+                                energy_delta=-counter_dmg - 3.0,
+                                details=f"Отбит соперником {defender.id} при попытке захвата территории (-{round(counter_dmg + 3.0, 1)} HP)",
+                                trait_deltas={"ferocity": "-0.08", "caution": "+0.06"},
+                            )
+
+                            if attacker.energy <= 0.0:
+                                attacker.die(f"Погиб в территориальной схватке с хищником {defender.id}", current_tick)
+                                defender.kills += 1
+                                deaths_this_tick += 1
+                                combat_deaths_this_tick += 1
+                                occupied.pop((attacker.x, attacker.y), None)
+                            self.events.log(
+                                tick=current_tick,
+                                event_type=EventType.FIGHT,
+                                agent_id=defender.id,
+                                parent_id=attacker.id,
+                                x=target_pos[0],
+                                y=target_pos[1],
+                                details=f"Хищник {defender.id} отразил нападение соперника {attacker.id}",
+                            )
+                        continue
+
+                # ВАРИАНТ 3: Мирный с Мирным (мирное сосуществование)
+                elif attacker.caste == "peaceful" and defender.caste == "peaceful":
+                    continue
+
+                # ВАРИАНТ 4: Мирный наткнулся на Хищника (отступает)
+                else:
+                    continue
+            else:
                 occupied.pop((agent.x, agent.y), None)
                 agent.x, agent.y = target_pos
                 occupied[target_pos] = agent
@@ -385,6 +1057,14 @@ class SimulationEngine:
             environment=self.env,
             births=births_this_tick,
             deaths=deaths_this_tick,
+            fights=fights_this_tick,
+            combat_deaths=combat_deaths_this_tick,
+            energy_shared=energy_shared_this_tick,
+            predation_energy=predation_energy_this_tick,
+            bribes=bribes_this_tick,
+            flees=flees_this_tick,
+            retaliations=retaliations_this_tick,
+            friendships=friendships_this_tick,
         )
 
         # 5. Проверка окончания симуляции
@@ -418,8 +1098,19 @@ class SimulationEngine:
                     "energy": round(a.energy, 4),
                     "age": a.age,
                     "gen": a.generation,
+                    "cst": getattr(a, "caste", "peaceful"),
                     "wt": round(a.w_temp, 4),
                     "ws": round(a.w_swarm, 4),
+                    "ag": round(a.aggression, 4),
+                    "fr": round(a.fear, 4),
+                    "cr": round(a.carnivore, 4),
+                    "al": round(a.altruism, 4),
+                    "tr": round(a.territorial, 4),
+                    "fc": round(getattr(a, "ferocity", 0.0), 4),
+                    "fn": round(getattr(a, "friendliness", 0.0), 4),
+                    "cg": round(getattr(a, "courage", 0.0), 4),
+                    "dp": round(getattr(a, "diplomacy", 0.0), 4),
+                    "ct": round(getattr(a, "caution", 0.0), 4),
                 }
                 for a in alive_agents
             ],
