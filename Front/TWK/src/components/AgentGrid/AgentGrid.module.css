@@ -42,11 +42,8 @@
 
 /* View Switcher Bar */
 .viewToggleBar {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  z-index: 30;
-  display: flex;
+  display: inline-flex;
+  align-items: center;
   background: rgba(10, 16, 30, 0.85);
   border: 1px solid rgba(0, 242, 254, 0.3);
   border-radius: 12px;
@@ -54,6 +51,11 @@
   gap: 4px;
   backdrop-filter: blur(16px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  flex-shrink: 0;
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 50;
 }
 
 .viewToggleBtn {
@@ -86,7 +88,7 @@
 /* Planet HUD Controls */
 .planetOverlay {
   position: absolute;
-  top: 16px;
+  top: 65px;
   left: 16px;
   z-index: 20;
   display: flex;
@@ -192,4 +194,247 @@
   border-radius: 2px;
   display: inline-block;
   box-shadow: 0 0 8px #00f2fe;
+}
+
+/* Top Controls Wrapper (holds View Toggle, Color Mode, and dropdown Legend) */
+.topControlWrapper {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-start;
+  gap: 8px;
+  pointer-events: none;
+  max-width: calc(100% - 32px);
+}
+
+/* TOP CONTROLS CONTAINER (View Mode + Color Mode) */
+.topControlContainer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+/* Color Mode Switcher Bar */
+.colorModeBar {
+  display: flex;
+  align-items: center;
+  background: rgba(10, 16, 30, 0.88);
+  border: 1px solid rgba(0, 242, 254, 0.3);
+  border-radius: 12px;
+  padding: 4px 6px;
+  gap: 4px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+.colorModeLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0 6px;
+}
+
+.colorModeBtn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 6px 11px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.colorModeBtn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.colorModeBtnActive {
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.25) 0%, rgba(79, 172, 254, 0.2) 100%);
+  color: #00f2fe;
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.35);
+  border: 1px solid rgba(0, 242, 254, 0.4);
+}
+
+.legendToggleBtn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+  padding: 6px 11px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  margin-left: 2px;
+}
+
+.legendToggleBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.legendToggleBtnActive {
+  background: rgba(0, 242, 254, 0.2);
+  border-color: rgba(0, 242, 254, 0.5);
+  color: #00f2fe;
+}
+
+/* FLOATING INTERACTIVE LEGEND PANEL */
+.legendPanel {
+  position: static;
+  pointer-events: auto;
+  background: rgba(10, 16, 30, 0.95);
+  border: 1px solid rgba(0, 242, 254, 0.35);
+  border-radius: 12px;
+  padding: 12px 14px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75);
+  min-width: 260px;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.legendHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 6px;
+}
+
+.legendTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: #e2e8f0;
+  letter-spacing: 0.3px;
+}
+
+.legendCloseBtn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.legendCloseBtn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.legendGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #e2e8f0;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  transition: background 0.15s ease;
+}
+
+.legendItem:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.legendSwatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+  box-shadow: 0 0 6px currentColor;
+  flex-shrink: 0;
+}
+
+.legendIcon {
+  font-size: 13px;
+}
+
+.legendName {
+  flex: 1;
+  font-weight: 500;
+}
+
+.legendCount {
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 11px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: #00f2fe;
+}
+
+.energyLegend {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+.energyRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trophicLegend {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.trophicBar {
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #7bed9f 0%, #ffa502 50%, #ff4757 100%);
+  box-shadow: 0 0 8px rgba(255, 71, 87, 0.3);
+}
+
+.trophicLabels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+@media (max-width: 1280px) {
+  .colorModeLabel {
+    display: none;
+  }
 }

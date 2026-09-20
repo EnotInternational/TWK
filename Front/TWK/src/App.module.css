@@ -21,3 +21,37 @@
   align-items: center;     /* Центрирует квадратную сетку по вертикали */
   overflow: hidden;
 }
+
+.bottomToggleBtn {
+  position: absolute;
+  top: -42px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 15px;
+  background: rgba(10, 16, 30, 0.85);
+  border: 1px solid rgba(0, 242, 254, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  color: #00e5ff;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  z-index: 100;
+}
+
+.bottomToggleBtn:hover {
+  background: rgba(0, 229, 255, 0.1);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+}
+
+.bottomPanelWrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  background: rgba(11, 16, 26, 0.98);
+  border-top: 1px solid rgba(0, 229, 255, 0.2);
+  transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  overflow: hidden;
+}

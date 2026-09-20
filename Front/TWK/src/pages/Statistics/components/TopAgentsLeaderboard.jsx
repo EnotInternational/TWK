@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
 import styles from './TopAgentsLeaderboard.module.css';
 
-export default function TopAgentsLeaderboard({ agents = [] }) {
+export default function TopAgentsLeaderboard({ agents = [], onSelectAgent = null }) {
   const [sortBy, setSortBy] = useState('age'); // 'age' | 'energy' | 'generation'
+
 
   const sortedList = useMemo(() => {
     return [...agents].sort((a, b) => {
@@ -61,12 +62,22 @@ export default function TopAgentsLeaderboard({ agents = [] }) {
           <tbody>
             {sortedList.length > 0 ? (
               sortedList.map((agent, index) => (
-                <tr key={agent.id || index}>
+                <tr 
+                  key={agent.id || index}
+                  onClick={() => onSelectAgent && onSelectAgent(agent.id)}
+                  style={{ cursor: onSelectAgent ? 'pointer' : 'default' }}
+                  title={onSelectAgent ? `Кликните, чтобы открыть досье и хронику выборов агента #${agent.id}` : ''}
+                >
                   <td style={{ color: '#64748b' }}>
                     {String(index + 1).padStart(2, '0')}
                   </td>
                   <td style={{ color: '#38bdf8', fontWeight: 600 }}>
                     {agent.id}
+                    {onSelectAgent && (
+                      <span style={{ marginLeft: '6px', fontSize: '0.72rem' }} title="Открыть досье">
+                        📜
+                      </span>
+                    )}
                   </td>
                   <td>
                     <strong style={{ color: '#f1f5f9' }}>{agent.age || 0}</strong>

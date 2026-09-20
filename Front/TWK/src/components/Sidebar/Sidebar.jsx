@@ -16,9 +16,10 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
     windPenalty: 0.0,
     rocksCount: 0,
   });
-  
+
   const [speed, setSpeed] = useState(0.2); // seconds per tick
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('map');
 
   const handleSpawn = async () => {
     setIsLoading(true);
@@ -81,127 +82,103 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
 
   return (
     <>
-      <aside 
+      <aside
         className={styles.sidebar}
-        style={{ 
+        style={{
           marginLeft: isOpen ? '0' : '-260px',
           opacity: isOpen ? 1 : 0
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-          <h2 style={{ margin: 0 }}>Terra Nova: Mercury</h2>
-          <button 
-            onClick={onToggle}
-            title="Закрыть меню"
-            style={{
-              background: 'rgba(255, 51, 68, 0.1)',
-              border: '1px solid rgba(255, 51, 68, 0.3)',
-              color: '#ff5266',
-              borderRadius: '6px',
-              width: '28px',
-              height: '28px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              fontSize: '0.9rem',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            ✕
-          </button>
-        </div>
+        <h2>Terra Nova: Mercury</h2>
         <div className={styles.statusBox}>
-           <span>Статус: {status}</span>
-           <span>Тик: {tick}</span>
+          <span>Статус: {status}</span>
+          <span>Тик: {tick}</span>
         </div>
-        
+
         {/* Панель симуляции */}
         <div className={styles.controlPanel}>
           <h3>Управление</h3>
           <div className={styles.btnGroup}>
-            <button className={styles.actionBtn} onClick={handleStart} disabled={status === 'running'}>▶</button>
-            <button className={styles.actionBtn} onClick={handlePause} disabled={status !== 'running'}>⏸</button>
-            <button className={styles.actionBtn} onClick={handleStep} disabled={status === 'running'}>⏭</button>
-            <button className={styles.actionBtn} onClick={handleReset}>🔄</button>
+            <button className={styles.controlBtn} onClick={handleStart} disabled={status === 'running'} title="Старт">▶</button>
+            <button className={styles.controlBtn} onClick={handlePause} disabled={status !== 'running'} title="Пауза">⏸</button>
+            <button className={styles.controlBtn} onClick={handleStep} disabled={status === 'running'} title="Шаг">⏭</button>
+            <button className={styles.controlBtn} onClick={handleReset} title="Обнулить">🔄</button>
           </div>
-          
+
           <div className={styles.inputGroup}>
             <label>Скорость (сек/тик): {speed}s</label>
-            <input 
-              type="range" 
-              min="0.01" 
-              max="1.0" 
-              step="0.05" 
-              value={speed} 
-              onChange={handleSpeedChange} 
+            <input
+              type="range"
+              min="0.01"
+              max="1.0"
+              step="0.05"
+              value={speed}
+              onChange={handleSpeedChange}
             />
           </div>
         </div>
 
         {/* Терраформирование */}
         <div className={styles.controlPanel}>
-          <h3>Терраформирование</h3>
-          <div className={styles.inputGroup}>
-            <label>Seed:</label>
-            <input type="number" name="seed" value={spawnParams.seed} onChange={handleInputChange} />
+          <h3>Начальные параметры</h3>
+          <div className={styles.tabsContainer}>
+            <button
+              className={`${styles.tabBtn} ${activeTab === 'map' ? styles.activeTab : ''}`}
+              onClick={() => setActiveTab('map')}
+            >Карта</button>
+            <button
+              className={`${styles.tabBtn} ${activeTab === 'agents' ? styles.activeTab : ''}`}
+              onClick={() => setActiveTab('agents')}
+            >Агенты</button>
+            <button
+              className={`${styles.tabBtn} ${activeTab === 'env' ? styles.activeTab : ''}`}
+              onClick={() => setActiveTab('env')}
+            >Среда</button>
           </div>
-          <div className={styles.inputGroup}>
-            <label>Ширина:</label>
-            <input type="number" name="width" value={spawnParams.width} onChange={handleInputChange} min="10" />
+
+          <div className={styles.tabContent}>
+            {activeTab === 'map' && (
+              <>
+                <div className={styles.inputGroup}><label>Seed:</label><input type="number" name="seed" value={spawnParams.seed} onChange={handleInputChange} /></div>
+                <div className={styles.inputGroup}><label>Ширина:</label><input type="number" name="width" value={spawnParams.width} onChange={handleInputChange} min="10" /></div>
+                <div className={styles.inputGroup}><label>Высота:</label><input type="number" name="height" value={spawnParams.height} onChange={handleInputChange} min="10" /></div>
+                <div className={styles.inputGroup}><label>Кол-во скал:</label><input type="number" name="rocksCount" value={spawnParams.rocksCount} onChange={handleInputChange} min="0" /></div>
+              </>
+            )}
+
+            {activeTab === 'agents' && (
+              <>
+                <div className={styles.inputGroup}><label>Нач. Популяция:</label><input type="number" name="initialAgents" value={spawnParams.initialAgents} onChange={handleInputChange} min="1" /></div>
+                <div className={styles.inputGroup}><label>Нач. Энергия:</label><input type="number" name="startingEnergy" value={spawnParams.startingEnergy} onChange={handleInputChange} min="10" /></div>
+                <div className={styles.inputGroup}><label>Порог деления:</label><input type="number" name="reproductionThreshold" value={spawnParams.reproductionThreshold} onChange={handleInputChange} min="10" /></div>
+                <div className={styles.inputGroup}><label>Стоимость дел.:</label><input type="number" name="reproductionCost" value={spawnParams.reproductionCost} onChange={handleInputChange} min="1" /></div>
+              </>
+            )}
+
+            {activeTab === 'env' && (
+              <>
+                <div className={styles.inputGroup}><label>Цикл (тиков):</label><input type="number" name="cycleTicks" value={spawnParams.cycleTicks} onChange={handleInputChange} min="10" /></div>
+                <div className={styles.inputGroup}><label>Ширина Терм.:</label><input type="number" name="terminatorWidth" value={spawnParams.terminatorWidth} onChange={handleInputChange} min="1" /></div>
+                <div className={styles.inputGroup}><label>Штраф за ветер:</label><input type="number" name="windPenalty" value={spawnParams.windPenalty} onChange={handleInputChange} step="0.1" /></div>
+              </>
+            )}
           </div>
-          <div className={styles.inputGroup}>
-            <label>Высота:</label>
-            <input type="number" name="height" value={spawnParams.height} onChange={handleInputChange} min="10" />
-          </div>
-          <div className={styles.inputGroup}>
-            <label>Нач. Популяция:</label>
-            <input type="number" name="initialAgents" value={spawnParams.initialAgents} onChange={handleInputChange} min="1" />
-          </div>
-          <div className={styles.inputGroup}>
-            <label>Нач. Энергия:</label>
-            <input type="number" name="startingEnergy" value={spawnParams.startingEnergy} onChange={handleInputChange} min="10" />
-          </div>
-          <div className={styles.inputGroup}>
-            <label>Порог деления:</label>
-            <input type="number" name="reproductionThreshold" value={spawnParams.reproductionThreshold} onChange={handleInputChange} min="10" />
-          </div>
-          <div className={styles.inputGroup}>
-            <label>Стоимость деления:</label>
-            <input type="number" name="reproductionCost" value={spawnParams.reproductionCost} onChange={handleInputChange} min="1" />
-          </div>
-          <div className={styles.inputGroup}>
-            <label>Цикл (тиков):</label>
-            <input type="number" name="cycleTicks" value={spawnParams.cycleTicks} onChange={handleInputChange} min="10" />
-          </div>
-          <div className={styles.inputGroup}>
-            <label>Ширина Терминатора:</label>
-            <input type="number" name="terminatorWidth" value={spawnParams.terminatorWidth} onChange={handleInputChange} min="1" />
-          </div>
-          <div className={styles.inputGroup}>
-            <label>Штраф за ветер:</label>
-            <input type="number" name="windPenalty" value={spawnParams.windPenalty} onChange={handleInputChange} step="0.1" />
-          </div>
-          <div className={styles.inputGroup}>
-            <label>Количество скал:</label>
-            <input type="number" name="rocksCount" value={spawnParams.rocksCount} onChange={handleInputChange} min="0" />
-          </div>
-          
-          <button 
-            className={styles.actionBtn} 
-            onClick={handleSpawn} 
+
+          <button
+            className={styles.actionBtn}
+            onClick={handleSpawn}
             disabled={isLoading}
-            style={{marginTop: '10px'}}
+            style={{ marginTop: '10px' }}
           >
             {isLoading ? 'Генерация...' : 'Инициализировать'}
           </button>
-          
+
         </div>
       </aside>
-      
-      <button 
-        className={styles.toggleBtn} 
-        style={{ left: isOpen ? '280px' : '20px' }} 
+
+      <button
+        className={styles.toggleBtn}
+        style={{ left: isOpen ? '320px' : '20px' }}
         onClick={onToggle}
       >
         {isOpen ? 'Скрыть' : 'Меню'}

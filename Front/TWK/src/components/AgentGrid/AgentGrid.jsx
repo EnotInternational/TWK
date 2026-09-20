@@ -3,6 +3,49 @@ import styles from './AgentGrid.module.css';
 import { socket } from '../../api';
 import Planet3D from './Planet3D';
 
+export const ARCHETYPE_INFO = {
+  predator: { label: 'Хищник', icon: '🥩', color: '#ff4757', desc: 'Плотоядный охотник' },
+  grazer: { label: 'Солнцеед', icon: '🌱', color: '#7bed9f', desc: 'Чистый фотосинтез' },
+  altruist_swarm: { label: 'Альтруист', icon: '🤝', color: '#00d2d3', desc: 'Спасатель сородичей' },
+  oasis_guardian: { label: 'Страж оазиса', icon: '🛡️', color: '#e056fd', desc: 'Оборона кратеров' },
+  fleeing_prey: { label: 'Беглец', icon: '🕊️', color: '#2ed573', desc: 'Пацифист-беглец' },
+  opportunist: { label: 'Оппортунист', icon: '⚖️', color: '#ffa502', desc: 'Сбалансированный' },
+};
+
+export function resolveAgentArchetype(a) {
+  if (a.archetype) return a.archetype;
+  const carnivore = a.carnivore ?? a.learning?.carnivore ?? 0.0;
+  const aggression = a.aggression ?? a.learning?.aggression ?? 0.3;
+  const fear = a.fear ?? a.learning?.fear ?? 0.5;
+  const altruism = a.altruism ?? a.learning?.altruism ?? 0.1;
+  const territorial = a.territorial ?? a.learning?.territorial ?? 0.0;
+  const wSwarm = a.w_swarm ?? a.learning?.w_swarm ?? 0.0;
+
+  if (territorial >= 0.35 && aggression >= 0.35 && carnivore < 0.6) return 'oasis_guardian';
+  if ((carnivore >= 0.45 && aggression >= 0.4) || (aggression >= 0.75 && aggression > fear)) return 'predator';
+  if (altruism >= 0.45 && wSwarm > 0.0) return 'altruist_swarm';
+  if ((fear >= 0.55 && aggression < 0.4) || (fear >= 0.65 && fear > aggression)) return 'fleeing_prey';
+  if (carnivore <= 0.2 && aggression <= 0.25 && territorial <= 0.2) return 'grazer';
+  return 'opportunist';
+}
+
+export function getAgentColor(agent, mode = 'archetypes') {
+  if (mode === 'energy') {
+    const energy = agent.energy ?? agent.hp ?? 0;
+    if (energy > 120) return '#00ff88';
+    if (energy >= 60) return '#ffd000';
+    return '#ff3344';
+  }
+  if (mode === 'trophic') {
+    const carnivore = Math.min(1.0, Math.max(0.0, agent.carnivore ?? agent.learning?.carnivore ?? 0.0));
+    const hue = Math.round(140 - carnivore * 145);
+    return `hsl(${hue}, 90%, 62%)`;
+  }
+  // Archetypes mode (default)
+  const arc = resolveAgentArchetype(agent);
+  return ARCHETYPE_INFO[arc]?.color || ARCHETYPE_INFO.opportunist.color;
+}
+
 export default function AgentGrid({ 
   onMetricsUpdate, 
   onAgentSelect, 
@@ -14,11 +57,14 @@ export default function AgentGrid({
   disasterParams = {} 
 }) {
   const [viewMode, setViewMode] = useState('3d'); // '3d' | '2d'
+  const [colorMode, setColorMode] = useState('archetypes'); // 'archetypes' | 'energy' | 'trophic'
+  const [isLegendOpen, setIsLegendOpen] = useState(false);
   const [agents, setAgents] = useState([]);
   const [environment, setEnvironment] = useState(null);
 
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
+  const colorModeRef = useRef(colorMode);
   
   const selectedDisasterRef = useRef(selectedDisaster);
   const disasterParamsRef = useRef(disasterParams);
@@ -40,9 +86,24 @@ export default function AgentGrid({
   const windsRef = useRef([]);
   const selectedAgentIdRef = useRef(null);
 
+  const lastTickRef = useRef(0);
+  const onAgentSelectRef = useRef(onAgentSelect);
+  const onAgentUpdateRef = useRef(onAgentUpdate);
+  const onMetricsUpdateRef = useRef(onMetricsUpdate);
+  const draw2DRef = useRef(null);
+  const viewModeRef = useRef(viewMode);
+
   useEffect(() => {
     selectedAgentIdRef.current = selectedAgent ? selectedAgent.id : null;
   }, [selectedAgent]);
+
+  useEffect(() => {
+    onAgentSelectRef.current = onAgentSelect;
+    onAgentUpdateRef.current = onAgentUpdate;
+    onMetricsUpdateRef.current = onMetricsUpdate;
+    draw2DRef.current = draw2D;
+    viewModeRef.current = viewMode;
+  });
 
   const addCrater = useCallback((crater) => {
     const id = crater.id || `crater_${crater.x}_${crater.y}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
@@ -332,13 +393,7 @@ export default function AgentGrid({
 
     // Draw Agents
     latestAgentsRef.current.forEach(agent => {
-      if (agent.energy > 120) {
-        ctx.fillStyle = '#00ff88';
-      } else if (agent.energy >= 60) {
-        ctx.fillStyle = '#ffd000';
-      } else {
-        ctx.fillStyle = '#ff3344';
-      }
+      ctx.fillStyle = getAgentColor(agent, colorModeRef.current);
 
       if (agent.isSelected) {
         ctx.strokeStyle = '#fff';
@@ -349,6 +404,12 @@ export default function AgentGrid({
       ctx.fillRect(agent.x * baseCellSize + 0.5, agent.y * baseCellSize + 0.5, baseCellSize - 1, baseCellSize - 1);
     });
   }, [gridWidth, gridHeight]);
+  draw2DRef.current = draw2D;
+
+  useEffect(() => {
+    colorModeRef.current = colorMode;
+    draw2D();
+  }, [colorMode, draw2D]);
 
   // Socket listener & data management
   useEffect(() => {
@@ -362,12 +423,13 @@ export default function AgentGrid({
       setAgents(currentAgents);
       setEnvironment(currentEnv);
 
-      if (data.tick === 0) {
+      const isReset = lastTickRef.current > 0 && data.tick === 0;
+      lastTickRef.current = data.tick;
+
+      if (isReset) {
         cratersRef.current = [];
         craterEpicentersRef.current.clear();
         windsRef.current = [];
-        selectedAgentIdRef.current = null;
-        onAgentSelect(null);
       } else {
         windsRef.current = windsRef.current.filter(w => {
           if (w.ticksLeft !== undefined) {
@@ -380,12 +442,15 @@ export default function AgentGrid({
 
       if (selectedAgentIdRef.current !== null) {
         const updatedAgent = currentAgents.find(a => a.id === selectedAgentIdRef.current);
-        const notifyUpdate = onAgentUpdate || onAgentSelect;
+        const notifyUpdate = onAgentUpdateRef.current || onAgentSelectRef.current;
         if (updatedAgent) {
           updatedAgent.isSelected = true;
-          notifyUpdate(updatedAgent);
+          notifyUpdate?.(updatedAgent);
+        } else if (isReset) {
+          selectedAgentIdRef.current = null;
+          onAgentSelectRef.current?.(null);
         } else {
-          notifyUpdate(prev => {
+          notifyUpdate?.(prev => {
             if (prev && prev.id === selectedAgentIdRef.current) {
               return {
                 ...prev,
@@ -402,7 +467,7 @@ export default function AgentGrid({
       }
 
       if (data.metrics) {
-        onMetricsUpdate({
+        onMetricsUpdateRef.current?.({
           ...data.metrics,
           tick: data.tick,
           status: data.status,
@@ -411,8 +476,8 @@ export default function AgentGrid({
         });
       }
 
-      if (viewMode === '2d') {
-        draw2D();
+      if (viewModeRef.current === '2d') {
+        draw2DRef.current?.();
       }
     };
 
@@ -424,7 +489,7 @@ export default function AgentGrid({
     return () => {
       socket.off('simulation:tick', handleTick);
     };
-  }, [viewMode, draw2D, onMetricsUpdate, onAgentSelect, onAgentUpdate]);
+  }, []);
 
   // 2D animation loop for smooth crater/wind fading
   useEffect(() => {
@@ -691,13 +756,110 @@ export default function AgentGrid({
 
   return (
     <div className={styles.wrapper}>
-      {/* View Switcher Controls */}
+      {/* Top Controls: View Switcher (3D / 2D) + Color Mode Switcher + Legend */}
+      <div className={styles.topControlWrapper}>
+        <div className={styles.topControlContainer}>
+          {/* Color Mode Switcher */}
+          <div className={styles.colorModeBar}>
+            <span className={styles.colorModeLabel}>Окраска:</span>
+            <button 
+              className={`${styles.colorModeBtn} ${colorMode === 'archetypes' ? styles.colorModeBtnActive : ''}`}
+              onClick={() => setColorMode('archetypes')}
+              title="Цвета по 6 эволюционным архетипам (Хищник, Солнцеед, Альтруист и др.)"
+            >
+              🧬 Архетипы
+            </button>
+            <button 
+              className={`${styles.colorModeBtn} ${colorMode === 'energy' ? styles.colorModeBtnActive : ''}`}
+              onClick={() => setColorMode('energy')}
+              title="Цвета по уровню энергии (Зеленый / Желтый / Красный)"
+            >
+              ⚡ HP
+            </button>
+            <button 
+              className={`${styles.colorModeBtn} ${colorMode === 'trophic' ? styles.colorModeBtnActive : ''}`}
+              onClick={() => setColorMode('trophic')}
+              title="Цвета по трофической специализации (Солнцеед ↔ Хищник)"
+            >
+              🥩 Трофика
+            </button>
+            <button 
+              className={`${styles.legendToggleBtn} ${isLegendOpen ? styles.legendToggleBtnActive : ''}`}
+              onClick={() => setIsLegendOpen(prev => !prev)}
+              title="Показать / скрыть легенду цветов"
+            >
+              🎨 Легенда
+            </button>
+          </div>
+        </div>
+
+        {/* Floating Interactive Legend Overlay */}
+        {isLegendOpen && (
+          <div className={styles.legendPanel}>
+            <div className={styles.legendHeader}>
+              <span className={styles.legendTitle}>
+                {colorMode === 'archetypes' ? '🧬 Легенда архетипов' :
+                 colorMode === 'energy' ? '⚡ Шкала энергии (HP)' :
+                 '🥩 Трофический градиент'}
+              </span>
+              <button className={styles.legendCloseBtn} onClick={() => setIsLegendOpen(false)}>✕</button>
+            </div>
+
+            {colorMode === 'archetypes' && (
+              <div className={styles.legendGrid}>
+                {Object.entries(ARCHETYPE_INFO).map(([key, info]) => {
+                  const count = (latestAgentsRef.current || []).filter(a => resolveAgentArchetype(a) === key).length;
+                  return (
+                    <div key={key} className={styles.legendItem} title={info.desc}>
+                      <span className={styles.legendSwatch} style={{ background: info.color }} />
+                      <span className={styles.legendIcon}>{info.icon}</span>
+                      <span className={styles.legendName}>{info.label}</span>
+                      <span className={styles.legendCount}>{count}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {colorMode === 'energy' && (
+              <div className={styles.energyLegend}>
+                <div className={styles.energyRow}>
+                  <span className={styles.legendSwatch} style={{ background: '#00ff88' }} />
+                  <span>Высокая (&gt; 120 HP) — размножение</span>
+                </div>
+                <div className={styles.energyRow}>
+                  <span className={styles.legendSwatch} style={{ background: '#ffd000' }} />
+                  <span>Стабильная (60–120 HP) — норма</span>
+                </div>
+                <div className={styles.energyRow}>
+                  <span className={styles.legendSwatch} style={{ background: '#ff3344' }} />
+                  <span>Критическая (&lt; 60 HP) — истощение</span>
+                </div>
+              </div>
+            )}
+
+            {colorMode === 'trophic' && (
+              <div className={styles.trophicLegend}>
+                <div className={styles.trophicBar} />
+                <div className={styles.trophicLabels}>
+                  <span>🌱 0.0 Солнцеед</span>
+                  <span>⚖️ 0.5 Смешанный</span>
+                  <span>🥩 1.0 Хищник</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* View Mode Toggle (Bottom Right) */}
       <div className={styles.viewToggleBar}>
         <button 
           className={`${styles.viewToggleBtn} ${viewMode === '3d' ? styles.viewToggleBtnActive : ''}`}
           onClick={() => setViewMode('3d')}
+          title="3D Сферическая модель Меркурия"
         >
-          🪐 3D Планета
+          🪐 3D
         </button>
         <button 
           className={`${styles.viewToggleBtn} ${viewMode === '2d' ? styles.viewToggleBtnActive : ''}`}
@@ -705,8 +867,9 @@ export default function AgentGrid({
             setViewMode('2d');
             setTimeout(draw2D, 50);
           }}
+          title="2D Цилиндрическая развертка"
         >
-          🗺️ 2D Сетка
+          🗺️ 2D
         </button>
       </div>
 
@@ -723,6 +886,7 @@ export default function AgentGrid({
           onAddCrater={addCrater}
           onRemoveCratersNear={removeCratersNear}
           craterEpicentersRef={craterEpicentersRef}
+          colorMode={colorMode}
         />
       ) : (
         <div ref={containerRef} className={styles.canvasContainer}>

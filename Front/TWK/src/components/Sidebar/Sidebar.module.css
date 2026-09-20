@@ -4,6 +4,7 @@
   border: 1px solid rgba(0, 229, 255, 0.2);
   padding: 15px;
   border-radius: 8px;
+  text-align: center;
 }
 
 .controlPanel h3 {
@@ -14,11 +15,48 @@
   text-transform: uppercase;
 }
 
+.tabsContainer {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.tabBtn {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.5);
+  color: #a0aec0;
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  padding: 6px 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.2s;
+  font-weight: 600;
+}
+
+.tabBtn:hover {
+  background: rgba(0, 229, 255, 0.1);
+  color: #fff;
+}
+
+.activeTab {
+  background: rgba(0, 229, 255, 0.2);
+  border-color: #00e5ff;
+  color: #fff;
+}
+
+.tabContent {
+  display: flex;
+  flex-direction: column;
+}
+
 .inputGroup {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
+  margin-top: 20px;
+  text-align: start;
 }
 
 .inputGroup label {
@@ -67,8 +105,42 @@
   cursor: not-allowed;
 }
 
+.btnGroup {
+  display: grid;
+  grid-template-columns: 36px 36px;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.controlBtn {
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.1rem;
+  background: transparent;
+  color: #00e5ff;
+  border: 1px solid #00e5ff;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.controlBtn:hover:not(:disabled) {
+  background: rgba(0, 229, 255, 0.1);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+}
+
+.controlBtn:disabled {
+  border-color: #4a5568;
+  color: #4a5568;
+  cursor: not-allowed;
+}
+
 .sidebar {
-  width: 260px;
+  width: 300px;
   background: rgba(5, 5, 8, 0.98);
   border-right: 1px solid rgba(0, 229, 255, 0.2);
   padding: 20px;
@@ -106,16 +178,19 @@
   left: 280px;
   top: 20px;
   padding: 10px 15px;
-  background: rgba(5, 5, 8, 0.9);
+  background: rgba(10, 16, 30, 0.85);
+  border: 1px solid rgba(0, 242, 254, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
   color: #00e5ff;
-  border: 1px solid #00e5ff;
-  border-radius: 4px;
+  border-radius: 12px;
+
   cursor: pointer;
   font-weight: bold;
   text-transform: uppercase;
   transition: all 0.2s;
   z-index: 100;
 }
+
 
 .toggleBtn:hover {
   background: rgba(0, 229, 255, 0.1);

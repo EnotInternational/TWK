@@ -83,6 +83,16 @@ function initSocketListeners() {
         ? Math.max(...agentsList.map(a => a.generation || 0)) 
         : (last?.dominantGeneration || 0);
 
+      // Extract 6 archetypes counts
+      const archetypes = m.archetypes || m.archetype_counts || {
+        predator: 0,
+        grazer: 0,
+        altruist_swarm: 0,
+        oasis_guardian: 0,
+        fleeing_prey: 0,
+        opportunist: 0
+      };
+
       const newPoint = {
         tick: tickNum,
         alive: aliveCount,
@@ -93,7 +103,40 @@ function initSocketListeners() {
         avgEnergy: Number(avgEnergy.toFixed(1)),
         terminatorRatio: Number(terminatorRatio.toFixed(2)),
         dominantGeneration: dominantGen,
-        stateHash: data.state_hash || `0x${tickNum.toString(16)}`
+        stateHash: data.state_hash || `0x${tickNum.toString(16)}`,
+        // Behavioral and Trophic Dynamics
+        avgAggression: Number((m.avg_aggression ?? 0.3).toFixed(3)),
+        avgFear: Number((m.avg_fear ?? 0.5).toFixed(3)),
+        avgCarnivore: Number((m.avg_carnivore ?? 0.0).toFixed(3)),
+        avgAltruism: Number((m.avg_altruism ?? 0.1).toFixed(3)),
+        avgTerritorial: Number((m.avg_territorial ?? 0.0).toFixed(3)),
+        fights: m.fights ?? 0,
+        cumFights: m.cumulative_fights ?? 0,
+        combatDeaths: m.combat_deaths ?? 0,
+        cumCombatDeaths: m.cumulative_combat_deaths ?? 0,
+        energyShared: Number((m.energy_shared ?? 0.0).toFixed(1)),
+        cumEnergyShared: Number((m.cumulative_energy_shared ?? 0.0).toFixed(1)),
+        predationEnergy: Number((m.predation_energy ?? 0.0).toFixed(1)),
+        cumPredationEnergy: Number((m.cumulative_predation_energy ?? 0.0).toFixed(1)),
+        archetypes: archetypes,
+        // Character & Encounter Choices Dynamics
+        bribes: m.bribes ?? 0,
+        cumBribes: m.cumulative_bribes ?? 0,
+        flees: m.flees ?? 0,
+        cumFlees: m.cumulative_flees ?? 0,
+        retaliations: m.retaliations ?? 0,
+        cumRetaliations: m.cumulative_retaliations ?? 0,
+        friendships: m.friendships ?? 0,
+        cumFriendships: m.cumulative_friendships ?? 0,
+        castes: m.castes || { predator: 0, peaceful: 0 },
+        character: {
+          avg_ferocity: Number((m.character?.avg_ferocity ?? 0.3).toFixed(3)),
+          avg_friendliness: Number((m.character?.avg_friendliness ?? 0.2).toFixed(3)),
+          avg_courage: Number((m.character?.avg_courage ?? 0.5).toFixed(3)),
+          avg_diplomacy: Number((m.character?.avg_diplomacy ?? 0.4).toFixed(3)),
+          avg_caution: Number((m.character?.avg_caution ?? 0.5).toFixed(3)),
+        },
+        characterTitles: m.character_titles || {},
       };
 
       // Избегаем дублирования точек с одинаковым номером тика
@@ -163,9 +206,60 @@ function initSocketListeners() {
     try {
       const historyRes = await simulationApi.getMetricsHistory(0, 1);
       if (historyRes && Array.isArray(historyRes.history) && historyRes.history.length > 0) {
+        const normalized = historyRes.history.map(item => ({
+          tick: item.tick,
+          alive: item.alive ?? item.alive_count ?? 0,
+          deaths: item.deaths ?? 0,
+          births: item.births ?? 0,
+          cumBirths: item.cumBirths ?? item.cumulative_births ?? 0,
+          cumDeaths: item.cumDeaths ?? item.cumulative_deaths ?? 0,
+          avgEnergy: Number((item.avgEnergy ?? item.avg_energy ?? 0).toFixed(1)),
+          terminatorRatio: Number((item.terminatorRatio ?? item.terminator_ratio ?? 0).toFixed(2)),
+          dominantGeneration: item.dominantGeneration ?? item.dominant_generation ?? 0,
+          stateHash: item.stateHash ?? item.state_hash ?? `0x${item.tick?.toString(16)}`,
+          avgAggression: Number((item.avgAggression ?? item.avg_aggression ?? 0.3).toFixed(3)),
+          avgFear: Number((item.avgFear ?? item.avg_fear ?? 0.5).toFixed(3)),
+          avgCarnivore: Number((item.avgCarnivore ?? item.avg_carnivore ?? 0.0).toFixed(3)),
+          avgAltruism: Number((item.avgAltruism ?? item.avg_altruism ?? 0.1).toFixed(3)),
+          avgTerritorial: Number((item.avgTerritorial ?? item.avg_territorial ?? 0.0).toFixed(3)),
+          fights: item.fights ?? 0,
+          cumFights: item.cumFights ?? item.cumulative_fights ?? 0,
+          combatDeaths: item.combatDeaths ?? item.combat_deaths ?? 0,
+          cumCombatDeaths: item.cumCombatDeaths ?? item.cumulative_combat_deaths ?? 0,
+          energyShared: Number((item.energyShared ?? item.energy_shared ?? 0.0).toFixed(1)),
+          cumEnergyShared: Number((item.cumEnergyShared ?? item.cumulative_energy_shared ?? 0.0).toFixed(1)),
+          predationEnergy: Number((item.predationEnergy ?? item.predation_energy ?? 0.0).toFixed(1)),
+          cumPredationEnergy: Number((item.cumPredationEnergy ?? item.cumulative_predation_energy ?? 0.0).toFixed(1)),
+          archetypes: item.archetypes || item.archetype_counts || {
+            predator: 0,
+            grazer: 0,
+            altruist_swarm: 0,
+            oasis_guardian: 0,
+            fleeing_prey: 0,
+            opportunist: 0
+          },
+          bribes: item.bribes ?? 0,
+          cumBribes: item.cumBribes ?? item.cumulative_bribes ?? 0,
+          flees: item.flees ?? 0,
+          cumFlees: item.cumFlees ?? item.cumulative_flees ?? 0,
+          retaliations: item.retaliations ?? 0,
+          cumRetaliations: item.cumRetaliations ?? item.cumulative_retaliations ?? 0,
+          friendships: item.friendships ?? 0,
+          cumFriendships: item.cumFriendships ?? item.cumulative_friendships ?? 0,
+          castes: item.castes || { predator: 0, peaceful: 0 },
+          character: {
+            avg_ferocity: Number((item.character?.avg_ferocity ?? 0.3).toFixed(3)),
+            avg_friendliness: Number((item.character?.avg_friendliness ?? 0.2).toFixed(3)),
+            avg_courage: Number((item.character?.avg_courage ?? 0.5).toFixed(3)),
+            avg_diplomacy: Number((item.character?.avg_diplomacy ?? 0.4).toFixed(3)),
+            avg_caution: Number((item.character?.avg_caution ?? 0.5).toFixed(3)),
+          },
+          characterTitles: item.character_titles || item.characterTitles || {},
+        }));
+
         updateGlobalState(prev => ({
           ...prev,
-          history: historyRes.history,
+          history: normalized,
           isInitialLoading: false
         }));
       }

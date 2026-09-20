@@ -42,10 +42,62 @@
   z-index: 100;
 }
 
+.tabNav {
+  background: #090d16;
+  border-bottom: 1px solid #1e293b;
+  padding: 0 24px;
+  display: flex;
+  gap: 4px;
+  position: sticky;
+  top: 57px;
+  z-index: 99;
+}
+
+.subTabBtn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #94a3b8;
+  padding: 10px 18px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.subTabBtn:hover {
+  color: #f1f5f9;
+  background: rgba(30, 41, 59, 0.4);
+}
+
+.subTabBtn.activeTab {
+  color: #38bdf8;
+  border-bottom-color: #38bdf8;
+  background: rgba(56, 189, 248, 0.06);
+}
+
+.tabBadge {
+  background: #1e293b;
+  color: #38bdf8;
+  font-size: 0.68rem;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+
 .brandArea {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 14px;
+  width: 100%
 }
 
 .backBtn {
@@ -237,6 +289,7 @@
   .triGrid {
     grid-template-columns: 1fr;
   }
+
   .splitGrid {
     grid-template-columns: 1fr;
   }

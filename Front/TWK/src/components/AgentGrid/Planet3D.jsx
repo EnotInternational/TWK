@@ -176,6 +176,7 @@ export default function Planet3D({
   onAddCrater,
   onRemoveCratersNear,
   craterEpicentersRef,
+  colorMode = 'archetypes',
 }) {
   const mountRef = useRef(null);
 
@@ -191,8 +192,13 @@ export default function Planet3D({
   const controlsRef = useRef(null);
   const cameraRef = useRef(null);
   const agentPosMap = useRef(new Map());
+  const colorModeRef = useRef(colorMode);
 
   const activeEffectsRef = useRef([]);
+
+  useEffect(() => {
+    colorModeRef.current = colorMode;
+  }, [colorMode]);
 
   useEffect(() => {
     agentsRef.current = agents;
@@ -651,9 +657,53 @@ export default function Planet3D({
     // --- Update Agents Mesh ---
     const dummy = new THREE.Object3D();
     const upVector = new THREE.Vector3(0, 1, 0);
+
     const colorReady = new THREE.Color(0x00ff88);
     const colorStable = new THREE.Color(0xffd000);
     const colorStarving = new THREE.Color(0xff3355);
+
+    // 6 Archetype colors
+    const colorPredator = new THREE.Color(0xff4757);
+    const colorGrazer = new THREE.Color(0x7bed9f);
+    const colorAltruist = new THREE.Color(0x00d2d3);
+    const colorGuardian = new THREE.Color(0xe056fd);
+    const colorPrey = new THREE.Color(0x2ed573);
+    const colorOpportunist = new THREE.Color(0xffa502);
+
+    const getThreeColor = (a, mode) => {
+      if (mode === 'energy') {
+        const energy = a.energy ?? a.hp ?? 0;
+        if (energy > 120) return colorReady;
+        if (energy >= 60) return colorStable;
+        return colorStarving;
+      }
+      if (mode === 'trophic') {
+        const carn = Math.min(1.0, Math.max(0.0, a.carnivore ?? a.learning?.carnivore ?? 0.0));
+        return colorGrazer.clone().lerp(colorPredator, carn);
+      }
+      // Mode: archetypes (default)
+      const arc = a.archetype;
+      if (arc === 'predator') return colorPredator;
+      if (arc === 'grazer') return colorGrazer;
+      if (arc === 'altruist_swarm') return colorAltruist;
+      if (arc === 'oasis_guardian') return colorGuardian;
+      if (arc === 'fleeing_prey') return colorPrey;
+      if (arc === 'opportunist') return colorOpportunist;
+
+      // Fallback inference if archetype field missing
+      const carn = a.carnivore ?? a.learning?.carnivore ?? 0.0;
+      const aggr = a.aggression ?? a.learning?.aggression ?? 0.3;
+      const f = a.fear ?? a.learning?.fear ?? 0.5;
+      const altr = a.altruism ?? a.learning?.altruism ?? 0.1;
+      const terr = a.territorial ?? a.learning?.territorial ?? 0.0;
+
+      if (terr >= 0.35 && aggr >= 0.35 && carn < 0.6) return colorGuardian;
+      if ((carn >= 0.45 && aggr >= 0.4) || (aggr >= 0.75 && aggr > f)) return colorPredator;
+      if (altr >= 0.45) return colorAltruist;
+      if ((f >= 0.55 && aggr < 0.4) || (f >= 0.65 && f > aggr)) return colorPrey;
+      if (carn <= 0.2 && aggr <= 0.25 && terr <= 0.2) return colorGrazer;
+      return colorOpportunist;
+    };
 
     const updateAgents = () => {
       const currentAgents = agentsRef.current || [];
@@ -688,12 +738,7 @@ export default function Planet3D({
 
         agentInstancedMesh.setMatrixAt(i, dummy.matrix);
 
-        let col = colorStarving;
-        if (a.energy > 120) {
-          col = colorReady;
-        } else if (a.energy >= 60) {
-          col = colorStable;
-        }
+        const col = getThreeColor(a, colorModeRef.current);
         agentInstancedMesh.setColorAt(i, col);
 
         if (a.isSelected) {
@@ -1341,11 +1386,16 @@ export default function Planet3D({
       if (!container) return;
       const w = container.clientWidth;
       const h = container.clientHeight;
+      if (w === 0 || h === 0) return;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
     };
-    window.addEventListener('resize', handleResize);
+    
+    const resizeObserver = new ResizeObserver(() => {
+      handleResize();
+    });
+    resizeObserver.observe(container);
 
     // --- Animation Loop (60 FPS) ---
     let animationFrameId;
@@ -1481,8 +1531,8 @@ export default function Planet3D({
 
     return () => {
       cancelAnimationFrame(animationFrameId);
+      resizeObserver.disconnect();
       window.removeEventListener('autoDisaster', handleAutoDisasterEffect);
-      window.removeEventListener('resize', handleResize);
       domElem.removeEventListener('mousedown', handleMouseDown);
       domElem.removeEventListener('mouseup', handleMouseUp);
 
@@ -1537,25 +1587,7 @@ export default function Planet3D({
         </div>
       </div>
 
-      {/* Legend */}
-      <div className={styles.legendCard}>
-        <div className={styles.legendItem}>
-          <span className={styles.legendDot} style={{ background: '#00ff88' }} />
-          <span>Энергия &gt; 120 (Размножение)</span>
-        </div>
-        <div className={styles.legendItem}>
-          <span className={styles.legendDot} style={{ background: '#ffd000' }} />
-          <span>Энергия 60-120 (Норма)</span>
-        </div>
-        <div className={styles.legendItem}>
-          <span className={styles.legendDot} style={{ background: '#ff3355' }} />
-          <span>Энергия &lt; 60 (Истощение)</span>
-        </div>
-        <div className={styles.legendItem}>
-          <span className={styles.legendLine} style={{ background: '#00f2fe' }} />
-          <span>Полоса Терминатора (Комфорт)</span>
-        </div>
-      </div>
+
     </div>
   );
 }
