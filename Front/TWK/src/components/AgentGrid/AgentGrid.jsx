@@ -85,6 +85,7 @@ export default function AgentGrid({
   const craterEpicentersRef = useRef(new Set());
   const windsRef = useRef([]);
   const selectedAgentIdRef = useRef(null);
+  const mouseDownOnCanvas = useRef(false);
 
   const lastTickRef = useRef(0);
   const onAgentSelectRef = useRef(onAgentSelect);
@@ -663,6 +664,7 @@ export default function AgentGrid({
       if (e.button !== 0) return;
       isDragging.current = true;
       hasDragged.current = false;
+      mouseDownOnCanvas.current = true;
       dragStart.current = { 
         x: e.clientX - camera.current.x, 
         y: e.clientY - camera.current.y,
@@ -692,11 +694,15 @@ export default function AgentGrid({
       
       container.style.cursor = currentSelectedDisaster ? 'crosshair' : 'grab';
 
+      // Only process clicks that started on the canvas area.
+      // Clicks on sidebar buttons / pause / genome weights etc. must NOT reset agent.
+      if (!mouseDownOnCanvas.current) return;
+      mouseDownOnCanvas.current = false;
+
       if (!hasDragged.current) {
         const rect = canvas.getBoundingClientRect();
+        // Click released outside canvas bounds — just ignore, don't deselect
         if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) {
-          onAgentSelect(null);
-          draw2D();
           return;
         }
 
