@@ -11,6 +11,7 @@ import random
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from .agent import Agent
+from .decision import observe, score_intents
 from .environment import MercuryEnvironment, Zone
 from .events import EventLogger, EventType
 from .metrics import MetricsCollector, TickMetrics
@@ -143,6 +144,35 @@ class SimulationEngine:
         self._next_agent_seq += 1
         return aid
 
+    def _update_agent_decision(self, agent: Agent, occupied: Dict[Tuple[int, int], Agent], current_tick: int) -> None:
+        """Расчет решения через EDM (observe -> score -> softmax) без вызова rng."""
+        neighbors = self._get_neighbors(agent.x, agent.y)
+        obs = observe(
+            agent=agent,
+            neighbors=neighbors,
+            occupied=occupied,
+            rocks=self.rocks,
+            get_zone_fn=self.get_effective_zone,
+            get_penalty_fn=self.env.get_energy_penalty,
+            tick=current_tick,
+            depressions=self.depressions,
+            grid_width=self.config.width,
+            grid_height=self.config.height,
+        )
+        scores = score_intents(agent, obs)
+        temp = max(0.05, getattr(agent, "temperature", 0.6))
+        keys = list(scores.keys())
+        max_s = max(scores[k] for k in keys)
+        exps = [math.exp((scores[k] - max_s) / temp) for k in keys]
+        total = sum(exps)
+        probs = {k: round(e / total, 4) for k, e in zip(keys, exps)}
+        intent = max(probs, key=probs.get)
+        agent.last_decision = {
+            "intent": intent,
+            "scores": {k: round(v, 2) for k, v in scores.items()},
+            "probs": probs,
+        }
+
     def _spawn_initial_agents(self) -> None:
         """Детерминированная начальная расстановка агентов и скал."""
         self.agents.clear()
@@ -222,6 +252,11 @@ class SimulationEngine:
                 y=y,
                 details=f"Spawned {caste} ({agent.character_title}) with energy {self.config.starting_energy}, fer={round(fer, 2)}, fr={round(fr, 2)}, crg={round(crg, 2)}, dip={round(dip, 2)}, caut={round(caut, 2)}",
             )
+
+        # Расчет начальных решений EDM для тика 0
+        current_occupied = {(a.x, a.y): a for a in self.agents.values()}
+        for agent in self.agents.values():
+            self._update_agent_decision(agent, current_occupied, 0)
 
         # Запись метрики для тика 0
         self.metrics.record(
@@ -383,6 +418,8 @@ class SimulationEngine:
         for agent in survivors:
             if not agent.is_alive:
                 continue
+
+            self._update_agent_decision(agent, occupied, current_tick)
 
             neighbors = self._get_neighbors(agent.x, agent.y)
             free_neighbors = [pos for pos in neighbors if pos not in occupied and pos not in self.rocks]

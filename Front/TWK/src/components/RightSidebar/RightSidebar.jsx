@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import styles from './RightSidebar.module.css';
 import { socket } from '../../api';
+import EdmDecisionHud from './EdmDecisionHud';
 
 export default function RightSidebar({
   isOpen,
@@ -457,6 +458,9 @@ export default function RightSidebar({
                       : 'При нападении хищника решает: откупиться данью HP, спастись бегством или дать яростный отпор.'}
                   </div>
                 </div>
+
+                {/* Live Evolutionary Decision Machine (EDM) HUD */}
+                <EdmDecisionHud agent={agent} currentTick={metrics?.tick} />
 
                 {/* Encounter Choices HUD */}
                 <div className={styles.choicesSection}>

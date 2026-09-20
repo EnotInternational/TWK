@@ -109,6 +109,15 @@ class Agent:
         self.energy_received = 0.0
         self.predation_energy = 0.0
 
+        # 5. Геном и телеметрия решений EDM (Evolutionary Decision Machine)
+        self.w_aggression = float(self.aggression - self.fear)
+        self.w_carnivore = float(self.carnivore)
+        self.w_social = float(self.w_swarm)
+        self.w_explore = 0.35
+        self.w_territorial = float(self.territorial)
+        self.temperature = 0.6
+        self.last_decision: Optional[Dict[str, Any]] = None
+
     @property
     def character_title(self) -> str:
         """Динамический титул характера, сформированный на основе опыта и выборов."""
@@ -338,6 +347,16 @@ class Agent:
             "energy_shared": round(self.energy_shared, 2),
             "energy_received": round(self.energy_received, 2),
             "predation_energy": round(self.predation_energy, 2),
+            "last_decision": self.last_decision,
+            "genome": {
+                "w_aggression": round(getattr(self, "w_aggression", self.aggression - self.fear), 4),
+                "w_carnivore": round(getattr(self, "w_carnivore", self.carnivore), 4),
+                "w_social": round(getattr(self, "w_social", self.w_swarm), 4),
+                "w_explore": round(getattr(self, "w_explore", 0.35), 4),
+                "w_territorial": round(getattr(self, "w_territorial", self.territorial), 4),
+                "w_temp": round(self.w_temp, 4),
+                "temperature": round(getattr(self, "temperature", 0.6), 4),
+            },
             "learning": {
                 "w_temp": round(self.w_temp, 4),
                 "w_swarm": round(self.w_swarm, 4),
