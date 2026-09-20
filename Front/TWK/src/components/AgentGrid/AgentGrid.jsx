@@ -40,9 +40,24 @@ export default function AgentGrid({
   const windsRef = useRef([]);
   const selectedAgentIdRef = useRef(null);
 
+  const lastTickRef = useRef(0);
+  const onAgentSelectRef = useRef(onAgentSelect);
+  const onAgentUpdateRef = useRef(onAgentUpdate);
+  const onMetricsUpdateRef = useRef(onMetricsUpdate);
+  const draw2DRef = useRef(null);
+  const viewModeRef = useRef(viewMode);
+
   useEffect(() => {
     selectedAgentIdRef.current = selectedAgent ? selectedAgent.id : null;
   }, [selectedAgent]);
+
+  useEffect(() => {
+    onAgentSelectRef.current = onAgentSelect;
+    onAgentUpdateRef.current = onAgentUpdate;
+    onMetricsUpdateRef.current = onMetricsUpdate;
+    draw2DRef.current = draw2D;
+    viewModeRef.current = viewMode;
+  });
 
   const addCrater = useCallback((crater) => {
     const id = crater.id || `crater_${crater.x}_${crater.y}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
@@ -349,6 +364,7 @@ export default function AgentGrid({
       ctx.fillRect(agent.x * baseCellSize + 0.5, agent.y * baseCellSize + 0.5, baseCellSize - 1, baseCellSize - 1);
     });
   }, [gridWidth, gridHeight]);
+  draw2DRef.current = draw2D;
 
   // Socket listener & data management
   useEffect(() => {
@@ -362,12 +378,13 @@ export default function AgentGrid({
       setAgents(currentAgents);
       setEnvironment(currentEnv);
 
-      if (data.tick === 0) {
+      const isReset = lastTickRef.current > 0 && data.tick === 0;
+      lastTickRef.current = data.tick;
+
+      if (isReset) {
         cratersRef.current = [];
         craterEpicentersRef.current.clear();
         windsRef.current = [];
-        selectedAgentIdRef.current = null;
-        onAgentSelect(null);
       } else {
         windsRef.current = windsRef.current.filter(w => {
           if (w.ticksLeft !== undefined) {
@@ -380,12 +397,15 @@ export default function AgentGrid({
 
       if (selectedAgentIdRef.current !== null) {
         const updatedAgent = currentAgents.find(a => a.id === selectedAgentIdRef.current);
-        const notifyUpdate = onAgentUpdate || onAgentSelect;
+        const notifyUpdate = onAgentUpdateRef.current || onAgentSelectRef.current;
         if (updatedAgent) {
           updatedAgent.isSelected = true;
-          notifyUpdate(updatedAgent);
+          notifyUpdate?.(updatedAgent);
+        } else if (isReset) {
+          selectedAgentIdRef.current = null;
+          onAgentSelectRef.current?.(null);
         } else {
-          notifyUpdate(prev => {
+          notifyUpdate?.(prev => {
             if (prev && prev.id === selectedAgentIdRef.current) {
               return {
                 ...prev,
@@ -402,7 +422,7 @@ export default function AgentGrid({
       }
 
       if (data.metrics) {
-        onMetricsUpdate({
+        onMetricsUpdateRef.current?.({
           ...data.metrics,
           tick: data.tick,
           status: data.status,
@@ -411,8 +431,8 @@ export default function AgentGrid({
         });
       }
 
-      if (viewMode === '2d') {
-        draw2D();
+      if (viewModeRef.current === '2d') {
+        draw2DRef.current?.();
       }
     };
 
@@ -424,7 +444,7 @@ export default function AgentGrid({
     return () => {
       socket.off('simulation:tick', handleTick);
     };
-  }, [viewMode, draw2D, onMetricsUpdate, onAgentSelect, onAgentUpdate]);
+  }, []);
 
   // 2D animation loop for smooth crater/wind fading
   useEffect(() => {

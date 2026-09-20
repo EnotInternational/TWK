@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Sidebar from './components/Sidebar/Sidebar';
 import AgentGrid from './components/AgentGrid/AgentGrid';
 import ToolPanel from './components/ToolPanel/ToolPanel';
@@ -17,20 +17,18 @@ export default function App() {
   const [selectedDisaster, setSelectedDisaster] = useState(null); // 'wind' | 'rocks' | 'meteorite' | 'eraser' | null
   const [disasterParams, setDisasterParams] = useState({}); // { ...params }
 
-  const handleAgentSelect = (agent) => {
+  const handleAgentSelect = useCallback((agent) => {
     setSelectedAgent(agent);
     if (agent) {
       setActiveRightTab('agent');
-      if (!isRightMenuOpen) {
-        setIsRightMenuOpen(true);
-      }
+      setIsRightMenuOpen(true);
     }
-  };
+  }, []);
 
-  const handleAgentUpdate = (agentOrUpdater) => {
+  const handleAgentUpdate = useCallback((agentOrUpdater) => {
     setSelectedAgent(agentOrUpdater);
     // Preserves activeRightTab so user can stay in 'all' mode without being forced back!
-  };
+  }, []);
 
   return (
     <div className={styles.appLayout}>
