@@ -10,7 +10,8 @@ import styles from './App.module.css';
 export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(true);
   const [isRightMenuOpen, setIsRightMenuOpen] = useState(true);
-  
+  const [isBottomPanelOpen, setIsBottomPanelOpen] = useState(true);
+
   const [metrics, setMetrics] = useState({});
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [activeRightTab, setActiveRightTab] = useState('all'); // 'all' | 'agent'
@@ -35,17 +36,17 @@ export default function App() {
 
   return (
     <div className={styles.appLayout}>
-      <Sidebar 
-        isOpen={isMenuOpen} 
-        onToggle={() => setIsMenuOpen(!isMenuOpen)} 
+      <Sidebar
+        isOpen={isMenuOpen}
+        onToggle={() => setIsMenuOpen(!isMenuOpen)}
         status={metrics.status}
         tick={metrics.tick}
       />
-      
+
       <main className={styles.mainWorkspace}>
         <div className={styles.gridArea}>
-          <AgentGrid 
-            onMetricsUpdate={setMetrics} 
+          <AgentGrid
+            onMetricsUpdate={setMetrics}
             onAgentSelect={handleAgentSelect}
             onAgentUpdate={handleAgentUpdate}
             selectedAgent={selectedAgent}
@@ -53,23 +54,39 @@ export default function App() {
             disasterParams={disasterParams}
           />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', background: 'rgba(11, 16, 26, 0.98)', borderTop: '2px solid #00e5ff' }}>
-          <ToolPanel
-            selectedDisaster={selectedDisaster}
-            setSelectedDisaster={setSelectedDisaster}
-            disasterParams={disasterParams}
-            setDisasterParams={setDisasterParams}
-            onOpenRandomizer={() => setIsRandomizerOpen(true)}
-          />
-          <BottomPanel metrics={metrics} />
+        <div style={{ position: 'relative' }}>
+          <button
+            className={styles.bottomToggleBtn}
+            onClick={() => setIsBottomPanelOpen(!isBottomPanelOpen)}
+            title="Скрыть/Показать нижнюю панель"
+          >
+            {isBottomPanelOpen ? 'Скрыть' : 'Инструменты'}
+          </button>
+
+          <div
+            className={styles.bottomPanelWrapper}
+            style={{
+              maxHeight: isBottomPanelOpen ? '400px' : '0px',
+              opacity: isBottomPanelOpen ? 1 : 0
+            }}
+          >
+            <ToolPanel
+              selectedDisaster={selectedDisaster}
+              setSelectedDisaster={setSelectedDisaster}
+              disasterParams={disasterParams}
+              setDisasterParams={setDisasterParams}
+              onOpenRandomizer={() => setIsRandomizerOpen(true)}
+            />
+            <BottomPanel metrics={metrics} />
+          </div>
         </div>
       </main>
 
       <Randomizer isOpen={isRandomizerOpen} onClose={() => setIsRandomizerOpen(false)} metrics={metrics} />
 
-      <RightSidebar 
-        isOpen={isRightMenuOpen} 
-        agent={selectedAgent} 
+      <RightSidebar
+        isOpen={isRightMenuOpen}
+        agent={selectedAgent}
         onSelectAgent={handleAgentSelect}
         onToggle={() => setIsRightMenuOpen(!isRightMenuOpen)}
         onClose={() => setIsRightMenuOpen(false)}

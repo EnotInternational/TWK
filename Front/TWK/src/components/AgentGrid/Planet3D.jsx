@@ -1453,25 +1453,7 @@ export default function Planet3D({
         </div>
       </div>
 
-      {/* Legend */}
-      <div className={styles.legendCard}>
-        <div className={styles.legendItem}>
-          <span className={styles.legendDot} style={{ background: '#00ff88' }} />
-          <span>Энергия &gt; 120 (Размножение)</span>
-        </div>
-        <div className={styles.legendItem}>
-          <span className={styles.legendDot} style={{ background: '#ffd000' }} />
-          <span>Энергия 60-120 (Норма)</span>
-        </div>
-        <div className={styles.legendItem}>
-          <span className={styles.legendDot} style={{ background: '#ff3355' }} />
-          <span>Энергия &lt; 60 (Истощение)</span>
-        </div>
-        <div className={styles.legendItem}>
-          <span className={styles.legendLine} style={{ background: '#00f2fe' }} />
-          <span>Полоса Терминатора (Комфорт)</span>
-        </div>
-      </div>
+
     </div>
   );
 }
