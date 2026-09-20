@@ -166,6 +166,11 @@ class SimulationEngine:
             x, y = all_coords[i]
             occupied.add((x, y))
             aid = self._generate_agent_id()
+            aggr = max(0.0, min(1.0, self.rng.gauss(0.3, 0.25)))
+            fear = max(0.0, min(1.0, self.rng.gauss(0.5, 0.25)))
+            carn = max(0.0, min(1.0, self.rng.gauss(0.15, 0.2)))
+            altr = max(0.0, min(1.0, self.rng.gauss(0.2, 0.2)))
+            terr = max(-1.0, min(1.0, self.rng.gauss(0.0, 0.35)))
             agent = Agent(
                 agent_id=aid,
                 x=x,
@@ -176,6 +181,11 @@ class SimulationEngine:
                 parent_id=None,
                 w_temp=self.rng.gauss(-1.0, 2.0), # Склонность избегать штрафов (в среднем отрицательная)
                 w_swarm=self.rng.gauss(0.5, 2.0), # Склонность кучковаться (в среднем положительная)
+                aggression=aggr,
+                fear=fear,
+                carnivore=carn,
+                altruism=altr,
+                territorial=terr,
             )
             self.agents[aid] = agent
             self.events.log(
@@ -184,7 +194,7 @@ class SimulationEngine:
                 agent_id=aid,
                 x=x,
                 y=y,
-                details=f"Spawned with energy {self.config.starting_energy}",
+                details=f"Spawned with energy {self.config.starting_energy}, aggr={round(aggr, 2)}, fear={round(fear, 2)}, carn={round(carn, 2)}, altr={round(altr, 2)}, terr={round(terr, 2)}",
             )
 
         # Запись метрики для тика 0
@@ -194,6 +204,10 @@ class SimulationEngine:
             environment=self.env,
             births=0,
             deaths=0,
+            fights=0,
+            combat_deaths=0,
+            energy_shared=0.0,
+            predation_energy=0.0,
         )
 
     def reset(self, new_config: Optional[SimulationConfig] = None) -> None:
@@ -236,6 +250,10 @@ class SimulationEngine:
         current_tick = self.tick
         births_this_tick = 0
         deaths_this_tick = 0
+        fights_this_tick = 0
+        combat_deaths_this_tick = 0
+        energy_shared_this_tick = 0.0
+        predation_energy_this_tick = 0.0
 
         alive_agents = [a for a in self.agents.values() if a.is_alive]
         # Сортируем по ID для строгой детерминированности обработки
@@ -253,9 +271,12 @@ class SimulationEngine:
                 # В зоне терминатора или освещенном углублении агенты получают солнечную энергию
                 dep_lvl = self.depressions.get((agent.x, agent.y), 0)
                 if dep_lvl == 1:
-                    agent.energy += 1.5
+                    base_solar = 1.5
                 else:
-                    agent.energy += 3.0
+                    base_solar = 3.0
+                # Трофическая адаптация: хищники получают значительно меньше энергии от солнца (стимул охотиться)
+                solar_efficiency = max(0.05, 1.0 - 0.85 * agent.carnivore)
+                agent.energy += base_solar * solar_efficiency
                 
             zone_penalty = self.env.get_energy_penalty(zone)
             total_consumption = self.config.base_metabolism + zone_penalty + self.config.wind_penalty
@@ -289,37 +310,268 @@ class SimulationEngine:
         # Обновленный список выживших
         survivors = [a for a in alive_agents if a.is_alive]
 
-        # 2. Перемещение выживших агентов
-        # Детерминированный порядок перемещения
+        # 1.5. Фаза альтруизма и взаимопомощи
+        # Агенты с высоким altruism делятся избытком энергии с умирающими сородичами до перемещения
         for agent in survivors:
+            if not agent.is_alive or agent.energy < 55.0 or agent.altruism < 0.3:
+                continue
+
+            neighbors = self._get_neighbors(agent.x, agent.y)
+            needy_neighbors = [
+                occupied[pos] for pos in neighbors
+                if pos in occupied and occupied[pos].is_alive and occupied[pos].id != agent.id and occupied[pos].energy < 25.0
+            ]
+            if needy_neighbors:
+                needy_neighbors.sort(key=lambda n: (n.energy, n.id))
+                recipient = needy_neighbors[0]
+
+                share_amount = min(8.0, agent.energy - 45.0)
+                if share_amount >= 3.0:
+                    agent.consume_energy(share_amount)
+                    transferred = share_amount * 0.9
+                    recipient.energy += transferred
+
+                    agent.energy_shared += share_amount
+                    recipient.energy_received += transferred
+                    energy_shared_this_tick += share_amount
+
+                    self.events.log(
+                        tick=current_tick,
+                        event_type=EventType.SHARE_ENERGY,
+                        agent_id=agent.id,
+                        parent_id=recipient.id,
+                        x=agent.x,
+                        y=agent.y,
+                        details=f"{agent.id} shared {round(share_amount, 1)} energy with starving {recipient.id}",
+                    )
+
+        # 2. Перемещение и поведенческий выбор выживших агентов
+        for agent in survivors:
+            if not agent.is_alive:
+                continue
+
             neighbors = self._get_neighbors(agent.x, agent.y)
             free_neighbors = [pos for pos in neighbors if pos not in occupied and pos not in self.rocks]
+            occupied_neighbors = [
+                pos for pos in neighbors 
+                if pos in occupied and occupied[pos].id != agent.id and pos not in self.rocks
+            ]
 
-            # Агент может остаться на месте или шагнуть на свободную клетку
+            # Варианты: остаться на месте, шагнуть на свободную клетку или напасть на соседа
             options = [(agent.x, agent.y)] + free_neighbors
-            
+            if agent.aggression >= 0.25 or agent.carnivore >= 0.3:
+                options += occupied_neighbors
+
             best_score = float("-inf")
             best_pos = (agent.x, agent.y)
-            
+
             for pos in options:
-                # 1. Штраф зоны (отрицательный стимул)
-                pos_zone = self.get_effective_zone(pos[0], pos[1], current_tick)
-                pos_penalty = self.env.get_energy_penalty(pos_zone)
-                
-                # 2. Плотность соседей (социальный стимул)
-                pos_neighbors = self._get_neighbors(pos[0], pos[1])
-                swarm_count = sum(1 for n in pos_neighbors if n in occupied and occupied[n].id != agent.id)
-                
-                # Функция приспособленности
-                score = (agent.w_temp * pos_penalty) + (agent.w_swarm * swarm_count) + self.rng.gauss(0, 0.5)
-                
+                is_attack = (pos in occupied and occupied[pos].id != agent.id)
+                if is_attack:
+                    target = occupied[pos]
+                    target_zone = self.get_effective_zone(target.x, target.y, current_tick)
+                    zone_bonus = 2.0 if target_zone == Zone.TERMINATOR else 0.0
+                    energy_diff = (agent.energy - target.energy) / 50.0
+
+                    # Голодный стимул хищника: чем выше carnivore и ниже энергия, тем сильнее тяга атаковать
+                    hunger_drive = agent.carnivore * max(0.0, (90.0 - agent.energy) / 25.0) * 2.0
+
+                    # Территориальный стимул: стремление занять оазис/кратер
+                    pos_dep = self.depressions.get(pos, 0)
+                    territorial_incentive = 2.0 * agent.territorial if pos_dep > 0 and agent.territorial > 0 else 0.0
+
+                    combat_incentive = (
+                        (agent.aggression * 3.0) 
+                        + energy_diff 
+                        + zone_bonus 
+                        + hunger_drive 
+                        + territorial_incentive 
+                        - (agent.fear * target.aggression * 3.0)
+                    )
+
+                    if combat_incentive <= 0.4:
+                        continue
+                    score = combat_incentive + self.rng.gauss(0, 0.3)
+                else:
+                    pos_zone = self.get_effective_zone(pos[0], pos[1], current_tick)
+                    pos_penalty = self.env.get_energy_penalty(pos_zone)
+                    pos_neighbors = self._get_neighbors(pos[0], pos[1])
+                    swarm_count = sum(1 for n in pos_neighbors if n in occupied and occupied[n].id != agent.id)
+
+                    # Учет страха: избегание клеток рядом с агрессивными соседями
+                    threat_sum = sum(
+                        occupied[n].aggression for n in pos_neighbors
+                        if n in occupied and occupied[n].id != agent.id and occupied[n].aggression > 0.4
+                    )
+                    fear_penalty = agent.fear * threat_sum * 3.0
+
+                    # Территориальная привязка к кратеру
+                    pos_dep = self.depressions.get(pos, 0)
+                    stay_dep_bonus = 3.0 * agent.territorial if pos_dep > 0 and agent.territorial > 0 else (
+                        -1.0 * abs(agent.territorial) if pos_dep == 0 and agent.territorial > 0 and (agent.x, agent.y) in self.depressions else 0.0
+                    )
+
+                    score = (
+                        (agent.w_temp * pos_penalty) 
+                        + (agent.w_swarm * swarm_count) 
+                        - fear_penalty 
+                        + stay_dep_bonus 
+                        + self.rng.gauss(0, 0.5)
+                    )
+
                 if score > best_score:
                     best_score = score
                     best_pos = pos
 
             target_pos = best_pos
 
-            if target_pos != (agent.x, agent.y):
+            if target_pos == (agent.x, agent.y):
+                continue
+            elif target_pos in occupied and occupied[target_pos].id != agent.id:
+                # Боевое столкновение
+                defender = occupied[target_pos]
+                fights_this_tick += 1
+
+                agent.consume_energy(2.5)
+                defender.consume_energy(2.5)
+
+                att_power = agent.energy * (0.6 + agent.aggression)
+                # Бонус защиты в своем кратере для территориальных агентов
+                def_dep = self.depressions.get(target_pos, 0)
+                dep_defense_mult = (1.0 + defender.territorial * 0.6) if def_dep > 0 and defender.territorial > 0 else 1.0
+                def_power = defender.energy * (0.6 + defender.aggression) * dep_defense_mult
+                total_power = max(0.1, att_power + def_power)
+                win_prob = att_power / total_power
+
+                attacker_wins = (self.rng.random() < win_prob)
+
+                if attacker_wins:
+                    agent.fights_won += 1
+                    defender.fights_lost += 1
+
+                    # Доля отнимаемой энергии и процент усвоения зависят от плотоядности хищника
+                    steal_pct = 0.20 + 0.40 * agent.carnivore
+                    absorption_efficiency = 0.40 + 0.50 * agent.carnivore
+
+                    dmg = min(defender.energy, max(6.0, defender.energy * steal_pct))
+                    defender.consume_energy(dmg)
+                    gained_energy = dmg * absorption_efficiency
+                    agent.energy += gained_energy
+                    agent.predation_energy += gained_energy
+                    predation_energy_this_tick += gained_energy
+
+                    is_predation = (agent.carnivore >= 0.35)
+
+                    if defender.energy <= 0.0:
+                        death_type = EventType.PREDATION if is_predation else EventType.DEATH_COMBAT
+                        reason = f"Predated and devoured by {agent.id}" if is_predation else f"Killed in combat by {agent.id}"
+
+                        defender.die(reason, current_tick)
+                        agent.kills += 1
+                        deaths_this_tick += 1
+                        combat_deaths_this_tick += 1
+                        occupied.pop((defender.x, defender.y), None)
+
+                        self.events.log(
+                            tick=current_tick,
+                            event_type=death_type,
+                            agent_id=defender.id,
+                            parent_id=agent.id,
+                            x=defender.x,
+                            y=defender.y,
+                            details=f"{defender.id} was {'devoured' if is_predation else 'slain'} by {agent.id} in combat (+{round(gained_energy, 1)} energy absorbed)",
+                        )
+                        occupied.pop((agent.x, agent.y), None)
+                        agent.x, agent.y = target_pos
+                        occupied[target_pos] = agent
+                    else:
+                        def_neighbors = self._get_neighbors(defender.x, defender.y)
+                        retreat_options = [p for p in def_neighbors if p not in occupied and p not in self.rocks]
+                        if retreat_options:
+                            retreat_pos = self.rng.choice(retreat_options)
+                            occupied.pop((defender.x, defender.y), None)
+                            defender.x, defender.y = retreat_pos
+                            occupied[retreat_pos] = defender
+
+                            self.events.log(
+                                tick=current_tick,
+                                event_type=EventType.FLEE,
+                                agent_id=defender.id,
+                                x=defender.x,
+                                y=defender.y,
+                                details=f"{defender.id} fled to ({retreat_pos[0]}, {retreat_pos[1]}) after assault by {agent.id}",
+                            )
+                            occupied.pop((agent.x, agent.y), None)
+                            agent.x, agent.y = target_pos
+                            occupied[target_pos] = agent
+                        else:
+                            defender.consume_energy(12.0)
+                            if defender.energy <= 0.0:
+                                death_type = EventType.PREDATION if is_predation else EventType.DEATH_COMBAT
+                                reason = f"Trapped, crushed and devoured by {agent.id}" if is_predation else f"Trapped and crushed in combat by {agent.id}"
+
+                                defender.die(reason, current_tick)
+                                agent.kills += 1
+                                deaths_this_tick += 1
+                                combat_deaths_this_tick += 1
+                                occupied.pop((defender.x, defender.y), None)
+                                occupied.pop((agent.x, agent.y), None)
+                                agent.x, agent.y = target_pos
+                                occupied[target_pos] = agent
+
+                                self.events.log(
+                                    tick=current_tick,
+                                    event_type=death_type,
+                                    agent_id=defender.id,
+                                    parent_id=agent.id,
+                                    x=defender.x,
+                                    y=defender.y,
+                                    details=f"{defender.id} trapped and devoured by {agent.id}",
+                                )
+
+                    self.events.log(
+                        tick=current_tick,
+                        event_type=EventType.PREDATION if is_predation else EventType.FIGHT,
+                        agent_id=agent.id,
+                        parent_id=defender.id,
+                        x=target_pos[0],
+                        y=target_pos[1],
+                        details=f"{'Predation assault' if is_predation else 'Assault'} on ({target_pos[0]}, {target_pos[1]}): {agent.id} defeated {defender.id} (stole {round(dmg, 1)} energy, absorbed {round(gained_energy, 1)})",
+                    )
+                else:
+                    defender.fights_won += 1
+                    agent.fights_lost += 1
+
+                    counter_dmg = min(agent.energy, max(4.0, agent.energy * 0.2))
+                    agent.consume_energy(counter_dmg)
+
+                    if agent.energy <= 0.0:
+                        agent.die(f"Killed during failed assault on {defender.id}", current_tick)
+                        defender.kills += 1
+                        deaths_this_tick += 1
+                        combat_deaths_this_tick += 1
+                        occupied.pop((agent.x, agent.y), None)
+
+                        self.events.log(
+                            tick=current_tick,
+                            event_type=EventType.DEATH_COMBAT,
+                            agent_id=agent.id,
+                            parent_id=defender.id,
+                            x=agent.x,
+                            y=agent.y,
+                            details=f"{agent.id} perished attacking {defender.id}",
+                        )
+
+                    self.events.log(
+                        tick=current_tick,
+                        event_type=EventType.FIGHT,
+                        agent_id=agent.id,
+                        parent_id=defender.id,
+                        x=target_pos[0],
+                        y=target_pos[1],
+                        details=f"Failed assault: {defender.id} repelled {agent.id} (-{round(counter_dmg, 1)} energy)",
+                    )
+            else:
                 occupied.pop((agent.x, agent.y), None)
                 agent.x, agent.y = target_pos
                 occupied[target_pos] = agent
@@ -380,6 +632,10 @@ class SimulationEngine:
             environment=self.env,
             births=births_this_tick,
             deaths=deaths_this_tick,
+            fights=fights_this_tick,
+            combat_deaths=combat_deaths_this_tick,
+            energy_shared=energy_shared_this_tick,
+            predation_energy=predation_energy_this_tick,
         )
 
         # 5. Проверка окончания симуляции
@@ -415,6 +671,11 @@ class SimulationEngine:
                     "gen": a.generation,
                     "wt": round(a.w_temp, 4),
                     "ws": round(a.w_swarm, 4),
+                    "ag": round(a.aggression, 4),
+                    "fr": round(a.fear, 4),
+                    "cr": round(a.carnivore, 4),
+                    "al": round(a.altruism, 4),
+                    "tr": round(a.territorial, 4),
                 }
                 for a in alive_agents
             ],

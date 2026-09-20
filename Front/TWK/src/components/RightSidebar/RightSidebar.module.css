@@ -696,4 +696,170 @@
   background: rgba(0, 229, 255, 0.2);
   color: #fff;
   box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+}
+
+/* TABLE ARCHETYPE ICON */
+.tableArchetypeIcon {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 5px;
+  font-size: 0.85rem;
+  vertical-align: middle;
+}
+
+/* ARCHETYPE CARD */
+.archetypeCard {
+  border: 1px solid;
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+.archetypeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.archetypeTitle {
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.3px;
+}
+
+.archetypeTag {
+  font-size: 0.68rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.archetypeDesc {
+  font-size: 0.74rem;
+  color: #cbd5e0;
+  line-height: 1.25;
+}
+
+/* GENE TRACK & PROGRESS (0 to 100%) */
+.geneTrack {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 4px 0;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.geneFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* COMBAT STATS CARD */
+.combatStatsCard {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 71, 87, 0.25);
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.combatTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.76rem;
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+.combatWinRate {
+  font-size: 0.72rem;
+  font-family: monospace;
+  font-weight: bold;
+}
+
+.combatGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+}
+
+.combatTile {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 5px 6px;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.combatLabel {
+  font-size: 0.65rem;
+  color: #a0aec0;
+  text-transform: uppercase;
+}
+
+.combatValue {
+  font-size: 0.85rem;
+  font-family: monospace;
+}
+
+/* TROPHIC & SOCIAL STATS CARD */
+.socialStatsCard {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(0, 210, 211, 0.25);
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.socialTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.76rem;
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+.socialGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+}
+
+.socialTile {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 5px 6px;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.socialLabel {
+  font-size: 0.62rem;
+  color: #a0aec0;
+  text-align: center;
+}
+
+.socialValue {
+  font-size: 0.82rem;
+  font-family: monospace;
+  font-weight: bold;
 }

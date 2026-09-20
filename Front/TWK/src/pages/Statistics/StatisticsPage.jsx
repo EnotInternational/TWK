@@ -2,6 +2,8 @@ import styles from './StatisticsPage.module.css';
 import { useStatisticsData } from './hooks/useStatisticsData';
 import StatsOverview from './components/StatsOverview';
 import PopulationChart from './components/PopulationChart';
+import ArchetypeDistributionChart from './components/ArchetypeDistributionChart';
+import GeneEvolutionChart from './components/GeneEvolutionChart';
 import EnergyDistributionChart from './components/EnergyDistributionChart';
 import ZoneDistributionCard from './components/ZoneDistributionCard';
 import MortalityAnalysis from './components/MortalityAnalysis';
@@ -121,10 +123,16 @@ export default function StatisticsPage({ onBack }) {
           status={status}
         />
 
-        {/* 2. График динамики популяции */}
+        {/* 2. График общей динамики популяции */}
         <PopulationChart history={history} />
 
-        {/* 3. Блок: Уровень энергии, Распределение по зонам, Причины гибели */}
+        {/* 3. График динамики 6 эволюционных архетипов (Трофика и Социальность) */}
+        <ArchetypeDistributionChart history={history} />
+
+        {/* 4. График генетического дрейфа и естественного отбора */}
+        <GeneEvolutionChart history={history} />
+
+        {/* 5. Блок: Уровень энергии, Распределение по зонам, Причины гибели */}
         <div className={styles.triGrid}>
           <EnergyDistributionChart 
             history={history} 

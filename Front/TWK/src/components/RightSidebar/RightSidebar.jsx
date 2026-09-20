@@ -119,6 +119,24 @@ export default function RightSidebar({
   const generation = agent?.generation ?? 0;
   const parentId = agent?.parent_id;
 
+  // New behavioral genes, Trophic niche, Sociality, Archetypes and Stats
+  const aggression = agent?.aggression ?? agent?.learning?.aggression ?? 0.3;
+  const fear = agent?.fear ?? agent?.learning?.fear ?? 0.5;
+  const carnivore = agent?.carnivore ?? agent?.learning?.carnivore ?? 0.0;
+  const altruism = agent?.altruism ?? agent?.learning?.altruism ?? 0.1;
+  const territorial = agent?.territorial ?? agent?.learning?.territorial ?? 0.0;
+  const archetype = agent?.archetype ?? agent?.learning?.archetype ?? 'opportunist';
+
+  const fightsWon = agent?.fights_won ?? 0;
+  const fightsLost = agent?.fights_lost ?? 0;
+  const kills = agent?.kills ?? 0;
+  const energyShared = agent?.energy_shared ?? 0.0;
+  const energyReceived = agent?.energy_received ?? 0.0;
+  const predationEnergy = agent?.predation_energy ?? 0.0;
+
+  const totalFights = fightsWon + fightsLost;
+  const winRate = totalFights > 0 ? `${((fightsWon / totalFights) * 100).toFixed(0)}%` : '0 боев';
+
   // Behavior Strategy
   let strategyTitle = 'Кооперация (термофоб)';
   let strategyDesc = 'Избегает опасных зон температуры (Hot/Cold) и стремится к стае сородичей';
@@ -136,10 +154,94 @@ export default function RightSidebar({
     strategyDesc = 'Автономно исследует экстремальные температурные регионы';
   }
 
-  // Bi-directional meter calculation (-3 to +3 range -> 0% to 100%)
+  // Archetype Data Banner (6 emerging evolutionary archetypes)
+  let archetypeData = {
+    key: 'opportunist',
+    label: '⚖️ Оппортунист',
+    tag: 'Сбалансированный',
+    color: '#ffa502',
+    bg: 'rgba(255, 165, 2, 0.12)',
+    border: 'rgba(255, 165, 2, 0.35)',
+    desc: 'Гибкая стратегия: балансирует между осторожностью, сбором солнечной энергии и умеренной защитой.',
+  };
+
+  if (archetype === 'oasis_guardian' || (territorial >= 0.35 && aggression >= 0.35 && carnivore < 0.6)) {
+    archetypeData = {
+      key: 'oasis_guardian',
+      label: '🛡️ Страж оазиса',
+      tag: 'Территориальный',
+      color: '#e056fd',
+      bg: 'rgba(224, 86, 253, 0.14)',
+      border: 'rgba(224, 86, 253, 0.4)',
+      desc: 'Оседает в метеоритных кратерах и оазисах. Получает до +60% к защите при обороне кратера.',
+    };
+  } else if (archetype === 'predator' || (carnivore >= 0.45 && aggression >= 0.4) || (aggression >= 0.75 && aggression > fear)) {
+    archetypeData = {
+      key: 'predator',
+      label: '🥩 Хищник-мясоед',
+      tag: 'Трофический хищник',
+      color: '#ff4757',
+      bg: 'rgba(255, 71, 87, 0.16)',
+      border: 'rgba(255, 71, 87, 0.45)',
+      desc: 'Почти не усваивает фотосинтез. Выживает охотой, поглощая до 90% биомассы атакованных жертв.',
+    };
+  } else if (archetype === 'altruist_swarm' || (altruism >= 0.45 && wSwarm > 0)) {
+    archetypeData = {
+      key: 'altruist_swarm',
+      label: '🤝 Альтруист-роевик',
+      tag: 'Социальная помощь',
+      color: '#00d2d3',
+      bg: 'rgba(0, 210, 211, 0.14)',
+      border: 'rgba(0, 210, 211, 0.4)',
+      desc: 'Держится в стае и спасает истощенных сородичей, безвозмездно передавая им избыток энергии.',
+    };
+  } else if (archetype === 'fleeing_prey' || archetype === 'passive' || (fear >= 0.55 && fear > aggression)) {
+    archetypeData = {
+      key: 'fleeing_prey',
+      label: '🕊️ Беглец-пацифист',
+      tag: 'Защитное бегство',
+      color: '#2ed573',
+      bg: 'rgba(46, 213, 115, 0.14)',
+      border: 'rgba(46, 213, 115, 0.35)',
+      desc: 'Чрезвычайно чуток к хищникам. При малейшей угрозе уступает ресурсы и спасается бегством.',
+    };
+  } else if (archetype === 'grazer' || (carnivore <= 0.2 && aggression <= 0.25 && territorial <= 0.2)) {
+    archetypeData = {
+      key: 'grazer',
+      label: '🌱 Солнцеед-пастбищник',
+      tag: 'Чистый фотосинтез',
+      color: '#7bed9f',
+      bg: 'rgba(123, 237, 159, 0.14)',
+      border: 'rgba(123, 237, 159, 0.35)',
+      desc: '100% эффективности усвоения солнечных лучей в Терминаторе. Не нападает и мирно мигрирует за светом.',
+    };
+  }
+
+  // Icon helper for table and badges
+  const getArchetypeIcon = (a) => {
+    const arc = a?.archetype;
+    const aggr = a?.aggression ?? 0.3;
+    const f = a?.fear ?? 0.5;
+    const carn = a?.carnivore ?? 0.0;
+    const altr = a?.altruism ?? 0.1;
+    const terr = a?.territorial ?? 0.0;
+    if (arc === 'oasis_guardian' || (terr >= 0.35 && aggr >= 0.35 && carn < 0.6)) return '🛡️';
+    if (arc === 'predator' || (carn >= 0.45 && aggr >= 0.4) || aggr >= 0.75) return '🥩';
+    if (arc === 'altruist_swarm' || altr >= 0.45) return '🤝';
+    if (arc === 'fleeing_prey' || arc === 'passive' || (f >= 0.55 && f > aggr)) return '🕊️';
+    if (arc === 'grazer' || (carn <= 0.2 && aggr <= 0.25 && terr <= 0.2)) return '🌱';
+    return '⚖️';
+  };
+
+  // Bi-directional and uni-directional meter calculations
   const clampRange = (val, min = -3, max = 3) => Math.min(max, Math.max(min, val));
   const tempMeterPercent = ((clampRange(wTemp) + 3) / 6) * 100;
   const swarmMeterPercent = ((clampRange(wSwarm) + 3) / 6) * 100;
+  const aggressionPercent = Math.min(100, Math.max(0, aggression * 100));
+  const fearPercent = Math.min(100, Math.max(0, fear * 100));
+  const carnivorePercent = Math.min(100, Math.max(0, carnivore * 100));
+  const altruismPercent = Math.min(100, Math.max(0, altruism * 100));
+  const territorialMeterPercent = ((Math.min(1.0, Math.max(-1.0, territorial)) + 1.0) / 2.0) * 100;
 
   return (
     <>
@@ -232,6 +334,12 @@ export default function RightSidebar({
                         >
                           <td className={styles.idCell}>
                             {isSelected && <span className={styles.selectedMarker}>▶ </span>}
+                            <span 
+                              className={styles.tableArchetypeIcon} 
+                              title={`Архетип: ${a.archetype || 'opportunist'} (Агрессия: ${a.aggression ?? 0.3}, Страх: ${a.fear ?? 0.5}, Хищник: ${a.carnivore ?? 0.0}, Альтруизм: ${a.altruism ?? 0.1}, Кратер: ${a.territorial ?? 0.0})`}
+                            >
+                              {getArchetypeIcon(a)}
+                            </span>
                             {a.id}
                           </td>
                           <td>{a.age}</td>
@@ -307,6 +415,25 @@ export default function RightSidebar({
                   <div className={`${styles.statusPill} ${isAlive ? styles.statusAlive : styles.statusDead}`}>
                     {isAlive ? '🟢 В строю' : '🔴 Погиб'}
                   </div>
+                </div>
+
+                {/* Archetype Banner */}
+                <div 
+                  className={styles.archetypeCard}
+                  style={{
+                    color: archetypeData.color,
+                    background: archetypeData.bg,
+                    borderColor: archetypeData.border,
+                  }}
+                  title={archetypeData.desc}
+                >
+                  <div className={styles.archetypeHeader}>
+                    <span className={styles.archetypeTitle}>{archetypeData.label}</span>
+                    <span className={styles.archetypeTag} style={{ borderColor: archetypeData.border }}>
+                      {archetypeData.tag}
+                    </span>
+                  </div>
+                  <div className={styles.archetypeDesc}>{archetypeData.desc}</div>
                 </div>
 
                 {/* HP & VITALITY SECTION */}
@@ -457,10 +584,225 @@ export default function RightSidebar({
                     </div>
                   </div>
 
+                  {/* Weight 3: Aggression Gene */}
+                  <div className={styles.weightCard}>
+                    <div className={styles.weightHeader}>
+                      <span className={styles.weightLabel}>⚔️ Агрессия (aggression):</span>
+                      <strong className={styles.weightValue} style={{ color: aggression >= 0.55 ? '#ff4757' : '#ffa502' }}>
+                        {(aggression * 100).toFixed(1)}% ({aggression.toFixed(3)})
+                      </strong>
+                    </div>
+                    <div className={styles.geneTrack}>
+                      <div 
+                        className={styles.geneFill} 
+                        style={{ 
+                          width: `${aggressionPercent}%`,
+                          background: 'linear-gradient(90deg, #ffa502, #ff4757)'
+                        }} 
+                      />
+                    </div>
+                    <div className={styles.meterLabels}>
+                      <span>0.0 (Миролюбивый)</span>
+                      <span>0.5</span>
+                      <span>1.0 (Бескомпромиссный)</span>
+                    </div>
+                    <div className={styles.weightExplanation}>
+                      {aggression >= 0.55 
+                        ? '✓ Высокая боевитость: нападает на занятые клетки и отбирает энергию'
+                        : aggression <= 0.3 
+                        ? '• Миролюбивый: избегает стычек и уступает клетки'
+                        : '• Умеренная: нападает только при значительном перевесе'}
+                    </div>
+                  </div>
+
+                  {/* Weight 4: Fear Gene */}
+                  <div className={styles.weightCard}>
+                    <div className={styles.weightHeader}>
+                      <span className={styles.weightLabel}>🏃 Чувствительность к угрозе (fear):</span>
+                      <strong className={styles.weightValue} style={{ color: fear >= 0.55 ? '#2ed573' : '#70a1ff' }}>
+                        {(fear * 100).toFixed(1)}% ({fear.toFixed(3)})
+                      </strong>
+                    </div>
+                    <div className={styles.geneTrack}>
+                      <div 
+                        className={styles.geneFill} 
+                        style={{ 
+                          width: `${fearPercent}%`,
+                          background: 'linear-gradient(90deg, #70a1ff, #2ed573)'
+                        }} 
+                      />
+                    </div>
+                    <div className={styles.meterLabels}>
+                      <span>0.0 (Хладнокровный)</span>
+                      <span>0.5</span>
+                      <span>1.0 (Панический беглец)</span>
+                    </div>
+                    <div className={styles.weightExplanation}>
+                      {fear >= 0.55 
+                        ? '✓ Высокая тревожность: избегает агрессоров и спасается бегством'
+                        : fear <= 0.3 
+                        ? '• Хладнокровный: не боится скоплений опасных соседей'
+                        : '• Осторожный: держится на безопасной дистанции'}
+                    </div>
+                  </div>
+
+                  {/* Weight 5: Carnivore Gene (Trophic Niche) */}
+                  <div className={styles.weightCard}>
+                    <div className={styles.weightHeader}>
+                      <span className={styles.weightLabel}>🥩 Плотоядность vs Фотосинтез (carnivore):</span>
+                      <strong className={styles.weightValue} style={{ color: carnivore >= 0.45 ? '#ff4757' : '#7bed9f' }}>
+                        {(carnivore * 100).toFixed(1)}% ({carnivore.toFixed(3)})
+                      </strong>
+                    </div>
+                    <div className={styles.geneTrack}>
+                      <div 
+                        className={styles.geneFill} 
+                        style={{ 
+                          width: `${carnivorePercent}%`,
+                          background: 'linear-gradient(90deg, #7bed9f, #ffa502, #ff4757)'
+                        }} 
+                      />
+                    </div>
+                    <div className={styles.meterLabels}>
+                      <span>0.0 (🌱 Солнцеед)</span>
+                      <span>0.5</span>
+                      <span>1.0 (🥩 Хищник)</span>
+                    </div>
+                    <div className={styles.weightExplanation}>
+                      {carnivore >= 0.5 
+                        ? '✓ Облигатный хищник: не получает солнечную энергию, питается только охотой (усвоение до 90%)'
+                        : carnivore <= 0.2 
+                        ? '🌱 Солнцеед: 100% эффективность фотосинтеза в зоне Терминатора'
+                        : '• Факультативный: совмещает фотосинтез и эпизодические атаки'}
+                    </div>
+                  </div>
+
+                  {/* Weight 6: Altruism Gene (Sociality) */}
+                  <div className={styles.weightCard}>
+                    <div className={styles.weightHeader}>
+                      <span className={styles.weightLabel}>🤝 Альтруизм и взаимопомощь (altruism):</span>
+                      <strong className={styles.weightValue} style={{ color: altruism >= 0.4 ? '#00d2d3' : '#a0aec0' }}>
+                        {(altruism * 100).toFixed(1)}% ({altruism.toFixed(3)})
+                      </strong>
+                    </div>
+                    <div className={styles.geneTrack}>
+                      <div 
+                        className={styles.geneFill} 
+                        style={{ 
+                          width: `${altruismPercent}%`,
+                          background: 'linear-gradient(90deg, #718096, #70a1ff, #00d2d3)'
+                        }} 
+                      />
+                    </div>
+                    <div className={styles.meterLabels}>
+                      <span>0.0 (Эгоизм)</span>
+                      <span>0.5</span>
+                      <span>1.0 (Взаимопомощь)</span>
+                    </div>
+                    <div className={styles.weightExplanation}>
+                      {altruism >= 0.35 
+                        ? '✓ Социальный спасатель: делится избытком энергии с умирающими соседями (<25 HP)'
+                        : '• Эгоцентричный: бережет накопленные запасы энергии исключительно для себя'}
+                    </div>
+                  </div>
+
+                  {/* Weight 7: Territorial Gene (Crater / Oasis Defense) */}
+                  <div className={styles.weightCard}>
+                    <div className={styles.weightHeader}>
+                      <span className={styles.weightLabel}>🛡️ Территориальность / Оазисы (territorial):</span>
+                      <strong className={styles.weightValue} style={{ color: territorial >= 0.35 ? '#e056fd' : territorial <= -0.3 ? '#ffa502' : '#cbd5e0' }}>
+                        {territorial >= 0 ? `+${territorial.toFixed(3)}` : territorial.toFixed(3)}
+                      </strong>
+                    </div>
+                    <div className={styles.bipolarTrack}>
+                      <div className={styles.bipolarCenterMark} />
+                      <div 
+                        className={styles.bipolarFill}
+                        style={{
+                          left: territorial < 0 ? `${territorialMeterPercent}%` : '50%',
+                          width: `${Math.abs(territorialMeterPercent - 50)}%`,
+                          background: territorial >= 0 ? '#e056fd' : '#ffa502'
+                        }}
+                      />
+                      <div 
+                        className={styles.bipolarPointer} 
+                        style={{ left: `${territorialMeterPercent}%` }}
+                      />
+                    </div>
+                    <div className={styles.meterLabels}>
+                      <span>-1.0 (Кочевник)</span>
+                      <span>0</span>
+                      <span>+1.0 (Страж кратера)</span>
+                    </div>
+                    <div className={styles.weightExplanation}>
+                      {territorial >= 0.35 
+                        ? '✓ Страж оазиса: защищает кратер (+60% к защите в depression при обороне)'
+                        : territorial <= -0.3 
+                        ? '• Кочевник: постоянно мигрирует за Терминатором, не удерживая кратеры'
+                        : '• Нейтральная привязка к местности'}
+                    </div>
+                  </div>
+
+                  {/* Combat Track Record */}
+                  <div className={styles.combatStatsCard}>
+                    <div className={styles.combatTitle}>
+                      <span>⚔️ Боевой послужной список</span>
+                      <span className={styles.combatWinRate} style={{ color: fightsWon > fightsLost ? '#2ed573' : fightsLost > fightsWon ? '#ff4757' : '#ffa502' }}>
+                        Винрейт: {winRate}
+                      </span>
+                    </div>
+                    <div className={styles.combatGrid}>
+                      <div className={styles.combatTile}>
+                        <span className={styles.combatLabel}>Побед</span>
+                        <strong className={styles.combatValue} style={{ color: '#2ed573' }}>{fightsWon}</strong>
+                      </div>
+                      <div className={styles.combatTile}>
+                        <span className={styles.combatLabel}>Поражений</span>
+                        <strong className={styles.combatValue} style={{ color: '#ff4757' }}>{fightsLost}</strong>
+                      </div>
+                      <div className={styles.combatTile}>
+                        <span className={styles.combatLabel}>Убито</span>
+                        <strong className={styles.combatValue} style={{ color: '#ff6b81' }}>{kills}</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Social & Trophic Energy Balance */}
+                  <div className={styles.socialStatsCard}>
+                    <div className={styles.socialTitle}>
+                      <span>🌱 Трофический и Социальный баланс</span>
+                      <span style={{ fontSize: '0.72rem', color: '#00d2d3' }}>HP поток</span>
+                    </div>
+                    <div className={styles.socialGrid}>
+                      <div className={styles.socialTile} title="Энергия, переданная умирающим сородичам">
+                        <span className={styles.socialLabel}>🤝 Отдано</span>
+                        <strong className={styles.socialValue} style={{ color: '#00d2d3' }}>
+                          {energyShared ? energyShared.toFixed(1) : '0.0'}
+                        </strong>
+                      </div>
+                      <div className={styles.socialTile} title="Энергия, полученная от альтруистов">
+                        <span className={styles.socialLabel}>💚 Получено</span>
+                        <strong className={styles.socialValue} style={{ color: '#2ed573' }}>
+                          {energyReceived ? energyReceived.toFixed(1) : '0.0'}
+                        </strong>
+                      </div>
+                      <div className={styles.socialTile} title="Энергия, усвоенная при хищничестве в боях">
+                        <span className={styles.socialLabel}>🥩 Охота</span>
+                        <strong className={styles.socialValue} style={{ color: '#ff4757' }}>
+                          {predationEnergy ? predationEnergy.toFixed(1) : '0.0'}
+                        </strong>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Mutation & Adaptation parameters */}
                   <div className={styles.metaRow}>
-                    <span>Шаг мутации весов (Gaussian σ):</span>
+                    <span>Шаг мутации весов (w_temp, w_swarm):</span>
                     <strong>±0.50</strong>
+                  </div>
+                  <div className={styles.metaRow}>
+                    <span>Шаг мутации генов (aggression, fear, carnivore, altruism, territorial):</span>
+                    <strong>±0.10</strong>
                   </div>
                 </div>
 
