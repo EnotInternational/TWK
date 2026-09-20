@@ -757,119 +757,121 @@ export default function AgentGrid({
   return (
     <div className={styles.wrapper}>
       {/* Top Controls: View Switcher (3D / 2D) + Color Mode Switcher + Legend */}
-      <div className={styles.topControlContainer}>
-        {/* View Mode */}
-        <div className={styles.viewToggleBar}>
-          <button 
-            className={`${styles.viewToggleBtn} ${viewMode === '3d' ? styles.viewToggleBtnActive : ''}`}
-            onClick={() => setViewMode('3d')}
-            title="3D Сферическая модель Меркурия"
-          >
-            🪐 3D
-          </button>
-          <button 
-            className={`${styles.viewToggleBtn} ${viewMode === '2d' ? styles.viewToggleBtnActive : ''}`}
-            onClick={() => {
-              setViewMode('2d');
-              setTimeout(draw2D, 50);
-            }}
-            title="2D Цилиндрическая развертка"
-          >
-            🗺️ 2D
-          </button>
-        </div>
-
-        {/* Color Mode Switcher */}
-        <div className={styles.colorModeBar}>
-          <span className={styles.colorModeLabel}>Окраска:</span>
-          <button 
-            className={`${styles.colorModeBtn} ${colorMode === 'archetypes' ? styles.colorModeBtnActive : ''}`}
-            onClick={() => setColorMode('archetypes')}
-            title="Цвета по 6 эволюционным архетипам (Хищник, Солнцеед, Альтруист и др.)"
-          >
-            🧬 Архетипы
-          </button>
-          <button 
-            className={`${styles.colorModeBtn} ${colorMode === 'energy' ? styles.colorModeBtnActive : ''}`}
-            onClick={() => setColorMode('energy')}
-            title="Цвета по уровню энергии (Зеленый / Желтый / Красный)"
-          >
-            ⚡ HP
-          </button>
-          <button 
-            className={`${styles.colorModeBtn} ${colorMode === 'trophic' ? styles.colorModeBtnActive : ''}`}
-            onClick={() => setColorMode('trophic')}
-            title="Цвета по трофической специализации (Солнцеед ↔ Хищник)"
-          >
-            🥩 Трофика
-          </button>
-          <button 
-            className={`${styles.legendToggleBtn} ${isLegendOpen ? styles.legendToggleBtnActive : ''}`}
-            onClick={() => setIsLegendOpen(prev => !prev)}
-            title="Показать / скрыть легенду цветов"
-          >
-            🎨 Легенда
-          </button>
-        </div>
-      </div>
-
-      {/* Floating Interactive Legend Overlay */}
-      {isLegendOpen && (
-        <div className={styles.legendPanel}>
-          <div className={styles.legendHeader}>
-            <span className={styles.legendTitle}>
-              {colorMode === 'archetypes' ? '🧬 Легенда архетипов' :
-               colorMode === 'energy' ? '⚡ Шкала энергии (HP)' :
-               '🥩 Трофический градиент'}
-            </span>
-            <button className={styles.legendCloseBtn} onClick={() => setIsLegendOpen(false)}>✕</button>
+      <div className={styles.topControlWrapper}>
+        <div className={styles.topControlContainer}>
+          {/* View Mode */}
+          <div className={styles.viewToggleBar}>
+            <button 
+              className={`${styles.viewToggleBtn} ${viewMode === '3d' ? styles.viewToggleBtnActive : ''}`}
+              onClick={() => setViewMode('3d')}
+              title="3D Сферическая модель Меркурия"
+            >
+              🪐 3D
+            </button>
+            <button 
+              className={`${styles.viewToggleBtn} ${viewMode === '2d' ? styles.viewToggleBtnActive : ''}`}
+              onClick={() => {
+                setViewMode('2d');
+                setTimeout(draw2D, 50);
+              }}
+              title="2D Цилиндрическая развертка"
+            >
+              🗺️ 2D
+            </button>
           </div>
 
-          {colorMode === 'archetypes' && (
-            <div className={styles.legendGrid}>
-              {Object.entries(ARCHETYPE_INFO).map(([key, info]) => {
-                const count = (latestAgentsRef.current || []).filter(a => resolveAgentArchetype(a) === key).length;
-                return (
-                  <div key={key} className={styles.legendItem} title={info.desc}>
-                    <span className={styles.legendSwatch} style={{ background: info.color }} />
-                    <span className={styles.legendIcon}>{info.icon}</span>
-                    <span className={styles.legendName}>{info.label}</span>
-                    <span className={styles.legendCount}>{count}</span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {colorMode === 'energy' && (
-            <div className={styles.energyLegend}>
-              <div className={styles.energyRow}>
-                <span className={styles.legendSwatch} style={{ background: '#00ff88' }} />
-                <span>Высокая (&gt; 120 HP) — размножение</span>
-              </div>
-              <div className={styles.energyRow}>
-                <span className={styles.legendSwatch} style={{ background: '#ffd000' }} />
-                <span>Стабильная (60–120 HP) — норма</span>
-              </div>
-              <div className={styles.energyRow}>
-                <span className={styles.legendSwatch} style={{ background: '#ff3344' }} />
-                <span>Критическая (&lt; 60 HP) — истощение</span>
-              </div>
-            </div>
-          )}
-
-          {colorMode === 'trophic' && (
-            <div className={styles.trophicLegend}>
-              <div className={styles.trophicBar} />
-              <div className={styles.trophicLabels}>
-                <span>🌱 0.0 Солнцеед</span>
-                <span>⚖️ 0.5 Смешанный</span>
-                <span>🥩 1.0 Хищник</span>
-              </div>
-            </div>
-          )}
+          {/* Color Mode Switcher */}
+          <div className={styles.colorModeBar}>
+            <span className={styles.colorModeLabel}>Окраска:</span>
+            <button 
+              className={`${styles.colorModeBtn} ${colorMode === 'archetypes' ? styles.colorModeBtnActive : ''}`}
+              onClick={() => setColorMode('archetypes')}
+              title="Цвета по 6 эволюционным архетипам (Хищник, Солнцеед, Альтруист и др.)"
+            >
+              🧬 Архетипы
+            </button>
+            <button 
+              className={`${styles.colorModeBtn} ${colorMode === 'energy' ? styles.colorModeBtnActive : ''}`}
+              onClick={() => setColorMode('energy')}
+              title="Цвета по уровню энергии (Зеленый / Желтый / Красный)"
+            >
+              ⚡ HP
+            </button>
+            <button 
+              className={`${styles.colorModeBtn} ${colorMode === 'trophic' ? styles.colorModeBtnActive : ''}`}
+              onClick={() => setColorMode('trophic')}
+              title="Цвета по трофической специализации (Солнцеед ↔ Хищник)"
+            >
+              🥩 Трофика
+            </button>
+            <button 
+              className={`${styles.legendToggleBtn} ${isLegendOpen ? styles.legendToggleBtnActive : ''}`}
+              onClick={() => setIsLegendOpen(prev => !prev)}
+              title="Показать / скрыть легенду цветов"
+            >
+              🎨 Легенда
+            </button>
+          </div>
         </div>
-      )}
+
+        {/* Floating Interactive Legend Overlay */}
+        {isLegendOpen && (
+          <div className={styles.legendPanel}>
+            <div className={styles.legendHeader}>
+              <span className={styles.legendTitle}>
+                {colorMode === 'archetypes' ? '🧬 Легенда архетипов' :
+                 colorMode === 'energy' ? '⚡ Шкала энергии (HP)' :
+                 '🥩 Трофический градиент'}
+              </span>
+              <button className={styles.legendCloseBtn} onClick={() => setIsLegendOpen(false)}>✕</button>
+            </div>
+
+            {colorMode === 'archetypes' && (
+              <div className={styles.legendGrid}>
+                {Object.entries(ARCHETYPE_INFO).map(([key, info]) => {
+                  const count = (latestAgentsRef.current || []).filter(a => resolveAgentArchetype(a) === key).length;
+                  return (
+                    <div key={key} className={styles.legendItem} title={info.desc}>
+                      <span className={styles.legendSwatch} style={{ background: info.color }} />
+                      <span className={styles.legendIcon}>{info.icon}</span>
+                      <span className={styles.legendName}>{info.label}</span>
+                      <span className={styles.legendCount}>{count}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {colorMode === 'energy' && (
+              <div className={styles.energyLegend}>
+                <div className={styles.energyRow}>
+                  <span className={styles.legendSwatch} style={{ background: '#00ff88' }} />
+                  <span>Высокая (&gt; 120 HP) — размножение</span>
+                </div>
+                <div className={styles.energyRow}>
+                  <span className={styles.legendSwatch} style={{ background: '#ffd000' }} />
+                  <span>Стабильная (60–120 HP) — норма</span>
+                </div>
+                <div className={styles.energyRow}>
+                  <span className={styles.legendSwatch} style={{ background: '#ff3344' }} />
+                  <span>Критическая (&lt; 60 HP) — истощение</span>
+                </div>
+              </div>
+            )}
+
+            {colorMode === 'trophic' && (
+              <div className={styles.trophicLegend}>
+                <div className={styles.trophicBar} />
+                <div className={styles.trophicLabels}>
+                  <span>🌱 0.0 Солнцеед</span>
+                  <span>⚖️ 0.5 Смешанный</span>
+                  <span>🥩 1.0 Хищник</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {viewMode === '3d' ? (
         <Planet3D 
