@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Sidebar from './components/Sidebar/Sidebar';
 import AgentGrid from './components/AgentGrid/AgentGrid';
 import ToolPanel from './components/ToolPanel/ToolPanel';
@@ -12,12 +12,24 @@ export default function App() {
   
   const [metrics, setMetrics] = useState({});
   const [selectedAgent, setSelectedAgent] = useState(null);
+  const [activeRightTab, setActiveRightTab] = useState('all'); // 'all' | 'agent'
 
   // Состояния для катастроф
   const [selectedDisaster, setSelectedDisaster] = useState(null); // 'wind' | 'rocks' | 'meteorite' | 'eraser' | null
   const [disasterParams, setDisasterParams] = useState({}); // { ...params }
 
-  // We rely on AgentGrid to render the environment and fetch the agents via sockets
+  const handleAgentSelect = useCallback((agent) => {
+    setSelectedAgent(agent);
+    if (agent) {
+      setActiveRightTab('agent');
+      setIsRightMenuOpen(true);
+    }
+  }, []);
+
+  const handleAgentUpdate = useCallback((agentOrUpdater) => {
+    setSelectedAgent(agentOrUpdater);
+    // Preserves activeRightTab so user can stay in 'all' mode without being forced back!
+  }, []);
 
   return (
     <div className={styles.appLayout}>
@@ -32,7 +44,9 @@ export default function App() {
         <div className={styles.gridArea}>
           <AgentGrid 
             onMetricsUpdate={setMetrics} 
-            onAgentSelect={setSelectedAgent}
+            onAgentSelect={handleAgentSelect}
+            onAgentUpdate={handleAgentUpdate}
+            selectedAgent={selectedAgent}
             selectedDisaster={selectedDisaster}
             disasterParams={disasterParams}
           />
@@ -49,7 +63,11 @@ export default function App() {
       <RightSidebar 
         isOpen={isRightMenuOpen} 
         agent={selectedAgent} 
+        onSelectAgent={handleAgentSelect}
         onToggle={() => setIsRightMenuOpen(!isRightMenuOpen)}
+        onClose={() => setIsRightMenuOpen(false)}
+        activeTab={activeRightTab}
+        setActiveTab={setActiveRightTab}
         metrics={metrics}
       />
     </div>

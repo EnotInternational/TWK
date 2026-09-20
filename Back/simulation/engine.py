@@ -14,6 +14,7 @@ from .agent import Agent
 from .environment import MercuryEnvironment, Zone
 from .events import EventLogger, EventType
 from .metrics import MetricsCollector, TickMetrics
+from .terrain import generate_rock_clusters
 
 
 class SimulationConfig:
@@ -151,19 +152,23 @@ class SimulationEngine:
         occupied: Set[Tuple[int, int]] = set()
 
         all_coords = [(x, y) for x in range(self.config.width) for y in range(self.config.height)]
-        self.rng.shuffle(all_coords)
 
-        # 1. Спавн скал
-        rocks_to_spawn = min(self.config.rocks_count, len(all_coords))
-        for i in range(rocks_to_spawn):
-            rx, ry = all_coords[i]
-            self.rocks.add((rx, ry))
-            occupied.add((rx, ry))
+        # 1. Спавн скал кучками на основе 2D шума Перлина
+        self.rocks = generate_rock_clusters(
+            width=self.config.width,
+            height=self.config.height,
+            rocks_count=self.config.rocks_count,
+            seed=self.config.seed,
+        )
+        occupied.update(self.rocks)
 
-        # 2. Спавн агентов
-        agents_to_spawn = min(self.config.initial_agents, len(all_coords) - rocks_to_spawn)
-        for i in range(rocks_to_spawn, rocks_to_spawn + agents_to_spawn):
-            x, y = all_coords[i]
+        # 2. Спавн агентов на свободных клетках
+        free_coords = [c for c in all_coords if c not in occupied]
+        self.rng.shuffle(free_coords)
+
+        agents_to_spawn = min(self.config.initial_agents, len(free_coords))
+        for i in range(agents_to_spawn):
+            x, y = free_coords[i]
             occupied.add((x, y))
             aid = self._generate_agent_id()
             agent = Agent(

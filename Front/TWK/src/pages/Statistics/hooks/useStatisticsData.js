@@ -310,6 +310,214 @@ export function useStatisticsData() {
     link.remove();
   };
 
+  // Вычисление расширенной аналитики генофонда популяции
+  const geneStats = (() => {
+    const agents = localState.agents || [];
+    if (!agents.length) {
+      return {
+        count: 0,
+        avgWTemp: 0,
+        minWTemp: 0,
+        maxWTemp: 0,
+        thermophobeCount: 0,
+        thermophobePercent: 0,
+        avgWSwarm: 0,
+        minWSwarm: 0,
+        maxWSwarm: 0,
+        swarmCount: 0,
+        swarmPercent: 0,
+        maxGeneration: 0,
+        dominantGeneration: 0,
+        generationDistribution: {},
+        strategies: {
+          cooperation_thermophobe: 0,
+          lone_thermophobe: 0,
+          swarm_extremophile: 0,
+          lone_extremophile: 0
+        },
+        strategyPercents: {
+          cooperation_thermophobe: 0,
+          lone_thermophobe: 0,
+          swarm_extremophile: 0,
+          lone_extremophile: 0
+        }
+      };
+    }
+
+    const wTemps = agents.map(a => a.w_temp ?? a.learning?.w_temp ?? 0);
+    const wSwarms = agents.map(a => a.w_swarm ?? a.learning?.w_swarm ?? 0);
+    const generations = agents.map(a => a.generation || 0);
+
+    const sumTemp = wTemps.reduce((acc, v) => acc + v, 0);
+    const sumSwarm = wSwarms.reduce((acc, v) => acc + v, 0);
+    const avgWTemp = sumTemp / agents.length;
+    const avgWSwarm = sumSwarm / agents.length;
+
+    const minWTemp = Math.min(...wTemps);
+    const maxWTemp = Math.max(...wTemps);
+    const minWSwarm = Math.min(...wSwarms);
+    const maxWSwarm = Math.max(...wSwarms);
+
+    const thermophobes = wTemps.filter(w => w < 0).length;
+    const swarmers = wSwarms.filter(w => w > 0).length;
+
+    const genDist = {};
+    generations.forEach(g => {
+      genDist[g] = (genDist[g] || 0) + 1;
+    });
+
+    let domGen = 0;
+    let maxGenCount = 0;
+    Object.entries(genDist).forEach(([g, c]) => {
+      if (c > maxGenCount) {
+        maxGenCount = c;
+        domGen = Number(g);
+      }
+    });
+
+    const strategies = {
+      cooperation_thermophobe: 0,
+      lone_thermophobe: 0,
+      swarm_extremophile: 0,
+      lone_extremophile: 0
+    };
+
+    agents.forEach(a => {
+      const wt = a.w_temp ?? a.learning?.w_temp ?? 0;
+      const ws = a.w_swarm ?? a.learning?.w_swarm ?? 0;
+      if (wt < 0 && ws > 0) strategies.cooperation_thermophobe++;
+      else if (wt < 0 && ws <= 0) strategies.lone_thermophobe++;
+      else if (wt >= 0 && ws > 0) strategies.swarm_extremophile++;
+      else strategies.lone_extremophile++;
+    });
+
+    const total = agents.length;
+    const strategyPercents = {
+      cooperation_thermophobe: Number(((strategies.cooperation_thermophobe / total) * 100).toFixed(1)),
+      lone_thermophobe: Number(((strategies.lone_thermophobe / total) * 100).toFixed(1)),
+      swarm_extremophile: Number(((strategies.swarm_extremophile / total) * 100).toFixed(1)),
+      lone_extremophile: Number(((strategies.lone_extremophile / total) * 100).toFixed(1))
+    };
+
+    return {
+      count: total,
+      avgWTemp: Number(avgWTemp.toFixed(4)),
+      minWTemp: Number(minWTemp.toFixed(4)),
+      maxWTemp: Number(maxWTemp.toFixed(4)),
+      thermophobeCount: thermophobes,
+      thermophobePercent: Number(((thermophobes / total) * 100).toFixed(1)),
+      avgWSwarm: Number(avgWSwarm.toFixed(4)),
+      minWSwarm: Number(minWSwarm.toFixed(4)),
+      maxWSwarm: Number(maxWSwarm.toFixed(4)),
+      swarmCount: swarmers,
+      swarmPercent: Number(((swarmers / total) * 100).toFixed(1)),
+      maxGeneration: Math.max(...generations),
+      dominantGeneration: domGen,
+      generationDistribution: genDist,
+      strategies,
+      strategyPercents
+    };
+  })();
+
+  // Отдельный экспорт генов в CSV
+  const exportGenesCSV = () => {
+    const agents = localState.agents || [];
+    const headers = [
+      'AgentID',
+      'Generation',
+      'ParentID',
+      'Age',
+      'HP_Energy',
+      'w_temp',
+      'w_swarm',
+      'Strategy',
+      'Zone',
+      'Status',
+      'Tick'
+    ];
+    const rows = agents.map(a => {
+      const wt = a.w_temp ?? a.learning?.w_temp ?? 0;
+      const ws = a.w_swarm ?? a.learning?.w_swarm ?? 0;
+      let strategy = 'Кооперация (термофоб)';
+      if (wt < 0 && ws > 0) strategy = 'Термофоб-стайный';
+      else if (wt < 0 && ws <= 0) strategy = 'Термофоб-одиночка';
+      else if (wt >= 0 && ws > 0) strategy = 'Экстремал-стайный';
+      else strategy = 'Экстремал-одиночка';
+
+      return [
+        a.id,
+        a.generation ?? 0,
+        a.parent_id || 'Gen0',
+        a.age ?? 0,
+        (a.hp ?? a.energy ?? 0).toFixed(2),
+        wt.toFixed(4),
+        ws.toFixed(4),
+        `"${strategy}"`,
+        a.zone || 'unknown',
+        a.is_alive !== false ? 'Alive' : 'Dead',
+        localState.currentTick
+      ];
+    });
+
+    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `terra-nova-genes-tick-${localState.currentTick}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
+
+  // Отдельный экспорт генов в JSON
+  const exportGenesJSON = () => {
+    const agents = localState.agents || [];
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify({
+      exportedAt: new Date().toISOString(),
+      currentTick: localState.currentTick,
+      status: localState.status,
+      populationCount: agents.length,
+      geneSummary: geneStats,
+      agents: agents.map(a => {
+        const wt = a.w_temp ?? a.learning?.w_temp ?? 0;
+        const ws = a.w_swarm ?? a.learning?.w_swarm ?? 0;
+        let strategy = 'Термофоб-стайный';
+        if (wt < 0 && ws > 0) strategy = 'Термофоб-стайный';
+        else if (wt < 0 && ws <= 0) strategy = 'Термофоб-одиночка';
+        else if (wt >= 0 && ws > 0) strategy = 'Экстремал-стайный';
+        else strategy = 'Экстремал-одиночка';
+
+        return {
+          id: a.id,
+          generation: a.generation ?? 0,
+          parent_id: a.parent_id || null,
+          age: a.age ?? 0,
+          hp: a.hp ?? a.energy ?? 0,
+          energy: a.energy ?? 0,
+          zone: a.zone || null,
+          is_alive: a.is_alive !== false,
+          w_temp: wt,
+          w_swarm: ws,
+          strategy,
+          learning: a.learning || {
+            w_temp: wt,
+            w_swarm: ws,
+            generation: a.generation ?? 0,
+            strategy,
+            mutation_rate: 0.5
+          }
+        };
+      })
+    }, null, 2));
+
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', dataStr);
+    downloadAnchor.setAttribute('download', `terra-nova-genes-tick-${localState.currentTick}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+
   return {
     history: filteredHistory,
     allHistory: history,
@@ -331,7 +539,10 @@ export function useStatisticsData() {
     topAgents,
     events: localState.events,
     stateHash: localState.stateHash,
+    geneStats,
     exportJSON,
-    exportCSV
+    exportCSV,
+    exportGenesCSV,
+    exportGenesJSON
   };
 }

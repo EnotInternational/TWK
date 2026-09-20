@@ -1,67 +1,229 @@
 .rightSidebar {
-  width: 320px;
-  /* Slightly wider for the table */
-  background: rgba(5, 5, 8, 0.98);
+  width: 360px;
+  background: rgba(6, 9, 15, 0.98);
   border-left: 1px solid rgba(0, 229, 255, 0.2);
-  padding: 20px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   height: 100vh;
   box-sizing: border-box;
   overflow-y: auto;
   position: relative;
   z-index: 10;
-  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
+  box-shadow: -5px 0 20px rgba(0, 0, 0, 0.6);
   flex-shrink: 0;
 }
 
-.rightSidebar h2,
-.rightSidebar h3 {
-  color: #00e5ff;
-  font-size: 1.2rem;
-  margin-top: 0;
-  margin-bottom: 20px;
-  text-transform: uppercase;
+/* Custom Scrollbar */
+.rightSidebar::-webkit-scrollbar {
+  width: 5px;
+}
+.rightSidebar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+.rightSidebar::-webkit-scrollbar-thumb {
+  background: rgba(0, 229, 255, 0.25);
+  border-radius: 3px;
+}
+.rightSidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 229, 255, 0.5);
 }
 
-.tableContainer {
-  background: rgba(0, 229, 255, 0.05);
-  border: 1px solid rgba(0, 229, 255, 0.2);
+/* HEADER WITH TABS & CLOSE BTN */
+.sidebarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+}
+
+.tabsContainer {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 3px;
   border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tabBtn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #718096;
+  padding: 7px 8px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+.tabBtn:hover {
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tabBtnActive {
+  background: rgba(0, 229, 255, 0.15) !important;
+  color: #00e5ff !important;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+}
+
+.closeBtn {
+  background: rgba(255, 51, 68, 0.1);
+  border: 1px solid rgba(255, 51, 68, 0.3);
+  color: #ff5266;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.closeBtn:hover {
+  background: rgba(255, 51, 68, 0.25);
+  color: #fff;
+  border-color: #ff3344;
+  box-shadow: 0 0 10px rgba(255, 51, 68, 0.4);
+}
+
+.tabContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.subHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 2px 8px 2px;
+}
+
+.hintText {
+  font-size: 0.75rem;
+  color: #718096;
+}
+
+.deselectBtn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #a0aec0;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.deselectBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-color: #cbd5e0;
+}
+
+/* ALL AGENTS TABLE */
+.tableContainer {
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow: hidden;
-  padding: 15px;
+  gap: 8px;
 }
 
-.tableContainer h3 {
-  margin-bottom: 15px;
+.tableTopRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.tableTopRow h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+.searchRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchInput {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  border-radius: 6px;
+  padding: 6px 26px 6px 10px;
+  color: #fff;
+  font-size: 0.8rem;
+  outline: none;
+  transition: border 0.2s ease;
+}
+
+.searchInput:focus {
+  border-color: #00e5ff;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.25);
+}
+
+.clearSearchBtn {
+  position: absolute;
+  right: 6px;
+  background: transparent;
+  border: none;
+  color: #718096;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.clearSearchBtn:hover {
+  color: #fff;
 }
 
 .tableScroll {
   overflow-y: auto;
-  flex: 1;
+  max-height: calc(100vh - 160px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .agentsTable {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.85rem;
-  color: #e2e8f0;
+  font-size: 0.78rem;
+  color: #cbd5e0;
 }
 
 .agentsTable th {
   text-align: left;
-  padding: 8px 4px;
+  padding: 8px 6px;
   color: #00e5ff;
-  border-bottom: 1px solid rgba(0, 229, 255, 0.3);
+  border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+  background: rgba(10, 16, 26, 0.98);
   cursor: pointer;
   user-select: none;
   position: sticky;
   top: 0;
-  background: rgba(5, 5, 8, 0.98);
+  z-index: 2;
+  font-size: 0.78rem;
 }
 
 .agentsTable th:hover {
@@ -69,29 +231,383 @@
 }
 
 .agentsTable td {
-  padding: 8px 4px;
+  padding: 7px 6px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.agentsTable tbody tr:hover td {
-  background: rgba(0, 229, 255, 0.05);
+.agentRow {
+  cursor: pointer;
+  transition: background 0.15s ease;
 }
 
+.agentRow:hover {
+  background: rgba(0, 229, 255, 0.08);
+}
+
+.selectedRow {
+  background: rgba(0, 229, 255, 0.18) !important;
+  border-left: 3px solid #00e5ff;
+}
+
+.idCell {
+  font-family: monospace;
+  font-weight: bold;
+}
+
+.selectedMarker {
+  color: #00e5ff;
+  font-weight: bold;
+}
+
+.tableHpCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.miniHpTrack {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.miniHpFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.genBadge {
+  background: rgba(0, 229, 255, 0.12);
+  color: #00e5ff;
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-family: monospace;
+}
+
+/* AGENT CARD (AGENT DATA) */
 .agentCard {
-  background: rgba(0, 229, 255, 0.05);
-  border: 1px solid rgba(0, 229, 255, 0.2);
-  padding: 15px;
-  border-radius: 8px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.agentCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0, 229, 255, 0.05);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.agentIdBadge {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.idLabel {
+  font-size: 0.75rem;
+  color: #718096;
+  text-transform: uppercase;
+}
+
+.idValue {
+  font-family: monospace;
+  font-size: 1.15rem;
+  color: #00e5ff;
+}
+
+.statusPill {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid;
+}
+
+.statusAlive {
+  background: rgba(0, 255, 136, 0.12);
+  border-color: rgba(0, 255, 136, 0.4);
+  color: #00ff88;
+}
+
+.statusDead {
+  background: rgba(255, 51, 68, 0.15);
+  border-color: rgba(255, 51, 68, 0.4);
+  color: #ff5266;
+}
+
+/* SECTION BOX */
+.sectionBox {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(0, 229, 255, 0.15);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sectionTitle {
+  color: #00e5ff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* HP ROW & PROGRESS */
+.hpMainRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hpDisplay {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.hpNumber {
+  font-size: 1.6rem;
+  font-weight: 800;
+  font-family: monospace;
+}
+
+.hpUnit {
+  font-size: 0.82rem;
+  color: #a0aec0;
+}
+
+.hpStatusBadge {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid;
+  font-weight: 600;
+}
+
+.hpProgressBarTrack {
+  width: 100%;
+  height: 9px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hpProgressBarFill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.3s ease, background 0.3s ease;
+}
+
+/* STATS GRID */
+.statsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.statTile {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 6px 10px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statLabel {
+  font-size: 0.7rem;
+  color: #a0aec0;
+  text-transform: uppercase;
+}
+
+.statValue {
+  font-size: 0.85rem;
+  color: #fff;
+  font-family: monospace;
+}
+
+/* LINEAGE ROW */
+.lineageRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.lineageItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+}
+
+.genHighlight {
+  color: #00e5ff;
+  font-family: monospace;
+  font-weight: bold;
+}
+
+.parentHighlight {
+  color: #cbd5e0;
+  font-family: monospace;
+}
+
+/* STRATEGY CARD */
+.strategyCard {
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.strategyTitle {
+  color: #00e5ff;
+  font-weight: bold;
+  font-size: 0.85rem;
+}
+
+.strategyDesc {
+  color: #cbd5e0;
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+/* WEIGHT CARDS */
+.weightCard {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.weightHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.weightLabel {
+  font-size: 0.78rem;
+  color: #e2e8f0;
+}
+
+.weightValue {
+  font-family: monospace;
+  font-size: 0.88rem;
+}
+
+.bipolarTrack {
+  position: relative;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  margin: 4px 0;
+}
+
+.bipolarCenterMark {
+  position: absolute;
+  left: 50%;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.6);
+  z-index: 1;
+}
+
+.bipolarFill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+.bipolarPointer {
+  position: absolute;
+  top: -4px;
+  width: 6px;
+  height: 14px;
+  background: #fff;
+  border-radius: 2px;
+  transform: translateX(-50%);
+  box-shadow: 0 0 6px #00e5ff;
+  z-index: 2;
+  transition: left 0.3s ease;
+}
+
+.meterLabels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  color: #718096;
+}
+
+.weightExplanation {
+  font-size: 0.72rem;
+  color: #a0aec0;
+  line-height: 1.25;
+}
+
+.metaRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #718096;
+  padding-top: 4px;
+}
+
+.metaRow strong {
+  color: #cbd5e0;
+  font-family: monospace;
+}
+
+/* DEATH REPORT */
+.deathReportBox {
+  background: rgba(255, 51, 68, 0.08);
+  border: 1px solid rgba(255, 51, 68, 0.35);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.deathHeader {
+  color: #ff5266;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .dataRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
 }
 
 .dataRow span {
@@ -101,29 +617,62 @@
 .dataRow strong {
   color: #fff;
   font-family: monospace;
-  font-size: 1rem;
 }
 
-.deadRow {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px dashed rgba(255, 51, 68, 0.5);
+/* EMPTY STATE */
+.emptyState {
+  background: rgba(0, 229, 255, 0.03);
+  border: 1px dashed rgba(0, 229, 255, 0.25);
+  border-radius: 8px;
+  padding: 30px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
 }
 
-.deadRow span {
-  color: #ff3344;
+.emptyIcon {
+  font-size: 2.2rem;
 }
 
-.deadRow strong {
-  color: #ff3344;
+.emptyState h4 {
+  margin: 0;
+  color: #00e5ff;
+  font-size: 1.05rem;
 }
 
+.emptyState p {
+  margin: 0;
+  color: #a0aec0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.actionBtn {
+  background: rgba(0, 229, 255, 0.15);
+  border: 1px solid #00e5ff;
+  color: #00e5ff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.82rem;
+  transition: all 0.2s ease;
+}
+
+.actionBtn:hover {
+  background: rgba(0, 229, 255, 0.3);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+}
+
+/* FLOATING TOGGLE BUTTON */
 .rightToggleBtn {
   position: absolute;
-  right: 340px;
-  /* Width of sidebar (320) + 20px */
+  right: 20px;
   top: 20px;
-  padding: 10px 15px;
+  padding: 10px 14px;
   background: rgba(10, 16, 30, 0.85);
   border: 1px solid rgba(0, 242, 254, 0.3);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
@@ -131,13 +680,13 @@
   border-radius: 12px;
   cursor: pointer;
   font-weight: bold;
-  text-transform: uppercase;
-  transition: all 0.2s;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
   z-index: 100;
 }
 
-
 .rightToggleBtn:hover {
-  background: rgba(0, 229, 255, 0.1);
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+  background: rgba(0, 229, 255, 0.2);
+  color: #fff;
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
 }

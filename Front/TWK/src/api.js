@@ -83,9 +83,31 @@ export const simulationApi = {
     return res.json();
   },
 
+  // Метрики генов и эволюционной адаптации
+  getGeneMetrics: async () => {
+    const res = await fetch(`${BASE_URL}/api/metrics/genes`);
+    return res.json();
+  },
+
   // Лента событий (рождения, смерти)
   getEvents: async (limit = 50) => {
     const res = await fetch(`${BASE_URL}/api/events?limit=${limit}`);
+    return res.json();
+  },
+
+  // Получить детальные данные об агенте по ID
+  getAgent: async (agentId) => {
+    const res = await fetch(`${BASE_URL}/api/agents/${agentId}`);
+    if (!res.ok) return null;
+    return res.json();
+  },
+
+  // Получить список агентов с опциональными фильтрами
+  getAgents: async (zone, aliveOnly = true) => {
+    let url = `${BASE_URL}/api/agents?alive_only=${aliveOnly}`;
+    if (zone) url += `&zone=${encodeURIComponent(zone)}`;
+    const res = await fetch(url);
+    if (!res.ok) return { agents: [] };
     return res.json();
   },
 
