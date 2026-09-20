@@ -3,7 +3,7 @@ import styles from './Randomizer.module.css';
 
 export default function Randomizer({ isOpen, onClose, metrics }) {
   const [config, setConfig] = useState(() => {
-    const saved = localStorage.getItem('disasterRandomizerConfigV2');
+    const saved = localStorage.getItem('disasterRandomizerConfigV3');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -16,19 +16,21 @@ export default function Randomizer({ isOpen, onClose, metrics }) {
     return {
       enabled: false,
       disasters: {
-        meteorite: { enabled: true, intervalSec: 5 },
-        wind: { enabled: true, intervalSec: 10 },
-        rocks: { enabled: false, intervalSec: 15 },
+        meteorite: { enabled: true, intervalTicks: 50 },
+        wind: { enabled: true, intervalTicks: 100 },
+        rocks: { enabled: false, intervalTicks: 150 },
       }
     };
   });
 
-  const configRef = useRef(config);
-  const timersRef = useRef([]);
+  const nextTicksRef = useRef({
+    meteorite: null,
+    wind: null,
+    rocks: null
+  });
 
   useEffect(() => {
-    configRef.current = config;
-    localStorage.setItem('disasterRandomizerConfigV2', JSON.stringify(config));
+    localStorage.setItem('disasterRandomizerConfigV3', JSON.stringify(config));
   }, [config]);
 
   // Stop if everyone dies
@@ -38,61 +40,47 @@ export default function Randomizer({ isOpen, onClose, metrics }) {
     }
   }, [metrics?.aliveCount, metrics?.tick, config.enabled]);
 
-  // Disaster Dispatch Loop
+  // Disaster Dispatch Loop based on Ticks
   useEffect(() => {
-    // Clear any existing timers
-    timersRef.current.forEach(t => clearTimeout(t));
-    timersRef.current = [];
+    if (!config.enabled || !metrics?.tick) return;
 
-    if (!config.enabled) return;
+    const currentTick = metrics.tick;
 
-    const startLoop = (disasterType) => {
-      const currentConfig = configRef.current.disasters[disasterType];
+    Object.keys(config.disasters).forEach(disasterType => {
+      const currentConfig = config.disasters[disasterType];
       
-      // We only fire if the main toggle is still enabled and this specific disaster is enabled
-      if (!configRef.current.enabled || !currentConfig.enabled) return;
-
-      // Random coordinates (assuming 60x30 grid as default)
-      const x = Math.floor(Math.random() * 60);
-      const y = Math.floor(Math.random() * 30);
-      
-      // Randomize params based on disaster
-      let params = {};
-      if (disasterType === 'meteorite') {
-        params = { radius: 2 + Math.random() * 4, damage: 100 + Math.random() * 400 };
-      } else if (disasterType === 'wind') {
-        params = { strength: 4 + Math.random() * 6 };
-      } else if (disasterType === 'rocks') {
-        params = { size: 1 + Math.floor(Math.random() * 4) };
+      if (!currentConfig.enabled) {
+        nextTicksRef.current[disasterType] = null;
+        return;
       }
 
-      const event = new CustomEvent('autoDisaster', {
-        detail: { type: disasterType, x, y, params }
-      });
-      window.dispatchEvent(event);
+      if (nextTicksRef.current[disasterType] === null || nextTicksRef.current[disasterType] < currentTick) {
+        nextTicksRef.current[disasterType] = currentTick + currentConfig.intervalTicks;
+      } else if (currentTick >= nextTicksRef.current[disasterType]) {
+        // Random coordinates (assuming 60x30 grid as default)
+        const x = Math.floor(Math.random() * 60);
+        const y = Math.floor(Math.random() * 30);
+        
+        // Randomize params based on disaster
+        let params = {};
+        if (disasterType === 'meteorite') {
+          params = { radius: 2 + Math.random() * 4, damage: 100 + Math.random() * 400 };
+        } else if (disasterType === 'wind') {
+          params = { strength: 4 + Math.random() * 6 };
+        } else if (disasterType === 'rocks') {
+          params = { size: 1 + Math.floor(Math.random() * 4) };
+        }
 
-      // Schedule next trigger for THIS disaster
-      const newConfig = configRef.current.disasters[disasterType];
-      if (configRef.current.enabled && newConfig.enabled) {
-        const t = setTimeout(() => startLoop(disasterType), newConfig.intervalSec * 1000);
-        timersRef.current.push(t);
-      }
-    };
+        const event = new CustomEvent('autoDisaster', {
+          detail: { type: disasterType, x, y, params }
+        });
+        window.dispatchEvent(event);
 
-    // Start initial timers for each enabled disaster (short initial delay for immediate feedback)
-    Object.keys(config.disasters).forEach(key => {
-      if (config.disasters[key].enabled) {
-        const initialDelay = Math.min(1500, config.disasters[key].intervalSec * 1000);
-        const t = setTimeout(() => startLoop(key), initialDelay);
-        timersRef.current.push(t);
+        nextTicksRef.current[disasterType] = currentTick + currentConfig.intervalTicks;
       }
     });
 
-    return () => {
-      timersRef.current.forEach(t => clearTimeout(t));
-      timersRef.current = [];
-    };
-  }, [config.enabled, config.disasters]); // Restart timers when any interval or enable toggle changes
+  }, [metrics?.tick, config.enabled, config.disasters]);
 
   const handleToggleDisaster = (key) => {
     setConfig(prev => ({
@@ -114,7 +102,7 @@ export default function Randomizer({ isOpen, onClose, metrics }) {
         ...prev.disasters,
         [key]: {
           ...prev.disasters[key],
-          intervalSec: parseInt(value) || 1
+          intervalTicks: parseInt(value) || 1
         }
       }
     }));
@@ -142,12 +130,12 @@ export default function Randomizer({ isOpen, onClose, metrics }) {
               Метеориты
             </label>
             <div className={styles.intervalControl}>
-              <span>{config.disasters.meteorite.intervalSec} сек</span>
+              <span>{config.disasters.meteorite.intervalTicks} тиков</span>
               <input 
                 type="range" 
-                min="1" 
-                max="60" 
-                value={config.disasters.meteorite.intervalSec}
+                min="10" 
+                max="1000" 
+                value={config.disasters.meteorite.intervalTicks}
                 onChange={(e) => handleIntervalChange('meteorite', e.target.value)}
                 className={styles.sliderSmall}
               />
@@ -164,12 +152,12 @@ export default function Randomizer({ isOpen, onClose, metrics }) {
               Ветер
             </label>
             <div className={styles.intervalControl}>
-              <span>{config.disasters.wind.intervalSec} сек</span>
+              <span>{config.disasters.wind.intervalTicks} тиков</span>
               <input 
                 type="range" 
-                min="1" 
-                max="60" 
-                value={config.disasters.wind.intervalSec}
+                min="10" 
+                max="1000" 
+                value={config.disasters.wind.intervalTicks}
                 onChange={(e) => handleIntervalChange('wind', e.target.value)}
                 className={styles.sliderSmall}
               />
@@ -186,12 +174,12 @@ export default function Randomizer({ isOpen, onClose, metrics }) {
               Скалы
             </label>
             <div className={styles.intervalControl}>
-              <span>{config.disasters.rocks.intervalSec} сек</span>
+              <span>{config.disasters.rocks.intervalTicks} тиков</span>
               <input 
                 type="range" 
-                min="1" 
-                max="60" 
-                value={config.disasters.rocks.intervalSec}
+                min="10" 
+                max="1000" 
+                value={config.disasters.rocks.intervalTicks}
                 onChange={(e) => handleIntervalChange('rocks', e.target.value)}
                 className={styles.sliderSmall}
               />

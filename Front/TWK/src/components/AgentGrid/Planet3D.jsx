@@ -195,6 +195,8 @@ export default function Planet3D({
   const colorModeRef = useRef(colorMode);
 
   const activeEffectsRef = useRef([]);
+  // Optimistic local rocks: merged with server state until confirmed
+  const pendingLocalRocksRef = useRef([]);
 
   useEffect(() => {
     colorModeRef.current = colorMode;
@@ -205,6 +207,23 @@ export default function Planet3D({
   }, [agents]);
 
   useEffect(() => {
+    // Merge pending local rocks into new env so they don't flicker
+    if (environment && pendingLocalRocksRef.current.length > 0) {
+      const serverRocks = environment.rocks || [];
+      const serverSet = new Set(serverRocks.map(r => `${r.x},${r.y}`));
+      const now = Date.now();
+      pendingLocalRocksRef.current = pendingLocalRocksRef.current.filter(pr => {
+        if (serverSet.has(`${pr.x},${pr.y}`)) return false;
+        if (now - pr._addedAt > 10000) return false;
+        return true;
+      });
+      for (const pr of pendingLocalRocksRef.current) {
+        if (!serverSet.has(`${pr.x},${pr.y}`)) {
+          serverRocks.push({ x: pr.x, y: pr.y });
+        }
+      }
+      environment.rocks = serverRocks;
+    }
     envRef.current = environment;
   }, [environment]);
 
@@ -1166,6 +1185,7 @@ export default function Planet3D({
               });
               // Leave permanent cliff in the center ("в центре после охлаждения метиорита остается скала и не исчезает")
               envRef.current.rocks.push({ x: gridX, y: gridY });
+              pendingLocalRocksRef.current.push({ x: gridX, y: gridY, _addedAt: Date.now() });
               update3DRocks();
 
               // Add depression cells (level 2 near center, level 1 further out)
@@ -1227,6 +1247,7 @@ export default function Planet3D({
                   if (ry >= 0 && ry < h) {
                     if (!envRef.current.rocks.some(r => r.x === rx && r.y === ry)) {
                       envRef.current.rocks.push({ x: rx, y: ry });
+                      pendingLocalRocksRef.current.push({ x: rx, y: ry, _addedAt: Date.now() });
                     }
                   }
                 }
@@ -1317,6 +1338,7 @@ export default function Planet3D({
             return Math.sqrt(dx * dx + dy * dy) > rad;
           });
           envRef.current.rocks.push({ x: x, y: y });
+          pendingLocalRocksRef.current.push({ x: x, y: y, _addedAt: Date.now() });
           update3DRocks();
 
           if (!envRef.current.depressions) envRef.current.depressions = [];

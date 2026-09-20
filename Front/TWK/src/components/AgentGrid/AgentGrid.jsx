@@ -85,6 +85,9 @@ export default function AgentGrid({
   const craterEpicentersRef = useRef(new Set());
   const windsRef = useRef([]);
   const selectedAgentIdRef = useRef(null);
+  const mouseDownOnCanvas = useRef(false);
+  // Optimistic local rocks: merged with server state until confirmed
+  const pendingLocalRocksRef = useRef([]);
 
   const lastTickRef = useRef(0);
   const onAgentSelectRef = useRef(onAgentSelect);
@@ -420,6 +423,26 @@ export default function AgentGrid({
       latestAgentsRef.current = currentAgents;
       latestEnvRef.current = currentEnv;
 
+      // Merge pending local rocks into server env so they don't flicker
+      if (currentEnv && pendingLocalRocksRef.current.length > 0) {
+        const serverRocks = currentEnv.rocks || [];
+        const serverSet = new Set(serverRocks.map(r => `${r.x},${r.y}`));
+        // Remove confirmed rocks from pending
+        const now = Date.now();
+        pendingLocalRocksRef.current = pendingLocalRocksRef.current.filter(pr => {
+          if (serverSet.has(`${pr.x},${pr.y}`)) return false; // confirmed
+          if (now - pr._addedAt > 10000) return false; // safety timeout 10s
+          return true;
+        });
+        // Merge remaining pending into env
+        for (const pr of pendingLocalRocksRef.current) {
+          if (!serverSet.has(`${pr.x},${pr.y}`)) {
+            serverRocks.push({ x: pr.x, y: pr.y });
+          }
+        }
+        currentEnv.rocks = serverRocks;
+      }
+
       setAgents(currentAgents);
       setEnvironment(currentEnv);
 
@@ -529,6 +552,7 @@ export default function AgentGrid({
         });
         // Leave permanent rock in the center
         latestEnvRef.current.rocks.push({ x: gridX, y: gridY });
+        pendingLocalRocksRef.current.push({ x: gridX, y: gridY, _addedAt: Date.now() });
 
         // Add depression cells (level 2 near center, level 1 further out)
         if (!latestEnvRef.current.depressions) latestEnvRef.current.depressions = [];
@@ -605,6 +629,7 @@ export default function AgentGrid({
       const half = Math.floor(size / 2);
       if (latestEnvRef.current) {
         if (!latestEnvRef.current.rocks) latestEnvRef.current.rocks = [];
+        const now = Date.now();
         for (let dy = -half; dy <= half; dy++) {
           for (let dx = -half; dx <= half; dx++) {
             const rx = (gridX + dx + w) % w;
@@ -612,6 +637,7 @@ export default function AgentGrid({
             if (ry >= 0 && ry < h) {
               if (!latestEnvRef.current.rocks.some(r => r.x === rx && r.y === ry)) {
                 latestEnvRef.current.rocks.push({ x: rx, y: ry });
+                pendingLocalRocksRef.current.push({ x: rx, y: ry, _addedAt: now });
               }
             }
           }
@@ -663,6 +689,7 @@ export default function AgentGrid({
       if (e.button !== 0) return;
       isDragging.current = true;
       hasDragged.current = false;
+      mouseDownOnCanvas.current = true;
       dragStart.current = { 
         x: e.clientX - camera.current.x, 
         y: e.clientY - camera.current.y,
@@ -692,11 +719,15 @@ export default function AgentGrid({
       
       container.style.cursor = currentSelectedDisaster ? 'crosshair' : 'grab';
 
+      // Only process clicks that started on the canvas area.
+      // Clicks on sidebar buttons / pause / genome weights etc. must NOT reset agent.
+      if (!mouseDownOnCanvas.current) return;
+      mouseDownOnCanvas.current = false;
+
       if (!hasDragged.current) {
         const rect = canvas.getBoundingClientRect();
+        // Click released outside canvas bounds — just ignore, don't deselect
         if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) {
-          onAgentSelect(null);
-          draw2D();
           return;
         }
 
