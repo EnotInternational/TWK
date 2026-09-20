@@ -677,25 +677,24 @@
 /* FLOATING TOGGLE BUTTON */
 .rightToggleBtn {
   position: absolute;
-  right: 20px;
   top: 20px;
-  padding: 10px 14px;
-  background: rgba(6, 9, 15, 0.95);
+  padding: 10px 15px;
+  background: rgba(10, 16, 30, 0.85);
+  border: 1px solid rgba(0, 242, 254, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
   color: #00e5ff;
-  border: 1px solid #00e5ff;
-  border-radius: 6px;
+  border-radius: 12px;
   cursor: pointer;
   font-weight: bold;
   font-size: 0.85rem;
-  transition: all 0.2s ease;
+  text-transform: uppercase;
+  transition: all 0.2s;
   z-index: 100;
-  box-shadow: 0 0 12px rgba(0, 229, 255, 0.2);
 }
 
 .rightToggleBtn:hover {
-  background: rgba(0, 229, 255, 0.2);
-  color: #fff;
-  box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+  background: rgba(0, 229, 255, 0.1);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
 }
 
 /* TABLE ARCHETYPE ICON */

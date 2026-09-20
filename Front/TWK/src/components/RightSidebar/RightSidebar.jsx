@@ -2,15 +2,15 @@ import { useState, useEffect, useMemo } from 'react';
 import styles from './RightSidebar.module.css';
 import { socket } from '../../api';
 
-export default function RightSidebar({ 
-  isOpen, 
-  agent, 
+export default function RightSidebar({
+  isOpen,
+  agent,
   onSelectAgent,
-  onToggle, 
+  onToggle,
   onClose,
-  activeTab: controlledTab, 
-  setActiveTab: setControlledTab, 
-  metrics 
+  activeTab: controlledTab,
+  setActiveTab: setControlledTab,
+  metrics
 }) {
   // Support controlled or internal tab state
   const [internalTab, setInternalTab] = useState('all');
@@ -50,8 +50,8 @@ export default function RightSidebar({
     let items = [...agentsList];
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
-      items = items.filter(a => 
-        (a.id && String(a.id).toLowerCase().includes(q)) || 
+      items = items.filter(a =>
+        (a.id && String(a.id).toLowerCase().includes(q)) ||
         (a.zone && String(a.zone).toLowerCase().includes(q))
       );
     }
@@ -270,7 +270,7 @@ export default function RightSidebar({
     <>
       <aside
         className={styles.rightSidebar}
-        style={{ 
+        style={{
           marginRight: isOpen ? '0' : '-360px',
           opacity: isOpen ? 1 : 0
         }}
@@ -278,14 +278,14 @@ export default function RightSidebar({
         {/* Top Header: Mode Switcher Tabs */}
         <div className={styles.sidebarHeader}>
           <div className={styles.tabsContainer}>
-            <button 
+            <button
               className={`${styles.tabBtn} ${activeTab === 'all' ? styles.tabBtnActive : ''}`}
               onClick={() => setActiveTab('all')}
               title="Режим: список всех агентов"
             >
               👥 Все ({agentsList.length})
             </button>
-            <button 
+            <button
               className={`${styles.tabBtn} ${activeTab === 'agent' ? styles.tabBtnActive : ''}`}
               onClick={() => setActiveTab('agent')}
               title="Режим: данные выбранного агента"
@@ -305,10 +305,10 @@ export default function RightSidebar({
               </div>
 
               <div className={styles.searchRow}>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className={styles.searchInput}
-                  placeholder="Поиск по ID или зоне..." 
+                  placeholder="Поиск по ID или зоне..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -341,16 +341,16 @@ export default function RightSidebar({
                       const isSelected = agent && agent.id === a.id;
                       const hpCol = agentHp > 120 ? '#00ff88' : agentHp < 60 ? '#ff3344' : '#ffd000';
                       return (
-                        <tr 
-                          key={a.id} 
+                        <tr
+                          key={a.id}
                           onClick={() => handleRowClick(a)}
                           className={`${styles.agentRow} ${isSelected ? styles.selectedRow : ''}`}
                           title={`Выбрать агента ${a.id}`}
                         >
                           <td className={styles.idCell}>
                             {isSelected && <span className={styles.selectedMarker}>▶ </span>}
-                            <span 
-                              className={styles.tableArchetypeIcon} 
+                            <span
+                              className={styles.tableArchetypeIcon}
                               title={`Каста: ${a.caste === 'predator' ? 'Хищник' : 'Мирный'} | Характер: ${a.character_title || a.archetype || 'Адаптивный'}`}
                             >
                               {a.caste === 'predator' ? '🥩' : a.caste === 'peaceful' ? '🕊️' : getArchetypeIcon(a)}
@@ -364,12 +364,12 @@ export default function RightSidebar({
                                 {agentHp ? agentHp.toFixed(1) : '0'}
                               </span>
                               <div className={styles.miniHpTrack}>
-                                <div 
-                                  className={styles.miniHpFill} 
-                                  style={{ 
+                                <div
+                                  className={styles.miniHpFill}
+                                  style={{
                                     width: `${Math.min(100, Math.max(5, (agentHp / 140) * 100))}%`,
                                     backgroundColor: hpCol
-                                  }} 
+                                  }}
                                 />
                               </div>
                             </div>
@@ -397,7 +397,7 @@ export default function RightSidebar({
             {agent && (
               <div className={styles.subHeader}>
                 <span className={styles.hintText}>Инспекция агента #{agent.id}</span>
-                <button 
+                <button
                   className={styles.deselectBtn}
                   onClick={handleDeselect}
                   title="Снять выбор агента"
@@ -412,7 +412,7 @@ export default function RightSidebar({
                 <div className={styles.emptyIcon}>🧬</div>
                 <h4>Агент не выбран</h4>
                 <p>Выберите нужного агента в списке «Все агенты» или кликните по объекту на карте планеты.</p>
-                <button 
+                <button
                   className={styles.actionBtn}
                   onClick={() => setActiveTab('all')}
                 >
@@ -433,7 +433,7 @@ export default function RightSidebar({
                 </div>
 
                 {/* Caste & Character Title Banner */}
-                <div 
+                <div
                   className={styles.casteBanner}
                   style={{
                     borderColor: caste === 'predator' ? 'rgba(255, 71, 87, 0.45)' : 'rgba(46, 213, 115, 0.45)',
@@ -540,9 +540,9 @@ export default function RightSidebar({
                         const energyDelta = ch.energy_delta ?? 0;
                         const dColor = energyDelta > 0 ? '#10b981' : energyDelta < 0 ? '#ef4444' : '#94a3b8';
                         const choiceLabel = ch.choice === 'friend' ? '🤝 Дружба' :
-                                            ch.choice === 'bribe' ? '💰 Откуп' :
-                                            ch.choice === 'flee' ? '🏃 Побег' :
-                                            ch.choice === 'retaliate' ? '🛡️ Отпор' : '⚔️ Схватка';
+                          ch.choice === 'bribe' ? '💰 Откуп' :
+                            ch.choice === 'flee' ? '🏃 Побег' :
+                              ch.choice === 'retaliate' ? '🛡️ Отпор' : '⚔️ Схватка';
                         return (
                           <div key={idx} style={{ background: '#0d131f', border: '1px solid #1e293b', borderRadius: '4px', padding: '8px 10px', fontSize: '0.72rem' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
@@ -581,11 +581,11 @@ export default function RightSidebar({
 
                   {/* HP Progress Bar */}
                   <div className={styles.hpProgressBarTrack}>
-                    <div 
+                    <div
                       className={styles.hpProgressBarFill}
-                      style={{ 
+                      style={{
                         width: `${hpPercent}%`,
-                        background: isAlive 
+                        background: isAlive
                           ? `linear-gradient(90deg, ${hpThemeColor}88, ${hpThemeColor})`
                           : '#4a5568'
                       }}
@@ -649,7 +649,7 @@ export default function RightSidebar({
                     </div>
                     <div className={styles.bipolarTrack}>
                       <div className={styles.bipolarCenterMark} />
-                      <div 
+                      <div
                         className={styles.bipolarFill}
                         style={{
                           left: wTemp < 0 ? `${tempMeterPercent}%` : '50%',
@@ -657,8 +657,8 @@ export default function RightSidebar({
                           background: wTemp < 0 ? '#00e5ff' : '#ff9900'
                         }}
                       />
-                      <div 
-                        className={styles.bipolarPointer} 
+                      <div
+                        className={styles.bipolarPointer}
                         style={{ left: `${tempMeterPercent}%` }}
                       />
                     </div>
@@ -668,8 +668,8 @@ export default function RightSidebar({
                       <span>+3.0 (Толерантность)</span>
                     </div>
                     <div className={styles.weightExplanation}>
-                      {wTemp < 0 
-                        ? '✓ Выучено поведение: избегать перегрева/холода и стремиться в Терминатор' 
+                      {wTemp < 0
+                        ? '✓ Выучено поведение: избегать перегрева/холода и стремиться в Терминатор'
                         : '⚠ Выучено поведение: безразличие к тепловым штрафам'}
                     </div>
                   </div>
@@ -684,7 +684,7 @@ export default function RightSidebar({
                     </div>
                     <div className={styles.bipolarTrack}>
                       <div className={styles.bipolarCenterMark} />
-                      <div 
+                      <div
                         className={styles.bipolarFill}
                         style={{
                           left: wSwarm < 0 ? `${swarmMeterPercent}%` : '50%',
@@ -692,8 +692,8 @@ export default function RightSidebar({
                           background: wSwarm > 0 ? '#00ff88' : '#718096'
                         }}
                       />
-                      <div 
-                        className={styles.bipolarPointer} 
+                      <div
+                        className={styles.bipolarPointer}
                         style={{ left: `${swarmMeterPercent}%` }}
                       />
                     </div>
@@ -703,8 +703,8 @@ export default function RightSidebar({
                       <span>+3.0 (Стайность)</span>
                     </div>
                     <div className={styles.weightExplanation}>
-                      {wSwarm > 0 
-                        ? '✓ Выучено поведение: группировка и совместный поиск партнеров' 
+                      {wSwarm > 0
+                        ? '✓ Выучено поведение: группировка и совместный поиск партнеров'
                         : '• Выучено поведение: обособленное выживание без скоплений'}
                     </div>
                   </div>
@@ -718,12 +718,12 @@ export default function RightSidebar({
                       </strong>
                     </div>
                     <div className={styles.geneTrack}>
-                      <div 
-                        className={styles.geneFill} 
-                        style={{ 
+                      <div
+                        className={styles.geneFill}
+                        style={{
                           width: `${ferocityPercent}%`,
                           background: 'linear-gradient(90deg, #ffa502, #ff4757)'
-                        }} 
+                        }}
                       />
                     </div>
                     <div className={styles.meterLabels}>
@@ -732,7 +732,7 @@ export default function RightSidebar({
                       <span>1.0 (Беспощадный)</span>
                     </div>
                     <div className={styles.weightExplanation}>
-                      {character.ferocity >= 0.6 
+                      {character.ferocity >= 0.6
                         ? '✓ Усилилась схватками: предпочитает войну и силовую охоту'
                         : '• Умеренная: нападает только при дефиците энергии или провокации'}
                     </div>
@@ -747,12 +747,12 @@ export default function RightSidebar({
                       </strong>
                     </div>
                     <div className={styles.geneTrack}>
-                      <div 
-                        className={styles.geneFill} 
-                        style={{ 
+                      <div
+                        className={styles.geneFill}
+                        style={{
                           width: `${friendlinessPercent}%`,
                           background: 'linear-gradient(90deg, #70a1ff, #00d2d3)'
-                        }} 
+                        }}
                       />
                     </div>
                     <div className={styles.meterLabels}>
@@ -761,7 +761,7 @@ export default function RightSidebar({
                       <span>1.0 (Миротворец)</span>
                     </div>
                     <div className={styles.weightExplanation}>
-                      {character.friendliness >= 0.5 
+                      {character.friendliness >= 0.5
                         ? '✓ Развита выбором мира: охотно идет на союз и мирное сосуществование'
                         : '• Обособленный: подозрительно относится к другим агентам'}
                     </div>
@@ -776,12 +776,12 @@ export default function RightSidebar({
                       </strong>
                     </div>
                     <div className={styles.geneTrack}>
-                      <div 
-                        className={styles.geneFill} 
-                        style={{ 
+                      <div
+                        className={styles.geneFill}
+                        style={{
                           width: `${couragePercent}%`,
                           background: 'linear-gradient(90deg, #ffd000, #ffa502)'
-                        }} 
+                        }}
                       />
                     </div>
                     <div className={styles.meterLabels}>
@@ -790,7 +790,7 @@ export default function RightSidebar({
                       <span>1.0 (Бесстрашный)</span>
                     </div>
                     <div className={styles.weightExplanation}>
-                      {character.courage >= 0.6 
+                      {character.courage >= 0.6
                         ? '✓ Закалена отпором: не бежит от врага, а яростно защищает себя'
                         : '• Склонность уступать: выбирает откуп или уклонение вместо драки'}
                     </div>
@@ -805,12 +805,12 @@ export default function RightSidebar({
                       </strong>
                     </div>
                     <div className={styles.geneTrack}>
-                      <div 
-                        className={styles.geneFill} 
-                        style={{ 
+                      <div
+                        className={styles.geneFill}
+                        style={{
                           width: `${diplomacyPercent}%`,
                           background: 'linear-gradient(90deg, #a29bfe, #e056fd)'
-                        }} 
+                        }}
                       />
                     </div>
                     <div className={styles.meterLabels}>
@@ -819,7 +819,7 @@ export default function RightSidebar({
                       <span>1.0 (Мастер переговоров)</span>
                     </div>
                     <div className={styles.weightExplanation}>
-                      {character.diplomacy >= 0.5 
+                      {character.diplomacy >= 0.5
                         ? '✓ Сформирована откупами: спасает жизнь, выплачивая избыток энергии'
                         : '• Прямолинейный: не склонен к уплате дани'}
                     </div>
@@ -834,12 +834,12 @@ export default function RightSidebar({
                       </strong>
                     </div>
                     <div className={styles.geneTrack}>
-                      <div 
-                        className={styles.geneFill} 
-                        style={{ 
+                      <div
+                        className={styles.geneFill}
+                        style={{
                           width: `${cautionPercent}%`,
                           background: 'linear-gradient(90deg, #7bed9f, #2ed573)'
-                        }} 
+                        }}
                       />
                     </div>
                     <div className={styles.meterLabels}>
@@ -848,7 +848,7 @@ export default function RightSidebar({
                       <span>1.0 (Мастер бегства)</span>
                     </div>
                     <div className={styles.weightExplanation}>
-                      {character.caution >= 0.55 
+                      {character.caution >= 0.55
                         ? '✓ Отточена бегством: мгновенно уклоняется на свободную соседнюю клетку'
                         : '• Уверенный в себе: не паникует при сближении хищника'}
                     </div>
@@ -864,7 +864,7 @@ export default function RightSidebar({
                     </div>
                     <div className={styles.bipolarTrack}>
                       <div className={styles.bipolarCenterMark} />
-                      <div 
+                      <div
                         className={styles.bipolarFill}
                         style={{
                           left: territorial < 0 ? `${territorialMeterPercent}%` : '50%',
@@ -872,8 +872,8 @@ export default function RightSidebar({
                           background: territorial >= 0 ? '#e056fd' : '#ffa502'
                         }}
                       />
-                      <div 
-                        className={styles.bipolarPointer} 
+                      <div
+                        className={styles.bipolarPointer}
                         style={{ left: `${territorialMeterPercent}%` }}
                       />
                     </div>
@@ -883,11 +883,11 @@ export default function RightSidebar({
                       <span>+1.0 (Страж кратера)</span>
                     </div>
                     <div className={styles.weightExplanation}>
-                      {territorial >= 0.35 
+                      {territorial >= 0.35
                         ? '✓ Страж оазиса: удерживает кратер (+60% к защите в depression при обороне)'
-                        : territorial <= -0.3 
-                        ? '• Кочевник: постоянно мигрирует за Терминатором, не удерживая кратеры'
-                        : '• Нейтральная привязка к местности'}
+                        : territorial <= -0.3
+                          ? '• Кочевник: постоянно мигрирует за Терминатором, не удерживая кратеры'
+                          : '• Нейтральная привязка к местности'}
                     </div>
                   </div>
 
@@ -979,13 +979,13 @@ export default function RightSidebar({
       </aside>
 
       {/* Floating Toggle Button on the side */}
-      <button 
-        className={styles.rightToggleBtn} 
+      <button
+        className={styles.rightToggleBtn}
         style={{ right: isOpen ? '380px' : '20px' }}
         onClick={onToggle}
         title={isOpen ? "Скрыть панель" : "Развернуть панель"}
       >
-        {isOpen ? 'Скрыть' : (activeTab === 'agent' && agent ? `Агент #${agent.id} ◀` : `Агенты (${agentsList.length}) ◀`)}
+        {isOpen ? 'Скрыть' : (activeTab === 'agent' && agent ? `Агент #${agent.id}` : `Агенты (${agentsList.length})`)}
       </button>
     </>
   );

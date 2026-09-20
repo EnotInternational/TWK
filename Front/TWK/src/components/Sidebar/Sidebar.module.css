@@ -105,8 +105,42 @@
   cursor: not-allowed;
 }
 
+.btnGroup {
+  display: grid;
+  grid-template-columns: 36px 36px;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.controlBtn {
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.1rem;
+  background: transparent;
+  color: #00e5ff;
+  border: 1px solid #00e5ff;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.controlBtn:hover:not(:disabled) {
+  background: rgba(0, 229, 255, 0.1);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+}
+
+.controlBtn:disabled {
+  border-color: #4a5568;
+  color: #4a5568;
+  cursor: not-allowed;
+}
+
 .sidebar {
-  width: 280px;
+  width: 300px;
   background: rgba(5, 5, 8, 0.98);
   border-right: 1px solid rgba(0, 229, 255, 0.2);
   padding: 20px;

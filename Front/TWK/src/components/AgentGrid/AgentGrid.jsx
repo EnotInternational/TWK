@@ -759,27 +759,6 @@ export default function AgentGrid({
       {/* Top Controls: View Switcher (3D / 2D) + Color Mode Switcher + Legend */}
       <div className={styles.topControlWrapper}>
         <div className={styles.topControlContainer}>
-          {/* View Mode */}
-          <div className={styles.viewToggleBar}>
-            <button 
-              className={`${styles.viewToggleBtn} ${viewMode === '3d' ? styles.viewToggleBtnActive : ''}`}
-              onClick={() => setViewMode('3d')}
-              title="3D Сферическая модель Меркурия"
-            >
-              🪐 3D
-            </button>
-            <button 
-              className={`${styles.viewToggleBtn} ${viewMode === '2d' ? styles.viewToggleBtnActive : ''}`}
-              onClick={() => {
-                setViewMode('2d');
-                setTimeout(draw2D, 50);
-              }}
-              title="2D Цилиндрическая развертка"
-            >
-              🗺️ 2D
-            </button>
-          </div>
-
           {/* Color Mode Switcher */}
           <div className={styles.colorModeBar}>
             <span className={styles.colorModeLabel}>Окраска:</span>
@@ -871,6 +850,27 @@ export default function AgentGrid({
             )}
           </div>
         )}
+      </div>
+
+      {/* View Mode Toggle (Bottom Right) */}
+      <div className={styles.viewToggleBar}>
+        <button 
+          className={`${styles.viewToggleBtn} ${viewMode === '3d' ? styles.viewToggleBtnActive : ''}`}
+          onClick={() => setViewMode('3d')}
+          title="3D Сферическая модель Меркурия"
+        >
+          🪐 3D
+        </button>
+        <button 
+          className={`${styles.viewToggleBtn} ${viewMode === '2d' ? styles.viewToggleBtnActive : ''}`}
+          onClick={() => {
+            setViewMode('2d');
+            setTimeout(draw2D, 50);
+          }}
+          title="2D Цилиндрическая развертка"
+        >
+          🗺️ 2D
+        </button>
       </div>
 
       {viewMode === '3d' ? (

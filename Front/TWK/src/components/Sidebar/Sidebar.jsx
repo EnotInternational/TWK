@@ -99,10 +99,10 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
         <div className={styles.controlPanel}>
           <h3>Управление</h3>
           <div className={styles.btnGroup}>
-            <button className={styles.actionBtn} onClick={handleStart} disabled={status === 'running'}>▶</button>
-            <button className={styles.actionBtn} onClick={handlePause} disabled={status !== 'running'}>⏸</button>
-            <button className={styles.actionBtn} onClick={handleStep} disabled={status === 'running'}>⏭</button>
-            <button className={styles.actionBtn} onClick={handleReset}>🔄</button>
+            <button className={styles.controlBtn} onClick={handleStart} disabled={status === 'running'} title="Старт">▶</button>
+            <button className={styles.controlBtn} onClick={handlePause} disabled={status !== 'running'} title="Пауза">⏸</button>
+            <button className={styles.controlBtn} onClick={handleStep} disabled={status === 'running'} title="Шаг">⏭</button>
+            <button className={styles.controlBtn} onClick={handleReset} title="Обнулить">🔄</button>
           </div>
 
           <div className={styles.inputGroup}>
@@ -120,17 +120,17 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
 
         {/* Терраформирование */}
         <div className={styles.controlPanel}>
-          <h3>Терраформирование</h3>
+          <h3>Начальные параметры</h3>
           <div className={styles.tabsContainer}>
-            <button 
+            <button
               className={`${styles.tabBtn} ${activeTab === 'map' ? styles.activeTab : ''}`}
               onClick={() => setActiveTab('map')}
             >Карта</button>
-            <button 
+            <button
               className={`${styles.tabBtn} ${activeTab === 'agents' ? styles.activeTab : ''}`}
               onClick={() => setActiveTab('agents')}
             >Агенты</button>
-            <button 
+            <button
               className={`${styles.tabBtn} ${activeTab === 'env' ? styles.activeTab : ''}`}
               onClick={() => setActiveTab('env')}
             >Среда</button>
@@ -145,7 +145,7 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
                 <div className={styles.inputGroup}><label>Кол-во скал:</label><input type="number" name="rocksCount" value={spawnParams.rocksCount} onChange={handleInputChange} min="0" /></div>
               </>
             )}
-            
+
             {activeTab === 'agents' && (
               <>
                 <div className={styles.inputGroup}><label>Нач. Популяция:</label><input type="number" name="initialAgents" value={spawnParams.initialAgents} onChange={handleInputChange} min="1" /></div>
@@ -178,7 +178,7 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
 
       <button
         className={styles.toggleBtn}
-        style={{ left: isOpen ? '280px' : '20px' }}
+        style={{ left: isOpen ? '320px' : '20px' }}
         onClick={onToggle}
       >
         {isOpen ? 'Скрыть' : 'Меню'}
