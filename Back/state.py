@@ -47,6 +47,36 @@ class SimulationManager:
             self._broadcast(snapshot)
             return snapshot
 
+    def throw_meteorite(self, x: int, y: int, radius: float) -> None:
+        with self.lock:
+            self.engine.throw_meteorite(x, y, radius)
+            snapshot = self.engine.get_snapshot()
+            self._broadcast(snapshot)
+
+    def add_rocks(self, x: int, y: int, size: int) -> None:
+        with self.lock:
+            self.engine.add_rocks(x, y, size)
+            snapshot = self.engine.get_snapshot()
+            self._broadcast(snapshot)
+
+    def remove_rocks(self, x: int, y: int, radius: float) -> None:
+        with self.lock:
+            self.engine.remove_rocks(x, y, radius)
+            snapshot = self.engine.get_snapshot()
+            self._broadcast(snapshot)
+
+    def add_depression(self, x: int, y: int, level: int = 1, size: int = 1) -> None:
+        with self.lock:
+            self.engine.add_depression(x, y, level, size)
+            snapshot = self.engine.get_snapshot()
+            self._broadcast(snapshot)
+
+    def apply_wind(self, x: int, y: int, strength: int = 7, direction: Optional[str] = None) -> None:
+        with self.lock:
+            self.engine.apply_wind(x, y, strength, direction)
+            snapshot = self.engine.get_snapshot()
+            self._broadcast(snapshot)
+
     def set_interval(self, interval_sec: float) -> float:
         with self.lock:
             self._interval = max(0.01, min(interval_sec, 10.0))

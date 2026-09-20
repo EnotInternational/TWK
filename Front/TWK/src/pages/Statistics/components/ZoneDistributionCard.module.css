@@ -1,0 +1,114 @@
+.card {
+  background: #0d131f;
+  border: 1px solid #1e293b;
+  border-radius: 4px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.title {
+  color: #f1f5f9;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.paramTag {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.75rem;
+  color: #38bdf8;
+}
+
+.spectrumBar {
+  display: flex;
+  height: 16px;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 14px;
+  border: 1px solid #334155;
+}
+
+.segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 700;
+  color: #ffffff;
+  transition: width 0.3s ease;
+}
+
+.segmentHot {
+  background: #ea580c;
+}
+
+.segmentTerminator {
+  background: #0284c7;
+}
+
+.segmentCold {
+  background: #1e3a8a;
+}
+
+.zonesList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.zoneRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  background: #090d16;
+  border-radius: 3px;
+  border: 1px solid #1e293b;
+}
+
+.zoneInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.zoneName {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.zoneDesc {
+  font-size: 0.68rem;
+  color: #64748b;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.zoneStats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+.zonePercent {
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: 'Courier New', Courier, monospace;
+  color: #f1f5f9;
+}
+
+.zoneStatus {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}

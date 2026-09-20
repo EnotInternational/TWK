@@ -8,8 +8,13 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
     width: 60,
     height: 30,
     initialAgents: 40,
+    startingEnergy: 100,
+    reproductionThreshold: 140,
+    reproductionCost: 50,
     cycleTicks: 200,
     terminatorWidth: 8,
+    windPenalty: 0.0,
+    rocksCount: 0,
   });
   
   const [speed, setSpeed] = useState(0.2); // seconds per tick
@@ -23,8 +28,13 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
         width: Number(spawnParams.width),
         height: Number(spawnParams.height),
         initialAgents: Number(spawnParams.initialAgents),
+        startingEnergy: Number(spawnParams.startingEnergy),
+        reproductionThreshold: Number(spawnParams.reproductionThreshold),
+        reproductionCost: Number(spawnParams.reproductionCost),
         cycleTicks: Number(spawnParams.cycleTicks),
-        terminatorWidth: Number(spawnParams.terminatorWidth)
+        terminatorWidth: Number(spawnParams.terminatorWidth),
+        windPenalty: Number(spawnParams.windPenalty),
+        rocksCount: Number(spawnParams.rocksCount)
       });
       socket.emit('request_field');
     } catch (error) {
@@ -127,12 +137,32 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
             <input type="number" name="initialAgents" value={spawnParams.initialAgents} onChange={handleInputChange} min="1" />
           </div>
           <div className={styles.inputGroup}>
+            <label>Нач. Энергия:</label>
+            <input type="number" name="startingEnergy" value={spawnParams.startingEnergy} onChange={handleInputChange} min="10" />
+          </div>
+          <div className={styles.inputGroup}>
+            <label>Порог деления:</label>
+            <input type="number" name="reproductionThreshold" value={spawnParams.reproductionThreshold} onChange={handleInputChange} min="10" />
+          </div>
+          <div className={styles.inputGroup}>
+            <label>Стоимость деления:</label>
+            <input type="number" name="reproductionCost" value={spawnParams.reproductionCost} onChange={handleInputChange} min="1" />
+          </div>
+          <div className={styles.inputGroup}>
             <label>Цикл (тиков):</label>
             <input type="number" name="cycleTicks" value={spawnParams.cycleTicks} onChange={handleInputChange} min="10" />
           </div>
           <div className={styles.inputGroup}>
             <label>Ширина Терминатора:</label>
             <input type="number" name="terminatorWidth" value={spawnParams.terminatorWidth} onChange={handleInputChange} min="1" />
+          </div>
+          <div className={styles.inputGroup}>
+            <label>Штраф за ветер:</label>
+            <input type="number" name="windPenalty" value={spawnParams.windPenalty} onChange={handleInputChange} step="0.1" />
+          </div>
+          <div className={styles.inputGroup}>
+            <label>Количество скал:</label>
+            <input type="number" name="rocksCount" value={spawnParams.rocksCount} onChange={handleInputChange} min="0" />
           </div>
           
           <button 

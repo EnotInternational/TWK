@@ -1,0 +1,109 @@
+.card {
+  background: #0d131f;
+  border: 1px solid #1e293b;
+  border-radius: 4px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.title {
+  color: #f1f5f9;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+.filterChips {
+  display: flex;
+  gap: 4px;
+}
+
+.chip {
+  background: #1e293b;
+  border: 1px solid transparent;
+  color: #94a3b8;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 0.68rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.chip:hover {
+  color: #38bdf8;
+  border-color: #334155;
+}
+
+.chip.active {
+  background: #334155;
+  color: #38bdf8;
+  border-color: #38bdf8;
+}
+
+.eventsList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.eventItem {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 8px;
+  background: #090d16;
+  border-radius: 3px;
+  border-left: 2px solid #38bdf8;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.72rem;
+}
+
+.eventBirth {
+  border-left-color: #10b981;
+}
+
+.eventDeath {
+  border-left-color: #ef4444;
+}
+
+.eventDisaster {
+  border-left-color: #f59e0b;
+}
+
+.eventEvolution {
+  border-left-color: #a78bfa;
+}
+
+.tagLabel {
+  font-weight: 700;
+  font-size: 0.65rem;
+}
+
+.eventText {
+  color: #cbd5e1;
+  flex: 1;
+}
+
+.eventMeta {
+  color: #64748b;
+  font-size: 0.68rem;
+  white-space: nowrap;
+}

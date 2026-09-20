@@ -32,11 +32,8 @@ def init_simulation():
             reproduction_cost: {type: number, example: 50.0}
             require_partner: {type: boolean, example: true}
             max_ticks: {type: integer, example: 1000}
-            agent_max_age: {type: integer, example: 100}
-            wind_penalty: {type: number, example: 0.0}
-            rocks_count: {type: integer, example: 0}
-            rocks_coords: {type: array, example: [[10, 15], [12, 18]]}
-            meteorite_prob: {type: number, example: 0.0}
+            wind_penalty: {type: number, example: 0.5}
+            rocks_count: {type: integer, example: 50}
     responses:
       200: {description: Симуляция инициализирована}
     """
@@ -154,3 +151,103 @@ def set_speed():
         return jsonify({"interval_sec": new_val}), 200
     except (ValueError, TypeError):
         return jsonify({"error": "interval_sec должен быть числом"}), 400
+
+
+@simulation_bp.route("/meteorite", methods=["POST"])
+def throw_meteorite():
+    """
+    Бросить метеорит в заданную точку, уничтожив агентов в радиусе.
+    ---
+    tags: [simulation]
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          required: [x, y, radius]
+          properties:
+            x: {type: integer, example: 10}
+            y: {type: integer, example: 10}
+            radius: {type: number, example: 3.0}
+    responses:
+      200: {description: Метеорит сброшен}
+      400: {description: Некорректные параметры}
+    """
+    data = request.get_json(silent=True) or {}
+    try:
+        x = int(data.get("x", 0))
+        y = int(data.get("y", 0))
+        radius = float(data.get("radius", 3.0))
+    except (ValueError, TypeError):
+        return jsonify({"error": "Некорректные параметры x, y, radius"}), 400
+
+    sim_manager.throw_meteorite(x, y, radius)
+    return jsonify({"message": "Meteorite thrown", "x": x, "y": y, "radius": radius}), 200
+
+
+@simulation_bp.route("/rocks", methods=["POST"])
+def add_rocks():
+    """
+    Добавить блок скал.
+    """
+    data = request.get_json(silent=True) or {}
+    try:
+        x = int(data.get("x", 0))
+        y = int(data.get("y", 0))
+        size = int(data.get("size", 3))
+    except (ValueError, TypeError):
+        return jsonify({"error": "Некорректные параметры"}), 400
+
+    sim_manager.add_rocks(x, y, size)
+    return jsonify({"message": "Rocks added", "x": x, "y": y, "size": size}), 200
+
+@simulation_bp.route("/depression", methods=["POST"])
+def add_depression():
+    """
+    Добавить углубление (уровень 1 - обычная, уровень 2 - глубокая).
+    """
+    data = request.get_json(silent=True) or {}
+    try:
+        x = int(data.get("x", 0))
+        y = int(data.get("y", 0))
+        level = int(data.get("level", 1))
+        size = int(data.get("size", 1))
+    except (ValueError, TypeError):
+        return jsonify({"error": "Некорректные параметры"}), 400
+
+    sim_manager.add_depression(x, y, level, size)
+    return jsonify({"message": "Depression added", "x": x, "y": y, "level": level, "size": size}), 200
+
+@simulation_bp.route("/eraser", methods=["POST"])
+def remove_rocks():
+    """
+    Удалить скалы и углубления в радиусе (Ластик).
+    """
+    data = request.get_json(silent=True) or {}
+    try:
+        x = int(data.get("x", 0))
+        y = int(data.get("y", 0))
+        radius = float(data.get("radius", 2.0))
+    except (ValueError, TypeError):
+        return jsonify({"error": "Некорректные параметры"}), 400
+
+    sim_manager.remove_rocks(x, y, radius)
+    return jsonify({"message": "Rocks and depressions removed", "x": x, "y": y, "radius": radius}), 200
+
+@simulation_bp.route("/wind", methods=["POST"])
+def apply_wind():
+    """
+    Применить ветер от центра нажатия указателя (радиальный).
+    """
+    data = request.get_json(silent=True) or {}
+    try:
+        x = int(data.get("x", 0))
+        y = int(data.get("y", 0))
+        strength = int(data.get("strength", 7))
+        direction = data.get("direction", None)
+    except (ValueError, TypeError):
+        return jsonify({"error": "Некорректные параметры"}), 400
+
+    sim_manager.apply_wind(x, y, strength, direction)
+    return jsonify({"message": "Wind applied", "x": x, "y": y, "strength": strength}), 200
