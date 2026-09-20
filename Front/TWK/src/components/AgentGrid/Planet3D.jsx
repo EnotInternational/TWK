@@ -768,16 +768,28 @@ export default function Planet3D({
     };
 
     // --- Update Sun Position Aligned With Surface Subsolar Point ---
+    let currentSunAlpha = null;
+
     const updateSun = () => {
       const env = envRef.current;
       const w = env?.width || gridWidth;
       const sunX = env?.sun_x ?? 0;
 
-      const alphaSun = (sunX / w) * Math.PI * 2;
+      const targetAlpha = (sunX / w) * Math.PI * 2;
+      
+      if (currentSunAlpha === null) {
+        currentSunAlpha = targetAlpha;
+      } else {
+        let diff = targetAlpha - currentSunAlpha;
+        // Normalize diff to [-PI, PI] to find shortest rotation path
+        diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+        currentSunAlpha += diff * 0.05; // smooth interpolation
+      }
+
       const dist = 32;
 
-      const sx = -dist * Math.cos(alphaSun);
-      const sz = dist * Math.sin(alphaSun);
+      const sx = -dist * Math.cos(currentSunAlpha);
+      const sz = dist * Math.sin(currentSunAlpha);
       const sy = 4;
 
       sunLight.position.set(sx, sy, sz);
