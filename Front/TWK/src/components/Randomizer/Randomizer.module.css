@@ -1,0 +1,154 @@
+.randomizerOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  opacity: 0;
+  animation: fadeIn 0.3s forwards;
+}
+
+.randomizerModal {
+  background: #1a1a2e;
+  border-radius: 16px;
+  padding: 24px;
+  width: 400px;
+  max-width: 90vw;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid #3a3a5c;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  color: #fff;
+  transform: translateY(20px);
+  animation: slideUp 0.3s forwards ease-out;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #a8a8ff;
+}
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  color: #888;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.closeBtn:hover {
+  color: #fff;
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #2a2a4a;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #4a4a7a;
+}
+
+.disasterRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.intervalControl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.intervalControl span {
+  font-size: 0.9rem;
+  color: #a8a8ff;
+  min-width: 50px;
+  text-align: right;
+}
+
+.sliderSmall {
+  width: 100px;
+  accent-color: #a8a8ff;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: color 0.2s;
+  min-width: 140px;
+}
+
+.checkboxLabel:hover {
+  color: #a8a8ff;
+}
+
+.checkboxLabel input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #a8a8ff;
+}
+
+.spinBtn {
+  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 14px;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+  box-shadow: 0 4px 15px rgba(37, 117, 252, 0.4);
+}
+
+.spinBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 117, 252, 0.6);
+}
+
+.spinBtn:active {
+  transform: translateY(0);
+}
+
+.btnActive {
+  box-shadow: 0 4px 15px rgba(255, 74, 74, 0.4);
+}
+
+.btnActive:hover {
+  box-shadow: 0 6px 20px rgba(255, 74, 74, 0.6);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

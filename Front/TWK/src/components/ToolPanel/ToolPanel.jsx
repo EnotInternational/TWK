@@ -2,7 +2,8 @@ import styles from './ToolPanel.module.css';
 
 export default function ToolPanel({
   selectedDisaster, setSelectedDisaster,
-  disasterParams, setDisasterParams
+  disasterParams, setDisasterParams,
+  onOpenRandomizer
 }) {
   const handleDisasterChange = (disaster) => {
     if (selectedDisaster === disaster) {
@@ -38,6 +39,13 @@ export default function ToolPanel({
       <div className={styles.disasterSection}>
         <h4 className={styles.title}>Катастрофы и рельеф (Клик по полю)</h4>
         <div className={styles.buttonGroup}>
+          <button 
+            className={styles.button}
+            onClick={onOpenRandomizer}
+            style={{ background: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)', color: 'white', border: 'none' }}
+          >
+            🎲 Рандомайзер
+          </button>
           <button 
             className={`${styles.button} ${selectedDisaster === 'wind' ? styles.active : ''}`}
             onClick={() => handleDisasterChange('wind')}

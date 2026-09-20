@@ -1189,6 +1189,16 @@ export default function Planet3D({
       }
     };
 
+    const handleAutoDisasterEffect = (e) => {
+      const { type, x, y, params } = e.detail;
+      const w = envRef.current?.width || gridWidthRef.current || 60;
+      const h = envRef.current?.height || gridHeightRef.current || 30;
+      const normal = gridToSphere(x, y, w, h, 1.0).normalize();
+      const pos = normal.clone().multiplyScalar(PLANET_RADIUS);
+      trigger3DEffect(type, pos, normal, params, x, y, null);
+    };
+    window.addEventListener('autoDisaster', handleAutoDisasterEffect);
+
     const domElem = renderer.domElement;
     domElem.addEventListener('mousedown', handleMouseDown);
     domElem.addEventListener('mouseup', handleMouseUp);
@@ -1337,6 +1347,7 @@ export default function Planet3D({
 
     return () => {
       cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('autoDisaster', handleAutoDisasterEffect);
       window.removeEventListener('resize', handleResize);
       domElem.removeEventListener('mousedown', handleMouseDown);
       domElem.removeEventListener('mouseup', handleMouseUp);

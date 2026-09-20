@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar/Sidebar';
 import AgentGrid from './components/AgentGrid/AgentGrid';
 import ToolPanel from './components/ToolPanel/ToolPanel';
 import RightSidebar from './components/RightSidebar/RightSidebar';
+import Randomizer from './components/Randomizer/Randomizer';
 import styles from './App.module.css';
 
 export default function App() {
@@ -12,6 +13,7 @@ export default function App() {
   const [metrics, setMetrics] = useState({});
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [activeRightTab, setActiveRightTab] = useState('all'); // 'all' | 'agent'
+  const [isRandomizerOpen, setIsRandomizerOpen] = useState(false);
 
   // Состояния для катастроф
   const [selectedDisaster, setSelectedDisaster] = useState(null); // 'wind' | 'rocks' | 'meteorite' | 'eraser' | null
@@ -57,8 +59,11 @@ export default function App() {
           setSelectedDisaster={setSelectedDisaster}
           disasterParams={disasterParams}
           setDisasterParams={setDisasterParams}
+          onOpenRandomizer={() => setIsRandomizerOpen(true)}
         />
       </main>
+
+      <Randomizer isOpen={isRandomizerOpen} onClose={() => setIsRandomizerOpen(false)} metrics={metrics} />
 
       <RightSidebar 
         isOpen={isRightMenuOpen} 

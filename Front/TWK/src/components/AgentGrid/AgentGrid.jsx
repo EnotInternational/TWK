@@ -438,6 +438,134 @@ export default function AgentGrid({
     return () => cancelAnimationFrame(animId);
   }, [viewMode, draw2D]);
 
+  const applyDisasterLocal = useCallback((type, gridX, gridY, params) => {
+    if (window.triggerDisaster) {
+      window.triggerDisaster(type, gridX, gridY, params);
+    }
+    const w = gridWidth;
+    const h = gridHeight;
+
+    if (type === 'meteorite') {
+      const rad = params?.radius || 3.0;
+      addCrater({
+        x: gridX,
+        y: gridY,
+        radius: rad,
+        createdAt: Date.now(),
+        duration: 25000,
+      });
+      if (latestEnvRef.current) {
+        if (!latestEnvRef.current.rocks) latestEnvRef.current.rocks = [];
+        latestEnvRef.current.rocks = latestEnvRef.current.rocks.filter(r => {
+          let dx = Math.abs(r.x - gridX);
+          dx = Math.min(dx, w - dx);
+          const dy = Math.abs(r.y - gridY);
+          return Math.sqrt(dx * dx + dy * dy) > rad;
+        });
+        // Leave permanent rock in the center
+        latestEnvRef.current.rocks.push({ x: gridX, y: gridY });
+
+        // Add depression cells (level 2 near center, level 1 further out)
+        if (!latestEnvRef.current.depressions) latestEnvRef.current.depressions = [];
+        const rInt = Math.ceil(rad);
+        for (let dy = -rInt; dy <= rInt; dy++) {
+          for (let dx = -rInt; dx <= rInt; dx++) {
+            const d = Math.sqrt(dx * dx + dy * dy);
+            if (d <= rad) {
+              const nx = (gridX + dx + w) % w;
+              const ny = gridY + dy;
+              if (ny >= 0 && ny < h) {
+                const lvl = d <= rad * 0.5 ? 2 : 1;
+                const ex = latestEnvRef.current.depressions.findIndex(dep => dep.x === nx && dep.y === ny);
+                if (ex >= 0) {
+                  latestEnvRef.current.depressions[ex].level = Math.max(latestEnvRef.current.depressions[ex].level, lvl);
+                } else {
+                  latestEnvRef.current.depressions.push({ x: nx, y: ny, level: lvl });
+                }
+              }
+            }
+          }
+        }
+      }
+    } else if (type === 'depression') {
+      const lvl = parseInt(params?.level || 1);
+      const sz = parseInt(params?.size || 2);
+      const offset = Math.floor(sz / 2);
+      if (latestEnvRef.current) {
+        if (!latestEnvRef.current.depressions) latestEnvRef.current.depressions = [];
+        for (let dy = -offset; dy < sz - offset; dy++) {
+          for (let dx = -offset; dx < sz - offset; dx++) {
+            const nx = (gridX + dx + w) % w;
+            const ny = gridY + dy;
+            if (ny >= 0 && ny < h) {
+              const ex = latestEnvRef.current.depressions.findIndex(d => d.x === nx && d.y === ny);
+              if (ex >= 0) {
+                latestEnvRef.current.depressions[ex].level = lvl;
+              } else {
+                latestEnvRef.current.depressions.push({ x: nx, y: ny, level: lvl });
+              }
+            }
+          }
+        }
+      }
+    } else if (type === 'eraser') {
+      const rad = params?.radius || 2.0;
+      if (latestEnvRef.current && latestEnvRef.current.rocks) {
+        latestEnvRef.current.rocks = latestEnvRef.current.rocks.filter(r => {
+          let dx = Math.abs(r.x - gridX);
+          dx = Math.min(dx, w - dx);
+          const dy = Math.abs(r.y - gridY);
+          return Math.sqrt(dx * dx + dy * dy) > rad;
+        });
+      }
+      if (latestEnvRef.current && latestEnvRef.current.depressions) {
+        latestEnvRef.current.depressions = latestEnvRef.current.depressions.filter(d => {
+          let dx = Math.abs(d.x - gridX);
+          dx = Math.min(dx, w - dx);
+          const dy = Math.abs(d.y - gridY);
+          return Math.sqrt(dx * dx + dy * dy) > rad;
+        });
+      }
+      removeCratersNear(gridX, gridY, rad, w);
+    } else if (type === 'wind') {
+      windsRef.current.push({
+        x: gridX,
+        y: gridY,
+        strength: params?.strength ?? 7,
+        direction: params?.direction || 'east',
+        ticksLeft: 20
+      });
+    } else if (type === 'rocks') {
+      const size = params?.size || 3;
+      const half = Math.floor(size / 2);
+      if (latestEnvRef.current) {
+        if (!latestEnvRef.current.rocks) latestEnvRef.current.rocks = [];
+        for (let dy = -half; dy <= half; dy++) {
+          for (let dx = -half; dx <= half; dx++) {
+            const rx = (gridX + dx + w) % w;
+            const ry = gridY + dy;
+            if (ry >= 0 && ry < h) {
+              if (!latestEnvRef.current.rocks.some(r => r.x === rx && r.y === ry)) {
+                latestEnvRef.current.rocks.push({ x: rx, y: ry });
+              }
+            }
+          }
+        }
+      }
+    }
+  }, [gridWidth, gridHeight, addCrater, removeCratersNear]);
+
+  useEffect(() => {
+    const handleAutoDisaster = (e) => {
+      const { type, x, y, params } = e.detail;
+      applyDisasterLocal(type, x, y, params);
+      // Let Planet3D or draw2D handle visuals on next tick, but force 2D draw here just in case:
+      if (viewMode === '2d') draw2D();
+    };
+    window.addEventListener('autoDisaster', handleAutoDisaster);
+    return () => window.removeEventListener('autoDisaster', handleAutoDisaster);
+  }, [applyDisasterLocal, viewMode, draw2D]);
+
   // 2D Mouse & Interaction listeners
   useEffect(() => {
     if (viewMode !== '2d') return;
@@ -535,118 +663,7 @@ export default function AgentGrid({
         }
 
         if (currentSelectedDisaster) {
-          if (window.triggerDisaster) {
-            window.triggerDisaster(currentSelectedDisaster, gridX, gridY, currentDisasterParams);
-          }
-          
-          if (currentSelectedDisaster === 'meteorite') {
-            const rad = currentDisasterParams?.radius || 3.0;
-            addCrater({
-              x: gridX,
-              y: gridY,
-              radius: rad,
-              createdAt: Date.now(),
-              duration: 25000,
-            });
-            if (latestEnvRef.current) {
-              if (!latestEnvRef.current.rocks) latestEnvRef.current.rocks = [];
-              latestEnvRef.current.rocks = latestEnvRef.current.rocks.filter(r => {
-                let dx = Math.abs(r.x - gridX);
-                dx = Math.min(dx, w - dx);
-                const dy = Math.abs(r.y - gridY);
-                return Math.sqrt(dx * dx + dy * dy) > rad;
-              });
-              // Leave permanent rock in the center
-              latestEnvRef.current.rocks.push({ x: gridX, y: gridY });
-
-              // Add depression cells (level 2 near center, level 1 further out)
-              if (!latestEnvRef.current.depressions) latestEnvRef.current.depressions = [];
-              const rInt = Math.ceil(rad);
-              for (let dy = -rInt; dy <= rInt; dy++) {
-                for (let dx = -rInt; dx <= rInt; dx++) {
-                  const d = Math.sqrt(dx * dx + dy * dy);
-                  if (d <= rad) {
-                    const nx = (gridX + dx + w) % w;
-                    const ny = gridY + dy;
-                    if (ny >= 0 && ny < h) {
-                      const lvl = d <= rad * 0.5 ? 2 : 1;
-                      const ex = latestEnvRef.current.depressions.findIndex(dep => dep.x === nx && dep.y === ny);
-                      if (ex >= 0) {
-                        latestEnvRef.current.depressions[ex].level = Math.max(latestEnvRef.current.depressions[ex].level, lvl);
-                      } else {
-                        latestEnvRef.current.depressions.push({ x: nx, y: ny, level: lvl });
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          } else if (currentSelectedDisaster === 'depression') {
-            const lvl = parseInt(currentDisasterParams?.level || 1);
-            const sz = parseInt(currentDisasterParams?.size || 2);
-            const offset = Math.floor(sz / 2);
-            if (latestEnvRef.current) {
-              if (!latestEnvRef.current.depressions) latestEnvRef.current.depressions = [];
-              for (let dy = -offset; dy < sz - offset; dy++) {
-                for (let dx = -offset; dx < sz - offset; dx++) {
-                  const nx = (gridX + dx + w) % w;
-                  const ny = gridY + dy;
-                  if (ny >= 0 && ny < h) {
-                    const ex = latestEnvRef.current.depressions.findIndex(d => d.x === nx && d.y === ny);
-                    if (ex >= 0) {
-                      latestEnvRef.current.depressions[ex].level = lvl;
-                    } else {
-                      latestEnvRef.current.depressions.push({ x: nx, y: ny, level: lvl });
-                    }
-                  }
-                }
-              }
-            }
-          } else if (currentSelectedDisaster === 'eraser') {
-            const rad = currentDisasterParams?.radius || 2.0;
-            if (latestEnvRef.current && latestEnvRef.current.rocks) {
-              latestEnvRef.current.rocks = latestEnvRef.current.rocks.filter(r => {
-                let dx = Math.abs(r.x - gridX);
-                dx = Math.min(dx, w - dx);
-                const dy = Math.abs(r.y - gridY);
-                return Math.sqrt(dx * dx + dy * dy) > rad;
-              });
-            }
-            if (latestEnvRef.current && latestEnvRef.current.depressions) {
-              latestEnvRef.current.depressions = latestEnvRef.current.depressions.filter(d => {
-                let dx = Math.abs(d.x - gridX);
-                dx = Math.min(dx, w - dx);
-                const dy = Math.abs(d.y - gridY);
-                return Math.sqrt(dx * dx + dy * dy) > rad;
-              });
-            }
-            removeCratersNear(gridX, gridY, rad, w);
-          } else if (currentSelectedDisaster === 'wind') {
-            windsRef.current.push({
-              x: gridX,
-              y: gridY,
-              strength: currentDisasterParams?.strength ?? 7,
-              direction: currentDisasterParams?.direction || 'east',
-              ticksLeft: 20
-            });
-          } else if (currentSelectedDisaster === 'rocks') {
-            const size = currentDisasterParams?.size || 3;
-            const half = Math.floor(size / 2);
-            if (latestEnvRef.current) {
-              if (!latestEnvRef.current.rocks) latestEnvRef.current.rocks = [];
-              for (let dy = -half; dy <= half; dy++) {
-                for (let dx = -half; dx <= half; dx++) {
-                  const rx = (gridX + dx + w) % w;
-                  const ry = gridY + dy;
-                  if (ry >= 0 && ry < h) {
-                    if (!latestEnvRef.current.rocks.some(r => r.x === rx && r.y === ry)) {
-                      latestEnvRef.current.rocks.push({ x: rx, y: ry });
-                    }
-                  }
-                }
-              }
-            }
-          }
+          applyDisasterLocal(currentSelectedDisaster, gridX, gridY, currentDisasterParams);
           draw2D();
         }
       }
