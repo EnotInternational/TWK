@@ -88,7 +88,29 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
           opacity: isOpen ? 1 : 0
         }}
       >
-        <h2>Terra Nova: Mercury</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+          <h2 style={{ margin: 0 }}>Terra Nova: Mercury</h2>
+          <button 
+            onClick={onToggle}
+            title="Закрыть меню"
+            style={{
+              background: 'rgba(255, 51, 68, 0.1)',
+              border: '1px solid rgba(255, 51, 68, 0.3)',
+              color: '#ff5266',
+              borderRadius: '6px',
+              width: '28px',
+              height: '28px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            ✕
+          </button>
+        </div>
         <div className={styles.statusBox}>
            <span>Статус: {status}</span>
            <span>Тик: {tick}</span>

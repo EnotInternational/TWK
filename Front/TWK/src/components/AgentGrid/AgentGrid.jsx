@@ -6,6 +6,8 @@ import Planet3D from './Planet3D';
 export default function AgentGrid({ 
   onMetricsUpdate, 
   onAgentSelect, 
+  onAgentUpdate,
+  selectedAgent = null,
   gridWidth = 60, 
   gridHeight = 30, 
   selectedDisaster = null, 
@@ -37,6 +39,10 @@ export default function AgentGrid({
   const craterEpicentersRef = useRef(new Set());
   const windsRef = useRef([]);
   const selectedAgentIdRef = useRef(null);
+
+  useEffect(() => {
+    selectedAgentIdRef.current = selectedAgent ? selectedAgent.id : null;
+  }, [selectedAgent]);
 
   const addCrater = useCallback((crater) => {
     const id = crater.id || `crater_${crater.x}_${crater.y}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
@@ -374,12 +380,24 @@ export default function AgentGrid({
 
       if (selectedAgentIdRef.current !== null) {
         const updatedAgent = currentAgents.find(a => a.id === selectedAgentIdRef.current);
+        const notifyUpdate = onAgentUpdate || onAgentSelect;
         if (updatedAgent) {
           updatedAgent.isSelected = true;
-          onAgentSelect(updatedAgent);
+          notifyUpdate(updatedAgent);
         } else {
-          selectedAgentIdRef.current = null;
-          onAgentSelect(null);
+          notifyUpdate(prev => {
+            if (prev && prev.id === selectedAgentIdRef.current) {
+              return {
+                ...prev,
+                is_alive: false,
+                energy: 0,
+                hp: 0,
+                death_reason: prev.death_reason || 'Погиб (истощение / среда)',
+                death_tick: data.tick,
+              };
+            }
+            return null;
+          });
         }
       }
 
@@ -406,7 +424,7 @@ export default function AgentGrid({
     return () => {
       socket.off('simulation:tick', handleTick);
     };
-  }, [viewMode, draw2D, onMetricsUpdate, onAgentSelect]);
+  }, [viewMode, draw2D, onMetricsUpdate, onAgentSelect, onAgentUpdate]);
 
   // 2D animation loop for smooth crater/wind fading
   useEffect(() => {

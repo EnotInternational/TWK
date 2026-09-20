@@ -91,6 +91,22 @@ export const simulationApi = {
     return res.json();
   },
 
+  // Получить детальные данные об агенте по ID
+  getAgent: async (agentId) => {
+    const res = await fetch(`${BASE_URL}/api/agents/${agentId}`);
+    if (!res.ok) return null;
+    return res.json();
+  },
+
+  // Получить список агентов с опциональными фильтрами
+  getAgents: async (zone, aliveOnly = true) => {
+    let url = `${BASE_URL}/api/agents?alive_only=${aliveOnly}`;
+    if (zone) url += `&zone=${encodeURIComponent(zone)}`;
+    const res = await fetch(url);
+    if (!res.ok) return { agents: [] };
+    return res.json();
+  },
+
   // Проверка научной воспроизводимости (одинаковый seed)
   verifyReproducibility: async (seed = 42, ticks = 50) => {
     const res = await fetch(`${BASE_URL}/api/experiments/verify`, {
