@@ -19,6 +19,7 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
 
   const [speed, setSpeed] = useState(0.2); // seconds per tick
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('map');
 
   const handleSpawn = async () => {
     setIsLoading(true);
@@ -120,49 +121,47 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
         {/* Терраформирование */}
         <div className={styles.controlPanel}>
           <h3>Терраформирование</h3>
-          <div className={styles.inputGroup}>
-            <label>Seed:</label>
-            <input type="number" name="seed" value={spawnParams.seed} onChange={handleInputChange} />
+          <div className={styles.tabsContainer}>
+            <button 
+              className={`${styles.tabBtn} ${activeTab === 'map' ? styles.activeTab : ''}`}
+              onClick={() => setActiveTab('map')}
+            >Карта</button>
+            <button 
+              className={`${styles.tabBtn} ${activeTab === 'agents' ? styles.activeTab : ''}`}
+              onClick={() => setActiveTab('agents')}
+            >Агенты</button>
+            <button 
+              className={`${styles.tabBtn} ${activeTab === 'env' ? styles.activeTab : ''}`}
+              onClick={() => setActiveTab('env')}
+            >Среда</button>
           </div>
-          <div className={styles.inputGroup}>
-            <label>Ширина:</label>
-            <input type="number" name="width" value={spawnParams.width} onChange={handleInputChange} min="10" />
-          </div>
-          <div className={styles.inputGroup}>
-            <label>Высота:</label>
-            <input type="number" name="height" value={spawnParams.height} onChange={handleInputChange} min="10" />
-          </div>
-          <div className={styles.inputGroup}>
-            <label>Нач. Популяция:</label>
-            <input type="number" name="initialAgents" value={spawnParams.initialAgents} onChange={handleInputChange} min="1" />
-          </div>
-          <div className={styles.inputGroup}>
-            <label>Нач. Энергия:</label>
-            <input type="number" name="startingEnergy" value={spawnParams.startingEnergy} onChange={handleInputChange} min="10" />
-          </div>
-          <div className={styles.inputGroup}>
-            <label>Порог деления:</label>
-            <input type="number" name="reproductionThreshold" value={spawnParams.reproductionThreshold} onChange={handleInputChange} min="10" />
-          </div>
-          <div className={styles.inputGroup}>
-            <label>Стоимость деления:</label>
-            <input type="number" name="reproductionCost" value={spawnParams.reproductionCost} onChange={handleInputChange} min="1" />
-          </div>
-          <div className={styles.inputGroup}>
-            <label>Цикл (тиков):</label>
-            <input type="number" name="cycleTicks" value={spawnParams.cycleTicks} onChange={handleInputChange} min="10" />
-          </div>
-          <div className={styles.inputGroup}>
-            <label>Ширина Терминатора:</label>
-            <input type="number" name="terminatorWidth" value={spawnParams.terminatorWidth} onChange={handleInputChange} min="1" />
-          </div>
-          <div className={styles.inputGroup}>
-            <label>Штраф за ветер:</label>
-            <input type="number" name="windPenalty" value={spawnParams.windPenalty} onChange={handleInputChange} step="0.1" />
-          </div>
-          <div className={styles.inputGroup}>
-            <label>Количество скал:</label>
-            <input type="number" name="rocksCount" value={spawnParams.rocksCount} onChange={handleInputChange} min="0" />
+
+          <div className={styles.tabContent}>
+            {activeTab === 'map' && (
+              <>
+                <div className={styles.inputGroup}><label>Seed:</label><input type="number" name="seed" value={spawnParams.seed} onChange={handleInputChange} /></div>
+                <div className={styles.inputGroup}><label>Ширина:</label><input type="number" name="width" value={spawnParams.width} onChange={handleInputChange} min="10" /></div>
+                <div className={styles.inputGroup}><label>Высота:</label><input type="number" name="height" value={spawnParams.height} onChange={handleInputChange} min="10" /></div>
+                <div className={styles.inputGroup}><label>Кол-во скал:</label><input type="number" name="rocksCount" value={spawnParams.rocksCount} onChange={handleInputChange} min="0" /></div>
+              </>
+            )}
+            
+            {activeTab === 'agents' && (
+              <>
+                <div className={styles.inputGroup}><label>Нач. Популяция:</label><input type="number" name="initialAgents" value={spawnParams.initialAgents} onChange={handleInputChange} min="1" /></div>
+                <div className={styles.inputGroup}><label>Нач. Энергия:</label><input type="number" name="startingEnergy" value={spawnParams.startingEnergy} onChange={handleInputChange} min="10" /></div>
+                <div className={styles.inputGroup}><label>Порог деления:</label><input type="number" name="reproductionThreshold" value={spawnParams.reproductionThreshold} onChange={handleInputChange} min="10" /></div>
+                <div className={styles.inputGroup}><label>Стоимость дел.:</label><input type="number" name="reproductionCost" value={spawnParams.reproductionCost} onChange={handleInputChange} min="1" /></div>
+              </>
+            )}
+
+            {activeTab === 'env' && (
+              <>
+                <div className={styles.inputGroup}><label>Цикл (тиков):</label><input type="number" name="cycleTicks" value={spawnParams.cycleTicks} onChange={handleInputChange} min="10" /></div>
+                <div className={styles.inputGroup}><label>Ширина Терм.:</label><input type="number" name="terminatorWidth" value={spawnParams.terminatorWidth} onChange={handleInputChange} min="1" /></div>
+                <div className={styles.inputGroup}><label>Штраф за ветер:</label><input type="number" name="windPenalty" value={spawnParams.windPenalty} onChange={handleInputChange} step="0.1" /></div>
+              </>
+            )}
           </div>
 
           <button

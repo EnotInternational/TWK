@@ -19,16 +19,13 @@
 }
 
 .chartsContainer {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
   flex: 1;
-  flex-wrap: wrap;
-  overflow-y: auto;
 }
 
 .statBox {
-  flex: 1 1 120px;
-  min-width: 0;
   background: #1a202c;
   border: 1px solid rgba(0, 229, 255, 0.2);
   border-radius: 6px;
@@ -37,7 +34,7 @@
   justify-content: center;
   align-items: center;
   gap: 4px;
-  padding: 6px 0;
+  padding: 8px 15px;
 }
 
 .label {
