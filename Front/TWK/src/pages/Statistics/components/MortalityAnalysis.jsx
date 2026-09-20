@@ -1,29 +1,29 @@
 import styles from './MortalityAnalysis.module.css';
 
 export default function MortalityAnalysis({ totalDeaths = 0 }) {
-  // Факторы элиминации популяции
+  // Причины гибели агентов
   const causes = [
     {
       id: 'starvation',
-      name: 'Метаболическое истощение (E → 0)',
+      name: 'Закончилась энергия (голод)',
       percent: 48,
       color: '#ef4444'
     },
     {
       id: 'heat',
-      name: 'Термическая денатурация (T > T_crit)',
+      name: 'Сгорели на дневной стороне (жара)',
       percent: 26,
       color: '#ea580c'
     },
     {
       id: 'cold',
-      name: 'Криогенная инактивация (T < T_min)',
+      name: 'Замёрзли на ночной стороне (холод)',
       percent: 18,
       color: '#3b82f6'
     },
     {
       id: 'age',
-      name: 'Онтогенетический предел (t_age ≥ t_max)',
+      name: 'Предельный возраст (старость)',
       percent: 8,
       color: '#a78bfa'
     }
@@ -32,8 +32,8 @@ export default function MortalityAnalysis({ totalDeaths = 0 }) {
   return (
     <div className={styles.card}>
       <h4 className={styles.title}>
-        <span>Факторы элиминации</span>
-        <span className={styles.paramTag}>ΣD = {totalDeaths}</span>
+        <span>Причины гибели</span>
+        <span className={styles.paramTag}>Всего погибло: {totalDeaths}</span>
       </h4>
 
       <div className={styles.causesList}>
@@ -45,7 +45,7 @@ export default function MortalityAnalysis({ totalDeaths = 0 }) {
                 <span className={styles.causeName}>{c.name}</span>
                 <div className={styles.causeStats}>
                   <span className={styles.causeCount}>
-                    n ≈ {estimatedCount}
+                    ~{estimatedCount}
                   </span>
                   <span className={styles.causePercent} style={{ color: c.color }}>
                     {c.percent}%
@@ -64,7 +64,7 @@ export default function MortalityAnalysis({ totalDeaths = 0 }) {
       </div>
 
       <div className={styles.footerNote}>
-        Доминирующий вектор летальности: дефицит свободной энергии при выходе за пределы сумеречного пояса.
+        Главная причина гибели: нехватка энергии при выходе из безопасной зоны терминатора.
       </div>
     </div>
   );

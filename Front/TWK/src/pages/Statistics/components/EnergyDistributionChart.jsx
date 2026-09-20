@@ -79,15 +79,15 @@ export default function EnergyDistributionChart({ history = [], latestMetric = {
   return (
     <div className={styles.card}>
       <h4 className={styles.title}>
-        <span>Метаболический профиль</span>
-        <span className={styles.paramTag}>⟨E⟩ = {avgEnergy > 0 ? avgEnergy.toFixed(1) : '0.0'}</span>
+        <span>Распределение энергии</span>
+        <span className={styles.paramTag}>Средняя: {avgEnergy > 0 ? avgEnergy.toFixed(1) : '0.0'}</span>
       </h4>
 
       <div className={styles.barsList}>
         {/* Репродуктивный резерв E >= 120 */}
         <div className={styles.barItem}>
           <div className={styles.barHeader}>
-            <span className={styles.barLabel}>Репродуктивный резерв (E ≥ 120)</span>
+            <span className={styles.barLabel}>Готовы к размножению (E ≥ 120)</span>
             <span className={styles.barValue}>
               {highPct}% <span style={{ color: '#64748b', fontSize: '0.68rem' }}>({highCount})</span>
             </span>
@@ -100,10 +100,10 @@ export default function EnergyDistributionChart({ history = [], latestMetric = {
           </div>
         </div>
 
-        {/* Гомеостатическая норма 60 - 120 */}
+        {/* Нормальный уровень 60 - 120 */}
         <div className={styles.barItem}>
           <div className={styles.barHeader}>
-            <span className={styles.barLabel}>Гомеостатический оптимум (60 ≤ E &lt; 120)</span>
+            <span className={styles.barLabel}>Нормальный уровень (60 ≤ E &lt; 120)</span>
             <span className={styles.barValue}>
               {midPct}% <span style={{ color: '#64748b', fontSize: '0.68rem' }}>({midCount})</span>
             </span>
@@ -116,10 +116,10 @@ export default function EnergyDistributionChart({ history = [], latestMetric = {
           </div>
         </div>
 
-        {/* Энергетический дефицит E < 60 */}
+        {/* Истощение / голод E < 60 */}
         <div className={styles.barItem}>
           <div className={styles.barHeader}>
-            <span className={styles.barLabel}>Критический дефицит (E &lt; 60)</span>
+            <span className={styles.barLabel}>Истощение / Голод (E &lt; 60)</span>
             <span className={styles.barValue}>
               {lowPct}% <span style={{ color: '#64748b', fontSize: '0.68rem' }}>({lowCount})</span>
             </span>
@@ -135,8 +135,8 @@ export default function EnergyDistributionChart({ history = [], latestMetric = {
 
       <div className={styles.miniChartArea}>
         <div className={styles.miniChartHeader}>
-          <span>Динамика среднего потенциала ⟨E(t)⟩</span>
-          <span>E_rep = 140</span>
+          <span>Средняя энергия во времени</span>
+          <span>Порог размножения: 140</span>
         </div>
         <canvas ref={canvasRef} className={styles.sparklineCanvas} />
       </div>

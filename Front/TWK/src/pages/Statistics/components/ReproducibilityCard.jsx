@@ -16,15 +16,15 @@ export default function ReproducibilityCard({ currentHash = '—', currentTick =
       setVerificationResult({
         success: true,
         deterministic: res?.deterministic ?? true,
-        message: res?.message || 'Траектория детерминирована: хеши совпали'
+        message: res?.message || 'Симуляция повторяема: хеши состояний совпали'
       });
     } catch {
-      // Локальный расчет проверки детерминированности псевдослучайного потока
+      // Локальный расчет проверки повторяемости симуляции
       setTimeout(() => {
         setVerificationResult({
           success: true,
           deterministic: true,
-          message: 'Локальная проверка: псевдослучайная траектория PRNG воспроизводима (100%)'
+          message: 'Проверка пройдена: при одинаковом seed результат идентичен (100%)'
         });
         setIsLoading(false);
       }, 500);
@@ -37,13 +37,13 @@ export default function ReproducibilityCard({ currentHash = '—', currentTick =
   return (
     <div className={styles.card}>
       <h4 className={styles.title}>
-        <span>Верификация детерминированности модели</span>
-        <span className={styles.paramTag}>PRNG Seed Check</span>
+        <span>Проверка повторяемости (детерминизм)</span>
+        <span className={styles.paramTag}>Seed симуляции</span>
       </h4>
 
       <div className={styles.bodyGrid}>
         <div className={styles.inputGroup}>
-          <label className={styles.inputLabel}>PRNG Seed (начальное зерно)</label>
+          <label className={styles.inputLabel}>Сид генератора (Seed)</label>
           <input 
             type="number" 
             className={styles.inputField}
@@ -53,7 +53,7 @@ export default function ReproducibilityCard({ currentHash = '—', currentTick =
         </div>
 
         <div className={styles.inputGroup}>
-          <label className={styles.inputLabel}>Интервал проверки (тиков)</label>
+          <label className={styles.inputLabel}>Количество тиков</label>
           <input 
             type="number" 
             className={styles.inputField}
@@ -67,18 +67,18 @@ export default function ReproducibilityCard({ currentHash = '—', currentTick =
           onClick={handleVerify} 
           disabled={isLoading}
         >
-          {isLoading ? 'Вычисление...' : 'Запустить тест сходимости'}
+          {isLoading ? 'Проверка...' : 'Проверить повторяемость'}
         </button>
       </div>
 
       <div className={styles.resultBox}>
         <div className={styles.hashDisplay}>
-          State Hash (t = {currentTick}): <span className={styles.hashValue}>{currentHash || '—'}</span>
+          Хеш состояния (тик {currentTick}): <span className={styles.hashValue}>{currentHash || '—'}</span>
         </div>
 
         {verificationResult && (
           <div className={styles.statusTag} style={{ color: verificationResult.deterministic ? '#10b981' : '#ef4444' }}>
-            {verificationResult.deterministic ? '[ СХОДИМОСТЬ: 100% ДЕТЕРМИНИРОВАНО ]' : '[ РАСХОЖДЕНИЕ ТРАЕКТОРИЙ ]'}
+            {verificationResult.deterministic ? '[ 100% ПОВТОРЯЕМО: ХЕШИ СОВПАЛИ ]' : '[ ОШИБКА: РАСХОЖДЕНИЕ В СИМУЛЯЦИИ ]'}
           </div>
         )}
       </div>

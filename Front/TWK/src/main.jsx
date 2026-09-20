@@ -75,7 +75,7 @@ function Root() {
             outline: 'none'
           }}
         >
-          Моделирование среды
+          Симуляция
         </button>
 
         <button
@@ -95,7 +95,7 @@ function Root() {
             outline: 'none'
           }}
         >
-          Научная телеметрия
+          Статистика
         </button>
       </nav>
 

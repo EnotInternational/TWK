@@ -21,11 +21,11 @@ export default function EventsFeed({ events = [] }) {
 
   const getTagLabel = (type) => {
     switch (type) {
-      case 'birth': return '[REPL]';
-      case 'death': return '[ELIM]';
-      case 'disaster': return '[ENVR]';
-      case 'evolution': return '[EVOL]';
-      default: return '[SYS]';
+      case 'birth': return '[РОЖДЕНИЕ]';
+      case 'death': return '[ГИБЕЛЬ]';
+      case 'disaster': return '[СРЕДА]';
+      case 'evolution': return '[МУТАЦИЯ]';
+      default: return '[СИСТЕМА]';
     }
   };
 
@@ -42,7 +42,7 @@ export default function EventsFeed({ events = [] }) {
   return (
     <div className={styles.card}>
       <div className={styles.header}>
-        <h4 className={styles.title}>Журнал стохастических событий</h4>
+        <h4 className={styles.title}>Лента событий</h4>
         <div className={styles.filterChips}>
           <button 
             className={`${styles.chip} ${filter === 'all' ? styles.active : ''}`}
@@ -54,19 +54,19 @@ export default function EventsFeed({ events = [] }) {
             className={`${styles.chip} ${filter === 'birth' ? styles.active : ''}`}
             onClick={() => setFilter('birth')}
           >
-            Репликация
+            Рождения
           </button>
           <button 
             className={`${styles.chip} ${filter === 'death' ? styles.active : ''}`}
             onClick={() => setFilter('death')}
           >
-            Элиминация
+            Гибель
           </button>
           <button 
             className={`${styles.chip} ${filter === 'disaster' ? styles.active : ''}`}
             onClick={() => setFilter('disaster')}
           >
-            Флуктуации
+            Среда
           </button>
         </div>
       </div>
@@ -82,13 +82,13 @@ export default function EventsFeed({ events = [] }) {
                 {ev.text || ev.message || JSON.stringify(ev)}
               </span>
               <span className={styles.eventMeta}>
-                t={ev.tick ?? '—'}
+                Тик {ev.tick ?? '—'}
               </span>
             </div>
           ))
         ) : (
           <div style={{ textAlign: 'center', color: '#64748b', padding: '24px', fontSize: '0.72rem', fontFamily: 'Courier New, monospace' }}>
-            [ Нет зарегистрированных событий ]
+            [ Пока событий не произошло ]
           </div>
         )}
       </div>

@@ -15,10 +15,12 @@ class EventType(str, Enum):
     DEATH_EXHAUSTION = "DEATH_EXHAUSTION"
     DEATH_HEAT = "DEATH_HEAT"
     DEATH_COLD = "DEATH_COLD"
-    DEATH_AGE = "DEATH_AGE"
     EXTINCTION = "EXTINCTION"
-    METEORITE_STRIKE = "METEORITE_STRIKE"
-
+    METEORITE = "METEORITE"
+    WIND = "WIND"
+    ROCKS = "ROCKS"
+    DEPRESSION = "DEPRESSION"
+    ERASER = "ERASER"
 
 class SimulationEvent:
     def __init__(

@@ -42,7 +42,7 @@ export default function PopulationChart({ history = [] }) {
       ctx.fillStyle = '#64748b';
       ctx.font = '11px Courier New, monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('[ Ожидание телеметрического потока: N < 2 точек ]', w / 2, h / 2);
+      ctx.fillText('[ Ожидание данных: нужно хотя бы 2 тика ]', w / 2, h / 2);
       return;
     }
 
@@ -88,7 +88,7 @@ export default function PopulationChart({ history = [] }) {
     ctx.textAlign = 'center';
     ctx.font = '10px -apple-system, BlinkMacSystemFont, sans-serif';
     ctx.fillStyle = '#64748b';
-    ctx.fillText('Особей [N]', 0, 0);
+    ctx.fillText('Агенты', 0, 0);
     ctx.restore();
 
     // Засечки оси абсцисс (время в тиках)
@@ -254,8 +254,8 @@ export default function PopulationChart({ history = [] }) {
     <div className={styles.chartContainer}>
       <div className={styles.chartHeader}>
         <div className={styles.titleArea}>
-          <h3 className={styles.title}>Временной ряд динамики популяции N(t)</h3>
-          <span className={styles.subtitle}>Хронограмма численности, репликации и кумулятивной элиминации</span>
+          <h3 className={styles.title}>График динамики популяции</h3>
+          <span className={styles.subtitle}>Количество живых агентов, рождений и смертей по тикам</span>
         </div>
 
         <div className={styles.controls}>
@@ -263,26 +263,26 @@ export default function PopulationChart({ history = [] }) {
             <div 
               className={`${styles.legendItem} ${seriesVisible.alive ? styles.active : ''}`}
               onClick={() => toggleSeries('alive')}
-              title="Переключить ряд N(t)"
+              title="Показать / скрыть живых"
             >
               <span className={styles.legendLineSample} style={{ background: '#38bdf8', opacity: seriesVisible.alive ? 1 : 0.25 }} />
-              <span>N(t) [Живые]</span>
+              <span>Живые агенты</span>
             </div>
             <div 
               className={`${styles.legendItem} ${seriesVisible.births ? styles.active : ''}`}
               onClick={() => toggleSeries('births')}
-              title="Переключить ряд ΣB"
+              title="Показать / скрыть рождаемость"
             >
               <span className={styles.legendLineSample} style={{ background: '#10b981', borderTop: '1px dashed #10b981', opacity: seriesVisible.births ? 1 : 0.25 }} />
-              <span>ΣB [Рождаемость]</span>
+              <span>Всего родилось</span>
             </div>
             <div 
               className={`${styles.legendItem} ${seriesVisible.deaths ? styles.active : ''}`}
               onClick={() => toggleSeries('deaths')}
-              title="Переключить ряд ΣD"
+              title="Показать / скрыть смертность"
             >
               <span className={styles.legendLineSample} style={{ background: '#ef4444', borderTop: '1px dotted #ef4444', opacity: seriesVisible.deaths ? 1 : 0.25 }} />
-              <span>ΣD [Смертность]</span>
+              <span>Всего погибло</span>
             </div>
           </div>
         </div>
@@ -304,23 +304,23 @@ export default function PopulationChart({ history = [] }) {
               top: `${Math.max(35, tooltip.y)}px` 
             }}
           >
-            <div className={styles.tooltipTitle}>ТИК t = {tooltip.point.tick}</div>
+            <div className={styles.tooltipTitle}>Тик {tooltip.point.tick}</div>
             <div className={styles.tooltipRow}>
-              <span>Численность N(t):</span>
+              <span>Живых агентов:</span>
               <strong style={{ color: '#38bdf8' }}>{tooltip.point.alive}</strong>
             </div>
             <div className={styles.tooltipRow}>
-              <span>Средн. энергия ⟨E⟩:</span>
+              <span>Средняя энергия:</span>
               <strong style={{ color: '#f59e0b' }}>{tooltip.point.avgEnergy}</strong>
             </div>
             <div className={styles.tooltipRow}>
-              <span>В терминаторе Φ:</span>
+              <span>В терминаторе:</span>
               <strong style={{ color: '#a78bfa' }}>
                 {(tooltip.point.terminatorRatio * 100).toFixed(1)}%
               </strong>
             </div>
             <div className={styles.tooltipRow}>
-              <span>Шаг Δ (B / D):</span>
+              <span>За этот тик (+ / -):</span>
               <span>
                 <strong style={{ color: '#10b981' }}>+{tooltip.point.births || 0}</strong>
                 {' / '}

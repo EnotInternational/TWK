@@ -12,9 +12,8 @@ export default function App() {
   const [metrics, setMetrics] = useState({});
   const [selectedAgent, setSelectedAgent] = useState(null);
 
-  // Новые состояния для режимов мыши и катастроф
-  const [mouseMode, setMouseMode] = useState('drag'); // 'drag' | 'select'
-  const [selectedDisaster, setSelectedDisaster] = useState(null); // 'wind' | 'rocks' | 'meteorite' | null
+  // Состояния для катастроф
+  const [selectedDisaster, setSelectedDisaster] = useState(null); // 'wind' | 'rocks' | 'meteorite' | 'eraser' | null
   const [disasterParams, setDisasterParams] = useState({}); // { ...params }
 
   // We rely on AgentGrid to render the environment and fetch the agents via sockets
@@ -33,14 +32,11 @@ export default function App() {
           <AgentGrid 
             onMetricsUpdate={setMetrics} 
             onAgentSelect={setSelectedAgent}
-            mouseMode={mouseMode}
             selectedDisaster={selectedDisaster}
             disasterParams={disasterParams}
           />
         </div>
         <ToolPanel
-          mouseMode={mouseMode}
-          setMouseMode={setMouseMode}
           selectedDisaster={selectedDisaster}
           setSelectedDisaster={setSelectedDisaster}
           disasterParams={disasterParams}

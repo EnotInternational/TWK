@@ -22,6 +22,8 @@ export const simulationApi = {
         reproduction_cost: params.reproductionCost ?? 50,
         cycle_ticks: params.cycleTicks ?? 200,
         terminator_width: params.terminatorWidth ?? 4,
+        wind_penalty: params.windPenalty ?? 0.0,
+        rocks_count: params.rocksCount ?? 0,
       }),
     });
     return res.json();
@@ -99,13 +101,54 @@ export const simulationApi = {
     return res.json();
   },
 
-  // Заглушка для вызова катастрофы на бэкенде
+  // Вызов катастрофы на бэкенде
   triggerDisaster: async (disasterType, x, y, params) => {
-    console.warn(`[Stub API] Вызвана катастрофа: ${disasterType} в (${x}, ${y}) с параметрами`, params);
-    console.warn('В бэкенде пока нет эндпоинта для этого. Нужна реализация POST /api/environment/disaster');
-    // В будущем здесь будет:
-    // const res = await fetch(`${BASE_URL}/api/environment/disaster`, { ... })
-    // return res.json();
+    if (disasterType === 'meteorite') {
+      const res = await fetch(`${BASE_URL}/api/simulation/meteorite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ x, y, radius: params?.radius || 3.0 }),
+      });
+      return res.json();
+    }
+
+    if (disasterType === 'rocks') {
+      const res = await fetch(`${BASE_URL}/api/simulation/rocks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ x, y, size: params?.size || 3 }),
+      });
+      return res.json();
+    }
+
+    if (disasterType === 'depression') {
+      const res = await fetch(`${BASE_URL}/api/simulation/depression`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ x, y, level: params?.level || 1, size: params?.size || 1 }),
+      });
+      return res.json();
+    }
+
+    if (disasterType === 'wind') {
+      const res = await fetch(`${BASE_URL}/api/simulation/wind`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ x, y, strength: params?.strength ?? 7 }),
+      });
+      return res.json();
+    }
+
+    if (disasterType === 'eraser') {
+      const res = await fetch(`${BASE_URL}/api/simulation/eraser`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ x, y, radius: params?.radius || 2 }),
+      });
+      return res.json();
+    }
+
+    console.warn(`[Stub API] Катастрофа ${disasterType} не реализована на бэкенде.`);
     return { success: true };
   }
 };

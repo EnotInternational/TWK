@@ -22,25 +22,25 @@ export default function TopAgentsLeaderboard({ agents = [] }) {
   return (
     <div className={styles.card}>
       <div className={styles.header}>
-        <h4 className={styles.title}>Реестр адаптированных фенотипов (Top-10)</h4>
+        <h4 className={styles.title}>Топ-10 агентов-долгожителей</h4>
         <div className={styles.sortTabs}>
           <button 
             className={`${styles.sortBtn} ${sortBy === 'age' ? styles.active : ''}`}
             onClick={() => setSortBy('age')}
           >
-            t_life (возраст)
+            По возрасту
           </button>
           <button 
             className={`${styles.sortBtn} ${sortBy === 'energy' ? styles.active : ''}`}
             onClick={() => setSortBy('energy')}
           >
-            E (энергия)
+            По энергии
           </button>
           <button 
             className={`${styles.sortBtn} ${sortBy === 'generation' ? styles.active : ''}`}
             onClick={() => setSortBy('generation')}
           >
-            G (поколение)
+            По поколению
           </button>
         </div>
       </div>
@@ -50,12 +50,12 @@ export default function TopAgentsLeaderboard({ agents = [] }) {
           <thead>
             <tr>
               <th>№</th>
-              <th>Идентификатор [ID]</th>
-              <th>t_life [тики]</th>
-              <th>E [энергия]</th>
-              <th>Поколение G</th>
-              <th>Локализация</th>
-              <th>Parent Taxon</th>
+              <th>ID агента</th>
+              <th>Возраст (тики)</th>
+              <th>Энергия</th>
+              <th>Поколение</th>
+              <th>Зона</th>
+              <th>Предок (Parent ID)</th>
             </tr>
           </thead>
           <tbody>
@@ -93,7 +93,7 @@ export default function TopAgentsLeaderboard({ agents = [] }) {
             ) : (
               <tr>
                 <td colSpan="7" style={{ textAlign: 'center', color: '#64748b', padding: '24px' }}>
-                  [ Нет данных: выборка популяции пуста ]
+                  [ Нет живых агентов ]
                 </td>
               </tr>
             )}

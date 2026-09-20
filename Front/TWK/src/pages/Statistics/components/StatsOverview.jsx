@@ -16,14 +16,14 @@ export default function StatsOverview({
     : '0.0';
   const dominantGen = latestMetric?.dominantGeneration ?? 0;
 
-  // Определение режима гомеостаза по энергии
-  let energyPill = { text: 'Гомеостаз', class: styles.statusNormal };
+  // Оценка запаса энергии популяции
+  let energyPill = { text: 'В норме', class: styles.statusNormal };
   if (avgEnergy >= 120) {
-    energyPill = { text: 'Профицит', class: styles.statusNormal };
+    energyPill = { text: 'С избытком', class: styles.statusNormal };
   } else if (avgEnergy < 60) {
-    energyPill = { text: 'Дефицит', class: styles.statusCritical };
+    energyPill = { text: 'Истощение', class: styles.statusCritical };
   } else {
-    energyPill = { text: 'Норма', class: styles.statusWarning };
+    energyPill = { text: 'В норме', class: styles.statusWarning };
   }
 
   const deltaN = totalBirths - totalDeaths;
@@ -33,106 +33,106 @@ export default function StatsOverview({
 
   return (
     <div className={styles.overviewGrid}>
-      {/* 1. Численность популяции N(t) */}
+      {/* 1. Численность популяции */}
       <div className={styles.metricCard}>
         <div className={styles.cardHeader}>
-          <span className={styles.paramLabel}>Численность популяции</span>
-          <span className={styles.paramSymbol}>N(t)</span>
+          <span className={styles.paramLabel}>Популяция</span>
+          <span className={styles.paramSymbol}>всего</span>
         </div>
         <div className={styles.valueContainer}>
           <span className={styles.numericValue}>{alive}</span>
-          <span className={styles.unitLabel}>особей</span>
+          <span className={styles.unitLabel}>живых</span>
         </div>
         <div className={styles.cardFooter}>
-          <span>Состояние: {status}</span>
+          <span>Статус: {status}</span>
           <span className={`${styles.statusPill} ${alive > 0 ? styles.statusNormal : styles.statusCritical}`}>
-            {alive > 0 ? 'Жизнеспособна' : 'Коллапс'}
+            {alive > 0 ? 'Активна' : 'Вымерли'}
           </span>
         </div>
       </div>
 
-      {/* 2. Интервал флуктуации численности */}
+      {/* 2. Мин и макс популяция */}
       <div className={styles.metricCard}>
         <div className={styles.cardHeader}>
-          <span className={styles.paramLabel}>Экстремумы ряда N</span>
-          <span className={styles.paramSymbol}>[N_min, N_max]</span>
+          <span className={styles.paramLabel}>Мин / Макс</span>
+          <span className={styles.paramSymbol}>диапазон</span>
         </div>
         <div className={styles.valueContainer}>
           <span className={styles.numericValue}>[{minPopulation}, {peakPopulation}]</span>
-          <span className={styles.unitLabel}>диапазон</span>
+          <span className={styles.unitLabel}>агентов</span>
         </div>
         <div className={styles.cardFooter}>
-          <span>Амплитуда: Δ = {peakPopulation - minPopulation}</span>
-          <span className={`${styles.statusPill} ${styles.statusNeutral}`}>t = {currentTick}</span>
+          <span>Колебания: {peakPopulation - minPopulation}</span>
+          <span className={`${styles.statusPill} ${styles.statusNeutral}`}>Тик {currentTick}</span>
         </div>
       </div>
 
-      {/* 3. Средняя метаболическая энергия */}
+      {/* 3. Средняя энергия */}
       <div className={styles.metricCard}>
         <div className={styles.cardHeader}>
-          <span className={styles.paramLabel}>Метаболическая энергия</span>
-          <span className={styles.paramSymbol}>⟨E⟩</span>
+          <span className={styles.paramLabel}>Средняя энергия</span>
+          <span className={styles.paramSymbol}>avg</span>
         </div>
         <div className={styles.valueContainer}>
           <span className={styles.numericValue}>{avgEnergy.toFixed(1)}</span>
-          <span className={styles.unitLabel}>усл. ед.</span>
+          <span className={styles.unitLabel}>ед. энергии</span>
         </div>
         <div className={styles.cardFooter}>
-          <span>Порог деления: E_rep = 140</span>
+          <span>Размножение при: 140+</span>
           <span className={`${styles.statusPill} ${energyPill.class}`}>
             {energyPill.text}
           </span>
         </div>
       </div>
 
-      {/* 4. Коэффициент локализации в терминаторе */}
+      {/* 4. Доля в терминаторе */}
       <div className={styles.metricCard}>
         <div className={styles.cardHeader}>
-          <span className={styles.paramLabel}>Доля в терминаторе</span>
-          <span className={styles.paramSymbol}>Φ_term</span>
+          <span className={styles.paramLabel}>В терминаторе</span>
+          <span className={styles.paramSymbol}>%</span>
         </div>
         <div className={styles.valueContainer}>
           <span className={styles.numericValue}>{terminatorRatio}%</span>
-          <span className={styles.unitLabel}>пояс обитания</span>
+          <span className={styles.unitLabel}>в зоне</span>
         </div>
         <div className={styles.cardFooter}>
-          <span>Градиент температур: ΔT ≈ 400 K</span>
-          <span className={`${styles.statusPill} ${styles.statusNeutral}`}>Климатич. зона</span>
+          <span>Умеренная температура</span>
+          <span className={`${styles.statusPill} ${styles.statusNeutral}`}>Комфорт</span>
         </div>
       </div>
 
-      {/* 5. Максимальная филогенетическая глубина */}
+      {/* 5. Максимальное поколение */}
       <div className={styles.metricCard}>
         <div className={styles.cardHeader}>
-          <span className={styles.paramLabel}>Филогенетическая глубина</span>
-          <span className={styles.paramSymbol}>G_max</span>
+          <span className={styles.paramLabel}>Поколения</span>
+          <span className={styles.paramSymbol}>max</span>
         </div>
         <div className={styles.valueContainer}>
           <span className={styles.numericValue}>{dominantGen}</span>
           <span className={styles.unitLabel}>поколение</span>
         </div>
         <div className={styles.cardFooter}>
-          <span>Всего репликаций: {totalBirths}</span>
+          <span>Всего родилось: {totalBirths}</span>
           <span className={`${styles.statusPill} ${styles.statusNeutral}`}>Эволюция</span>
         </div>
       </div>
 
-      {/* 6. Демографическое сальдо */}
+      {/* 6. Баланс рождений и смертей */}
       <div className={styles.metricCard}>
         <div className={styles.cardHeader}>
-          <span className={styles.paramLabel}>Демографический прирост</span>
-          <span className={styles.paramSymbol}>ΔN = B - D</span>
+          <span className={styles.paramLabel}>Прирост популяции</span>
+          <span className={styles.paramSymbol}>+/-</span>
         </div>
         <div className={styles.valueContainer}>
           <span className={styles.numericValue} style={{ color: deltaN >= 0 ? '#10b981' : '#ef4444' }}>
             {deltaN >= 0 ? `+${deltaN}` : deltaN}
           </span>
-          <span className={styles.unitLabel}>сальдо</span>
+          <span className={styles.unitLabel}>разница</span>
         </div>
         <div className={styles.cardFooter}>
-          <span>ΣB: {totalBirths} | ΣD: {totalDeaths}</span>
+          <span>Родилось: {totalBirths} | Погибло: {totalDeaths}</span>
           <span className={`${styles.statusPill} ${deltaN >= 0 ? styles.statusNormal : styles.statusCritical}`}>
-            Индекс B/D: {survivalRatio}
+            Соотношение: {survivalRatio}
           </span>
         </div>
       </div>

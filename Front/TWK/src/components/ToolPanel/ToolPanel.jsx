@@ -1,19 +1,28 @@
 import styles from './ToolPanel.module.css';
 
 export default function ToolPanel({
-  mouseMode, setMouseMode,
   selectedDisaster, setSelectedDisaster,
   disasterParams, setDisasterParams
 }) {
   const handleDisasterChange = (disaster) => {
+    if (selectedDisaster === disaster) {
+      setSelectedDisaster(null);
+      setDisasterParams({});
+      return;
+    }
+    
     setSelectedDisaster(disaster);
     // Инициализируем дефолтные параметры при смене
     if (disaster === 'wind') {
-      setDisasterParams({ direction: 'east', strength: 50 });
+      setDisasterParams({ strength: 7 });
     } else if (disaster === 'rocks') {
       setDisasterParams({ size: 3 });
     } else if (disaster === 'meteorite') {
       setDisasterParams({ radius: 5, damage: 100 });
+    } else if (disaster === 'depression') {
+      setDisasterParams({ level: 1, size: 2 });
+    } else if (disaster === 'eraser') {
+      setDisasterParams({ radius: 2 });
     } else {
       setDisasterParams({});
     }
@@ -26,76 +35,84 @@ export default function ToolPanel({
 
   return (
     <footer className={styles.toolPanel}>
-      <div className={styles.modeSection}>
-        <h4 className={styles.title}>Режим мыши</h4>
-        <div className={styles.buttonGroup}>
-          <button 
-            className={`${styles.button} ${mouseMode === 'drag' ? styles.active : ''}`}
-            onClick={() => setMouseMode('drag')}
-          >
-            Перетаскивание
-          </button>
-          <button 
-            className={`${styles.button} ${mouseMode === 'select' ? styles.active : ''}`}
-            onClick={() => setMouseMode('select')}
-          >
-            Выбор клетки
-          </button>
-        </div>
-      </div>
-
-      <div className={`${styles.disasterSection} ${mouseMode === 'drag' ? styles.disabled : ''}`}>
-        <h4 className={styles.title}>Катастрофы (Клик по полю)</h4>
+      <div className={styles.disasterSection}>
+        <h4 className={styles.title}>Катастрофы и рельеф (Клик по полю)</h4>
         <div className={styles.buttonGroup}>
           <button 
             className={`${styles.button} ${selectedDisaster === 'wind' ? styles.active : ''}`}
             onClick={() => handleDisasterChange('wind')}
-            disabled={mouseMode === 'drag'}
           >
             Ветер
           </button>
           <button 
             className={`${styles.button} ${selectedDisaster === 'rocks' ? styles.active : ''}`}
             onClick={() => handleDisasterChange('rocks')}
-            disabled={mouseMode === 'drag'}
           >
             Скалы
           </button>
           <button 
             className={`${styles.button} ${selectedDisaster === 'meteorite' ? styles.active : ''}`}
             onClick={() => handleDisasterChange('meteorite')}
-            disabled={mouseMode === 'drag'}
           >
             Метеорит
+          </button>
+          <button 
+            className={`${styles.button} ${selectedDisaster === 'depression' ? styles.active : ''}`}
+            onClick={() => handleDisasterChange('depression')}
+          >
+            Углубление
+          </button>
+          <button 
+            className={`${styles.button} ${selectedDisaster === 'eraser' ? styles.active : ''}`}
+            onClick={() => handleDisasterChange('eraser')}
+          >
+            Ластик
           </button>
         </div>
       </div>
 
-      {mouseMode === 'select' && selectedDisaster && (
+      {selectedDisaster && (
         <div className={styles.paramsSection}>
-          <h4 className={styles.title}>Параметры: {selectedDisaster}</h4>
+          <h4 className={styles.title}>
+            Параметры: {
+              selectedDisaster === 'wind' ? 'Радиальный ветер' :
+              selectedDisaster === 'rocks' ? 'Скалы' :
+              selectedDisaster === 'meteorite' ? 'Метеорит' :
+              selectedDisaster === 'depression' ? 'Углубление' : 'Ластик'
+            }
+          </h4>
           <div className={styles.inputs}>
             {selectedDisaster === 'wind' && (
-              <>
-                <label>
-                  Направление:
-                  <select name="direction" value={disasterParams.direction || 'east'} onChange={handleParamChange}>
-                    <option value="north">Север</option>
-                    <option value="south">Юг</option>
-                    <option value="east">Восток</option>
-                    <option value="west">Запад</option>
-                  </select>
-                </label>
-                <label>
-                  Сила:
-                  <input type="number" name="strength" value={disasterParams.strength || 0} onChange={handleParamChange} min="1" max="100" />
-                </label>
-              </>
+              <label>
+                Сила (от центра клика):
+                <input type="number" name="strength" value={disasterParams.strength ?? 7} onChange={handleParamChange} min="1" max="100" />
+              </label>
             )}
             {selectedDisaster === 'rocks' && (
               <label>
                 Размер (клетки):
                 <input type="number" name="size" value={disasterParams.size || 0} onChange={handleParamChange} min="1" max="10" />
+              </label>
+            )}
+            {selectedDisaster === 'depression' && (
+              <>
+                <label>
+                  Глубина:
+                  <select name="level" value={disasterParams.level || 1} onChange={handleParamChange}>
+                    <option value={1}>1 (Обычная)</option>
+                    <option value={2}>2 (Глубокая)</option>
+                  </select>
+                </label>
+                <label>
+                  Размер (клетки):
+                  <input type="number" name="size" value={disasterParams.size || 2} onChange={handleParamChange} min="1" max="8" />
+                </label>
+              </>
+            )}
+            {selectedDisaster === 'eraser' && (
+              <label>
+                Радиус удаления:
+                <input type="number" name="radius" value={disasterParams.radius || 0} onChange={handleParamChange} min="1" max="10" />
               </label>
             )}
             {selectedDisaster === 'meteorite' && (

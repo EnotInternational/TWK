@@ -36,28 +36,28 @@ export default function StatisticsPage({ onBack }) {
 
   return (
     <div className={styles.pageContainer}>
-      {/* Верхняя панель научной телеметрии */}
+      {/* Верхняя панель статистики */}
       <header className={styles.topBar}>
         <div className={styles.brandArea}>
           {onBack && (
-            <button className={styles.backBtn} onClick={onBack} title="Вернуться к интерактивному полю">
+            <button className={styles.backBtn} onClick={onBack} title="Вернуться к интерактивному полю симуляции">
               ← Поле симуляции
             </button>
           )}
 
           <h1 className={styles.pageTitle}>
-            TERRA NOVA // <span>Научная телеметрия популяции</span>
+            TERRA NOVA // <span>Статистика симуляции</span>
           </h1>
 
           <div className={styles.statusBadges}>
             <span className={`${styles.badge} ${isConnected ? styles.badgeOnline : styles.badgeOffline}`}>
-              {isConnected ? 'STREAM: ACTIVE' : isInitialLoading ? 'SYNCING...' : 'OFFLINE'}
+              {isConnected ? 'ОНЛАЙН' : isInitialLoading ? 'ПОДКЛЮЧЕНИЕ...' : 'ОФЛАЙН'}
             </span>
             <span className={`${styles.badge} ${styles.badgeTick}`}>
-              t = {currentTick}
+              Тик: {currentTick}
             </span>
             <span className={styles.badge} style={{ background: '#1e293b', color: '#94a3b8' }}>
-              STATUS: {status.toUpperCase()}
+              СТАТУС: {status.toUpperCase()}
             </span>
           </div>
         </div>
@@ -69,41 +69,41 @@ export default function StatisticsPage({ onBack }) {
               className={`${styles.filterBtn} ${timeRange === '50' ? styles.active : ''}`}
               onClick={() => setTimeRange('50')}
             >
-              50t
+              50 тиков
             </button>
             <button 
               className={`${styles.filterBtn} ${timeRange === '100' ? styles.active : ''}`}
               onClick={() => setTimeRange('100')}
             >
-              100t
+              100 тиков
             </button>
             <button 
               className={`${styles.filterBtn} ${timeRange === '500' ? styles.active : ''}`}
               onClick={() => setTimeRange('500')}
             >
-              500t
+              500 тиков
             </button>
             <button 
               className={`${styles.filterBtn} ${timeRange === 'all' ? styles.active : ''}`}
               onClick={() => setTimeRange('all')}
             >
-              ALL
+              Все
             </button>
           </div>
 
           <button 
             className={`${styles.liveBtn} ${!isLive ? styles.paused : ''}`}
             onClick={() => setIsLive(!isLive)}
-            title="Приостановить поток сбора точек"
+            title={isLive ? "Приостановить автообновление данных" : "Возобновить автообновление данных"}
           >
-            {isLive ? '[ ПОТОК: LIVE ]' : '[ ПАУЗА ]'}
+            {isLive ? '● LIVE' : '⏸ ПАУЗА'}
           </button>
 
-          <button className={styles.exportBtn} onClick={exportCSV} title="Выгрузить временной ряд в формате CSV">
-            CSV Экспорт
+          <button className={styles.exportBtn} onClick={exportCSV} title="Скачать историю показателей в формате CSV">
+            Экспорт в CSV
           </button>
-          <button className={styles.exportBtn} onClick={exportJSON} title="Выгрузить снимок состояния в формате JSON">
-            JSON Срез
+          <button className={styles.exportBtn} onClick={exportJSON} title="Скачать снимок состояния в формате JSON">
+            Экспорт в JSON
           </button>
         </div>
       </header>
@@ -121,10 +121,10 @@ export default function StatisticsPage({ onBack }) {
           status={status}
         />
 
-        {/* 2. Научный график временного ряда динамики популяции N(t) */}
+        {/* 2. График динамики популяции */}
         <PopulationChart history={history} />
 
-        {/* 3. Трёхкомпонентный блок: Метаболический профиль, Термическая зональность, Факторы смертности */}
+        {/* 3. Блок: Уровень энергии, Распределение по зонам, Причины гибели */}
         <div className={styles.triGrid}>
           <EnergyDistributionChart 
             history={history} 
@@ -139,13 +139,13 @@ export default function StatisticsPage({ onBack }) {
           />
         </div>
 
-        {/* 4. Реестр фенотипов и журнал стохастических событий */}
+        {/* 4. Топ агентов и лента событий */}
         <div className={styles.splitGrid}>
           <TopAgentsLeaderboard agents={topAgents} />
           <EventsFeed events={events} />
         </div>
 
-        {/* 5. Верификация детерминированности модели (PRNG) */}
+        {/* 5. Проверка повторяемости (детерминизм) */}
         <div style={{ marginBottom: '16px' }}>
           <ReproducibilityCard 
             currentHash={stateHash || latestMetric?.stateHash} 
@@ -155,7 +155,7 @@ export default function StatisticsPage({ onBack }) {
       </main>
 
       <footer className={styles.footerBar}>
-        MERCURY PLANETARY AGENT SIMULATION PLATFORM • RESEARCH TELEMETRY SPECIFICATION V0.3.0
+        TERRA NOVA: MERCURY • МОНИТОРИНГ И СТАТИСТИКА СИМУЛЯЦИИ
       </footer>
     </div>
   );
