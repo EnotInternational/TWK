@@ -59,6 +59,13 @@ class SimulationManager:
             snapshot = self.engine.get_snapshot()
             self._broadcast(snapshot)
 
+    def generate_random_rocks(self, count: int = 30, seed: Optional[int] = None) -> int:
+        with self.lock:
+            added = self.engine.generate_random_rocks(count=count, seed=seed)
+            snapshot = self.engine.get_snapshot()
+            self._broadcast(snapshot)
+            return added
+
     def remove_rocks(self, x: int, y: int, radius: float) -> None:
         with self.lock:
             self.engine.remove_rocks(x, y, radius)

@@ -1,5 +1,4 @@
 import styles from './ToolPanel.module.css';
-import ValidatedInput from '../ValidatedInput/ValidatedInput';
 
 export default function ToolPanel({
   selectedDisaster, setSelectedDisaster,
@@ -94,14 +93,28 @@ export default function ToolPanel({
             {selectedDisaster === 'wind' && (
               <label>
                 Сила (от центра клика):
-                <ValidatedInput name="strength" value={disasterParams.strength ?? 7} onChange={handleParamChange} min="1" max="100" />
+                <input type="number" name="strength" value={disasterParams.strength ?? 7} onChange={handleParamChange} min="1" max="100" />
               </label>
             )}
             {selectedDisaster === 'rocks' && (
-              <label>
-                Размер (клетки):
-                <ValidatedInput name="size" value={disasterParams.size || 0} onChange={handleParamChange} min="1" max="10" />
-              </label>
+              <>
+                <label>
+                  Размер (клетки):
+                  <input type="number" name="size" value={disasterParams.size || 0} onChange={handleParamChange} min="1" max="10" />
+                </label>
+                <button
+                  className={styles.button}
+                  style={{ marginLeft: 8, background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white', border: 'none' }}
+                  onClick={() => {
+                    if (window.generateRandomRocks) {
+                      window.generateRandomRocks(30);
+                    }
+                  }}
+                  title="Сгенерировать процедурные скалы кучками (Перлин)"
+                >
+                  🎲 Россыпь скал
+                </button>
+              </>
             )}
             {selectedDisaster === 'depression' && (
               <>
@@ -114,25 +127,25 @@ export default function ToolPanel({
                 </label>
                 <label>
                   Размер (клетки):
-                  <ValidatedInput name="size" value={disasterParams.size || 2} onChange={handleParamChange} min="1" max="8" />
+                  <input type="number" name="size" value={disasterParams.size || 2} onChange={handleParamChange} min="1" max="8" />
                 </label>
               </>
             )}
             {selectedDisaster === 'eraser' && (
               <label>
                 Радиус удаления:
-                <ValidatedInput name="radius" value={disasterParams.radius || 0} onChange={handleParamChange} min="1" max="10" />
+                <input type="number" name="radius" value={disasterParams.radius || 0} onChange={handleParamChange} min="1" max="10" />
               </label>
             )}
             {selectedDisaster === 'meteorite' && (
               <>
                 <label>
                   Радиус:
-                  <ValidatedInput name="radius" value={disasterParams.radius || 0} onChange={handleParamChange} min="1" max="20" />
+                  <input type="number" name="radius" value={disasterParams.radius || 0} onChange={handleParamChange} min="1" max="20" />
                 </label>
                 <label>
                   Урон:
-                  <ValidatedInput name="damage" value={disasterParams.damage || 0} onChange={handleParamChange} min="10" max="1000" />
+                  <input type="number" name="damage" value={disasterParams.damage || 0} onChange={handleParamChange} min="10" max="1000" />
                 </label>
               </>
             )}

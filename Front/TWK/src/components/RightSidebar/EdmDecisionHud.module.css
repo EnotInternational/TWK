@@ -1,0 +1,373 @@
+/* Live EDM Decision HUD Container */
+.hudCard {
+  background: linear-gradient(180deg, rgba(13, 20, 36, 0.95) 0%, rgba(8, 12, 22, 0.98) 100%);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.25s ease;
+}
+
+.hudCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #00e5ff, #70a1ff, transparent);
+  animation: scanline 4s linear infinite;
+}
+
+@keyframes scanline {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Header with Live Pulse */
+.hudHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.hudTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hudTitle {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.liveBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: rgba(0, 255, 136, 0.12);
+  border: 1px solid rgba(0, 255, 136, 0.35);
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #00ff88;
+  letter-spacing: 0.04em;
+}
+
+.pulseDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #00ff88;
+  box-shadow: 0 0 8px #00ff88;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+/* Hero Banner: Active Decision */
+.heroBanner {
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+  transition: all 0.25s ease;
+}
+
+.heroTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.heroIntentTag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+.heroProbBadge {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid currentColor;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.heroProbLabel {
+  font-size: 0.6rem;
+  opacity: 0.8;
+  font-weight: 600;
+}
+
+.heroExplain {
+  font-size: 0.7rem;
+  line-height: 1.35;
+  color: #cbd5e1;
+}
+
+.heroScoresRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 2px;
+  padding-top: 5px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.68rem;
+  color: #94a3b8;
+}
+
+.heroScoreValue {
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+/* Probabilities Distribution Bars */
+.distSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.distHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.intentRow {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.intentRowActive {
+  background: rgba(0, 229, 255, 0.08);
+  border-color: rgba(0, 229, 255, 0.35);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.12);
+}
+
+.intentMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.72rem;
+}
+
+.intentLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.intentNumbers {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.intentScore {
+  font-size: 0.64rem;
+  color: #64748b;
+  font-family: monospace;
+}
+
+.intentPercent {
+  font-weight: 700;
+  font-size: 0.74rem;
+  min-width: 44px;
+  text-align: right;
+  font-family: monospace;
+}
+
+.track {
+  height: 5px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease;
+}
+
+/* Softmax Temperature Box */
+.tempBox {
+  background: rgba(10, 15, 29, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+
+.tempTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.7rem;
+}
+
+.tempLabel {
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+.tempBadge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid currentColor;
+}
+
+.tempTrack {
+  height: 4px;
+  background: linear-gradient(90deg, #00e5ff 0%, #00ff88 40%, #ffa502 80%, #ff4757 100%);
+  border-radius: 2px;
+  position: relative;
+  margin: 4px 0 2px 0;
+}
+
+.tempPointer {
+  position: absolute;
+  top: -4px;
+  width: 4px;
+  height: 12px;
+  background: #ffffff;
+  border-radius: 2px;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.9);
+  transform: translateX(-50%);
+  transition: left 0.3s ease;
+}
+
+.tempDesc {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  line-height: 1.3;
+}
+
+/* Accordion: Genome Drivers */
+.genomeToggleBtn {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #94a3b8;
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.genomeToggleBtn:hover {
+  background: rgba(0, 229, 255, 0.06);
+  border-color: rgba(0, 229, 255, 0.3);
+  color: #e2e8f0;
+}
+
+.genomeDriversGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 5px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.geneMiniCard {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  padding: 4px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.geneMiniLabel {
+  font-size: 0.6rem;
+  color: #64748b;
+  font-family: monospace;
+}
+
+.geneMiniVal {
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-family: monospace;
+}
+
+/* Waiting / Empty state */
+.waitingBox {
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px dashed rgba(0, 229, 255, 0.2);
+  border-radius: 6px;
+  padding: 14px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.74rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.waitingSpinner {
+  font-size: 1.2rem;
+  animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

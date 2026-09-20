@@ -79,10 +79,11 @@ export default function Randomizer({ isOpen, onClose, metrics }) {
       }
     };
 
-    // Start initial timers for each enabled disaster
+    // Start initial timers for each enabled disaster (short initial delay for immediate feedback)
     Object.keys(config.disasters).forEach(key => {
       if (config.disasters[key].enabled) {
-        const t = setTimeout(() => startLoop(key), config.disasters[key].intervalSec * 1000);
+        const initialDelay = Math.min(1500, config.disasters[key].intervalSec * 1000);
+        const t = setTimeout(() => startLoop(key), initialDelay);
         timersRef.current.push(t);
       }
     });

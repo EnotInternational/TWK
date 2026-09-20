@@ -98,3 +98,31 @@ def test_simulation_engine_integration_with_clustered_rocks():
     snap = engine.step()
     assert snap["tick"] == 1
     assert len(snap["environment"]["rocks"]) == 40
+
+
+def test_generate_random_rocks_dynamically():
+    """Проверка генерации случайных скал на лету в уже запущенном движке."""
+    cfg = SimulationConfig(width=30, height=20, rocks_count=0)
+    engine = SimulationEngine(cfg)
+    assert len(engine.rocks) == 0
+
+    added = engine.generate_random_rocks(count=15, seed=777)
+    assert added == 15
+    assert len(engine.rocks) == 15
+
+    # Добавляем еще скал
+    added2 = engine.generate_random_rocks(count=10, seed=888)
+    assert added2 > 0
+    assert len(engine.rocks) >= 15 + added2 - 5  # с учетом возможного частичного перекрытия
+
+
+def test_simulation_config_camel_case_parsing():
+    """Проверка того, что SimulationConfig.from_dict корректно принимает rocksCount и windPenalty."""
+    cfg = SimulationConfig.from_dict({
+        "rocksCount": 35,
+        "windPenalty": 0.75,
+        "initialAgents": 18,
+    })
+    assert cfg.rocks_count == 35
+    assert cfg.wind_penalty == 0.75
+    assert cfg.initial_agents == 18

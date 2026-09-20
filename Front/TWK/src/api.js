@@ -24,12 +24,14 @@ export const simulationApi = {
         seed: params.seed ?? 42,
         width: params.width ?? 60,
         height: params.height ?? 30,
-        initial_agents: params.initialAgents ?? 40,
-        starting_energy: params.startingEnergy ?? 100,
-        reproduction_threshold: params.reproductionThreshold ?? 140,
-        reproduction_cost: params.reproductionCost ?? 50,
-        cycle_ticks: params.cycleTicks ?? 200,
-        terminator_width: params.terminatorWidth ?? 4,
+        initial_agents: params.initialAgents ?? params.initial_agents ?? 40,
+        starting_energy: params.startingEnergy ?? params.starting_energy ?? 100,
+        reproduction_threshold: params.reproductionThreshold ?? params.reproduction_threshold ?? 140,
+        reproduction_cost: params.reproductionCost ?? params.reproduction_cost ?? 50,
+        cycle_ticks: params.cycleTicks ?? params.cycle_ticks ?? 200,
+        terminator_width: params.terminatorWidth ?? params.terminator_width ?? 4,
+        wind_penalty: params.windPenalty ?? params.wind_penalty ?? 0.0,
+        rocks_count: params.rocksCount ?? params.rocks_count ?? 0,
       }),
     });
     return res.json();
@@ -142,7 +144,23 @@ export const simulationApi = {
       console.error('[API] Ошибка при вызове катастрофы:', err);
       return { success: false, error: err.message };
     }
+  },
+
+  // Генерация процедурных скал кучками (шум Перлина) на лету
+  generateRandomRocks: async (count = 30) => {
+    try {
+      const res = await fetch(`${BASE_URL}/api/environment/rocks/random`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ count }),
+      });
+      return res.json();
+    } catch (err) {
+      console.error('[API] Ошибка при генерации скал:', err);
+      return { success: false, error: err.message };
+    }
   }
 };
 
 window.triggerDisaster = simulationApi.triggerDisaster;
+window.generateRandomRocks = simulationApi.generateRandomRocks;

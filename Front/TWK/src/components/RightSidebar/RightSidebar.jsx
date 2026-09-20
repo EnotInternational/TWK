@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import styles from './RightSidebar.module.css';
 import { socket } from '../../api';
-import ValidatedInput from '../ValidatedInput/ValidatedInput';
+import EdmDecisionHud from './EdmDecisionHud';
 
 export default function RightSidebar({
   isOpen,
@@ -306,7 +306,7 @@ export default function RightSidebar({
               </div>
 
               <div className={styles.searchRow}>
-                <ValidatedInput
+                <input
                   type="text"
                   className={styles.searchInput}
                   placeholder="Поиск по ID или зоне..."
@@ -458,6 +458,9 @@ export default function RightSidebar({
                       : 'При нападении хищника решает: откупиться данью HP, спастись бегством или дать яростный отпор.'}
                   </div>
                 </div>
+
+                {/* Live Evolutionary Decision Machine (EDM) HUD */}
+                <EdmDecisionHud agent={agent} currentTick={metrics?.tick} />
 
                 {/* Encounter Choices HUD */}
                 <div className={styles.choicesSection}>

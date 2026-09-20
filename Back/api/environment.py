@@ -30,7 +30,26 @@ def trigger_disaster():
     y = data.get("y")
     params = data.get("params", {})
 
-    if disaster_type is None or x is None or y is None:
+    if disaster_type is None:
+        return jsonify({"error": "Нужно поле: type"}), 400
+
+    if disaster_type in ("random_rocks", "generate_rocks"):
+        try:
+            count = int(params.get("count", 30))
+            seed = params.get("seed")
+            if seed is not None:
+                seed = int(seed)
+            added = sim_manager.generate_random_rocks(count=count, seed=seed)
+            return jsonify({
+                "success": True,
+                "type": disaster_type,
+                "added": added,
+                "total_rocks": len(sim_manager.engine.rocks)
+            }), 200
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    if x is None or y is None:
         return jsonify({"error": "Нужны поля: type, x, y"}), 400
 
     try:
@@ -48,8 +67,12 @@ def trigger_disaster():
             direction = params.get("direction")
             sim_manager.apply_wind(x, y, strength, direction)
         elif disaster_type == "rocks":
-            size = int(params.get("size", 3))
-            sim_manager.add_rocks(x, y, size)
+            if "count" in params:
+                count = int(params.get("count", 30))
+                sim_manager.generate_random_rocks(count=count)
+            else:
+                size = int(params.get("size", 3))
+                sim_manager.add_rocks(x, y, size)
         elif disaster_type == "depression":
             level = int(params.get("level", 1))
             size = int(params.get("size", 2))
@@ -63,6 +86,36 @@ def trigger_disaster():
         return jsonify({"error": str(e)}), 500
 
     return jsonify({"success": True, "type": disaster_type, "x": x, "y": y}), 200
+
+
+@environment_bp.route("/rocks/random", methods=["POST"])
+def generate_random_rocks():
+    """
+    Сгенерировать случайные скалы кучками (шум Перлина) на лету.
+    ---
+    tags: [environment]
+    parameters:
+      - name: body
+        in: body
+        schema:
+          type: object
+          properties:
+            count: {type: integer, example: 30}
+            seed: {type: integer, example: 42}
+    responses:
+      200: {description: Скалы сгенерированы}
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    count = int(data.get("count", 30))
+    seed = data.get("seed")
+    if seed is not None:
+        seed = int(seed)
+    added = sim_manager.generate_random_rocks(count=count, seed=seed)
+    return jsonify({
+        "success": True,
+        "added": added,
+        "total_rocks": len(sim_manager.engine.rocks)
+    }), 200
 
 
 @environment_bp.route("", methods=["GET"])
