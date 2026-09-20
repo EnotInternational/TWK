@@ -3,14 +3,12 @@
 Содержит чистую логику моделирования без зависимости от Flask/HTTP:
 - MercuryEnvironment: физическая среда, движение Солнца, температурные зоны.
 - Agent: модель агента, расход энергии, размножение, смертность.
-- DecisionMachine (EDM): утилитарная машина выбора с softmax.
 - EventLogger: логирование значимых событий симуляции.
 - MetricsCollector: агрегация метрик для графиков и аналитики.
 - SimulationEngine: главный детерминированный движок симуляции с поддержкой сидов.
 """
 
 from .agent import Agent
-from .decision import observe, score_intents, softmax_choose, INTENTS
 from .environment import MercuryEnvironment, Zone
 from .events import EventLogger, SimulationEvent, EventType
 from .metrics import MetricsCollector, TickMetrics
@@ -19,10 +17,6 @@ from .terrain import PerlinNoise2D, generate_rock_clusters
 
 __all__ = [
     "Agent",
-    "observe",
-    "score_intents",
-    "softmax_choose",
-    "INTENTS",
     "MercuryEnvironment",
     "Zone",
     "EventLogger",
