@@ -74,17 +74,19 @@ export default function StatisticsPage({ onBack }) {
     <div className={styles.pageContainer}>
       {/* Верхняя панель статистики */}
       <header className={styles.topBar}>
+
         <div className={styles.brandArea}>
-          {onBack && (
-            <button className={styles.backBtn} onClick={onBack} title="Вернуться к интерактивному полю симуляции">
-              ← Поле симуляции
-            </button>
-          )}
+          <div>
+            {onBack && (
+              <button className={styles.backBtn} onClick={onBack} title="Вернуться к интерактивному полю симуляции">
+                ← Поле симуляции
+              </button>
+            )}
 
-          <h1 className={styles.pageTitle}>
-            TERRA NOVA // <span>Статистика симуляции</span>
-          </h1>
-
+            <h1 className={styles.pageTitle}>
+              TERRA NOVA // <span>Статистика симуляции</span>
+            </h1>
+          </div>
           <div className={styles.statusBadges}>
             <span className={`${styles.badge} ${isConnected ? styles.badgeOnline : styles.badgeOffline}`}>
               {isConnected ? 'ОНЛАЙН' : isInitialLoading ? 'ПОДКЛЮЧЕНИЕ...' : 'ОФЛАЙН'}
@@ -101,25 +103,25 @@ export default function StatisticsPage({ onBack }) {
         {/* Инструменты выборки и экспорта данных */}
         <div className={styles.topActions}>
           <div className={styles.filterGroup}>
-            <button 
+            <button
               className={`${styles.filterBtn} ${timeRange === '50' ? styles.active : ''}`}
               onClick={() => setTimeRange('50')}
             >
               50 тиков
             </button>
-            <button 
+            <button
               className={`${styles.filterBtn} ${timeRange === '100' ? styles.active : ''}`}
               onClick={() => setTimeRange('100')}
             >
               100 тиков
             </button>
-            <button 
+            <button
               className={`${styles.filterBtn} ${timeRange === '500' ? styles.active : ''}`}
               onClick={() => setTimeRange('500')}
             >
               500 тиков
             </button>
-            <button 
+            <button
               className={`${styles.filterBtn} ${timeRange === 'all' ? styles.active : ''}`}
               onClick={() => setTimeRange('all')}
             >
@@ -127,7 +129,7 @@ export default function StatisticsPage({ onBack }) {
             </button>
           </div>
 
-          <button 
+          <button
             className={`${styles.liveBtn} ${!isLive ? styles.paused : ''}`}
             onClick={() => setIsLive(!isLive)}
             title={isLive ? "Приостановить автообновление данных" : "Возобновить автообновление данных"}
@@ -141,16 +143,16 @@ export default function StatisticsPage({ onBack }) {
           <button className={styles.exportBtn} onClick={exportJSON} title="Скачать снимок состояния в формате JSON">
             Экспорт в JSON
           </button>
-          <button 
-            className={`${styles.exportBtn} ${styles.exportGeneBtn}`} 
-            onClick={exportGenesCSV} 
+          <button
+            className={`${styles.exportBtn} ${styles.exportGeneBtn}`}
+            onClick={exportGenesCSV}
             title="Скачать данные генофонда и адаптации всех агентов в формате CSV"
           >
             🧬 Гены (CSV)
           </button>
-          <button 
-            className={`${styles.exportBtn} ${styles.exportGeneBtn}`} 
-            onClick={exportGenesJSON} 
+          <button
+            className={`${styles.exportBtn} ${styles.exportGeneBtn}`}
+            onClick={exportGenesJSON}
             title="Скачать полный датасет генома и мутаций в формате JSON"
           >
             🧬 Гены (JSON)
@@ -201,7 +203,7 @@ export default function StatisticsPage({ onBack }) {
         ) : (
           <>
             {/* 1. Блок базовых статистических агрегатов */}
-            <StatsOverview 
+            <StatsOverview
               latestMetric={latestMetric}
               peakPopulation={peakPopulation}
               minPopulation={minPopulation}
@@ -225,16 +227,16 @@ export default function StatisticsPage({ onBack }) {
 
             {/* 5. Блок: Уровень энергии, Распределение по зонам, Причины гибели */}
             <div className={styles.triGrid}>
-              <EnergyDistributionChart 
-                history={history} 
-                latestMetric={latestMetric} 
+              <EnergyDistributionChart
+                history={history}
+                latestMetric={latestMetric}
                 agents={agents}
               />
-              <ZoneDistributionCard 
-                zoneDistribution={zoneDistribution} 
+              <ZoneDistributionCard
+                zoneDistribution={zoneDistribution}
               />
-              <MortalityAnalysis 
-                totalDeaths={totalDeaths} 
+              <MortalityAnalysis
+                totalDeaths={totalDeaths}
               />
             </div>
 
@@ -253,9 +255,9 @@ export default function StatisticsPage({ onBack }) {
 
             {/* 5. Проверка повторяемости (детерминизм) */}
             <div style={{ marginBottom: '16px' }}>
-              <ReproducibilityCard 
-                currentHash={stateHash || latestMetric?.stateHash} 
-                currentTick={currentTick} 
+              <ReproducibilityCard
+                currentHash={stateHash || latestMetric?.stateHash}
+                currentTick={currentTick}
               />
             </div>
           </>

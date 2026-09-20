@@ -95,7 +95,9 @@
 .brandArea {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 14px;
+  width: 100%
 }
 
 .backBtn {
@@ -287,6 +289,7 @@
   .triGrid {
     grid-template-columns: 1fr;
   }
+
   .splitGrid {
     grid-template-columns: 1fr;
   }
