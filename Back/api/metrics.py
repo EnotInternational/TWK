@@ -92,3 +92,104 @@ def get_distribution():
             for zone, energies in zone_energies.items()
         },
     }), 200
+
+
+@metrics_bp.route("/genes", methods=["GET"])
+def get_gene_metrics():
+    """
+    Получить агрегированную статистику и распределение генов популяции.
+    ---
+    tags: [metrics]
+    responses:
+      200: {description: Статистика генов и эволюции}
+    """
+    with sim_manager.lock:
+        tick = sim_manager.engine.tick
+        alive_agents = [a for a in sim_manager.engine.agents.values() if a.is_alive]
+        total_count = len(alive_agents)
+
+        if not alive_agents:
+            return jsonify({
+                "tick": tick,
+                "alive_count": 0,
+                "w_temp": {"avg": 0.0, "min": 0.0, "max": 0.0, "std": 0.0, "thermophobe_ratio": 0.0},
+                "w_swarm": {"avg": 0.0, "min": 0.0, "max": 0.0, "std": 0.0, "swarm_ratio": 0.0},
+                "generations": {"max": 0, "dominant": 0, "distribution": {}},
+                "strategies": {},
+                "agents": []
+            }), 200
+
+        w_temp_vals = [a.w_temp for a in alive_agents]
+        w_swarm_vals = [a.w_swarm for a in alive_agents]
+
+        def calc_stats(vals):
+            avg = sum(vals) / len(vals)
+            variance = sum((x - avg) ** 2 for x in vals) / len(vals)
+            return {
+                "avg": round(avg, 4),
+                "min": round(min(vals), 4),
+                "max": round(max(vals), 4),
+                "std": round(variance ** 0.5, 4),
+            }
+
+        thermophobes = sum(1 for a in alive_agents if a.w_temp < 0)
+        swarmers = sum(1 for a in alive_agents if a.w_swarm > 0)
+
+        gen_counts = {}
+        for a in alive_agents:
+            gen_counts[a.generation] = gen_counts.get(a.generation, 0) + 1
+        dominant_gen = max(gen_counts.items(), key=lambda x: x[1])[0] if gen_counts else 0
+
+        strategy_counts = {
+            "cooperation_thermophobe": 0,
+            "lone_thermophobe": 0,
+            "swarm_extremophile": 0,
+            "lone_extremophile": 0,
+        }
+        for a in alive_agents:
+            if a.w_temp < 0 and a.w_swarm > 0:
+                strategy_counts["cooperation_thermophobe"] += 1
+            elif a.w_temp < 0 and a.w_swarm <= 0:
+                strategy_counts["lone_thermophobe"] += 1
+            elif a.w_temp >= 0 and a.w_swarm > 0:
+                strategy_counts["swarm_extremophile"] += 1
+            else:
+                strategy_counts["lone_extremophile"] += 1
+
+        w_temp_stats = calc_stats(w_temp_vals)
+        w_temp_stats["thermophobe_ratio"] = round(thermophobes / total_count, 4)
+
+        w_swarm_stats = calc_stats(w_swarm_vals)
+        w_swarm_stats["swarm_ratio"] = round(swarmers / total_count, 4)
+
+        return jsonify({
+            "tick": tick,
+            "alive_count": total_count,
+            "w_temp": w_temp_stats,
+            "w_swarm": w_swarm_stats,
+            "generations": {
+                "max": max(a.generation for a in alive_agents),
+                "dominant": dominant_gen,
+                "distribution": gen_counts,
+            },
+            "strategies": {
+                k: {
+                    "count": v,
+                    "percent": round((v / total_count) * 100, 1)
+                }
+                for k, v in strategy_counts.items()
+            },
+            "agents": [
+                {
+                    "id": a.id,
+                    "w_temp": round(a.w_temp, 4),
+                    "w_swarm": round(a.w_swarm, 4),
+                    "generation": a.generation,
+                    "age": a.age,
+                    "hp": round(a.energy, 2),
+                    "energy": round(a.energy, 2),
+                    "parent_id": a.parent_id,
+                }
+                for a in alive_agents
+            ]
+        }), 200

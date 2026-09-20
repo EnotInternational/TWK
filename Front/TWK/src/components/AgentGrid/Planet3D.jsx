@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import styles from './AgentGrid.module.css';
 
 // Atmosphere glow shader
@@ -81,57 +82,81 @@ const craterRockMaterial = new THREE.MeshStandardMaterial({
   flatShading: true,
 });
 
-// Procedural cliff (скала) generator with sharp craggy facets
-function createCliffMesh(rng, isCraterRock = false) {
+// Procedural watertight low-poly boulder geometry generator
+function createBoulderGeometry(radius, heightRatio, rng, detail = 0) {
+  // Use closed Platonic polyhedra (Dodecahedron = 12 pentagons / 36 triangles, Icosahedron = 20 triangles)
+  // These are inherently watertight, closed surfaces with no open ends or seams
+  const baseGeom = detail === 0
+    ? new THREE.DodecahedronGeometry(radius, 0)
+    : new THREE.IcosahedronGeometry(radius, detail);
+
+  // Strip UV and normals so mergeVertices unifies all coincident vertices at the same (x,y,z)
+  delete baseGeom.attributes.uv;
+  delete baseGeom.attributes.normal;
+  const mergedGeom = mergeVertices(baseGeom, 1e-4);
+
+  const pos = mergedGeom.attributes.position;
+  const v = new THREE.Vector3();
+
+  // Perturb vertices radially from the rock center
+  // Displacing purely along radius prevents polygon self-intersection and inversion
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i);
+    const len = v.length();
+    // Controlled radial jitter (+/- 18%)
+    const radialFactor = 0.82 + rng() * 0.36;
+    v.normalize().multiplyScalar(len * radialFactor);
+    pos.setXYZ(i, v.x, v.y, v.z);
+  }
+
+  // Non-uniform scaling to form natural jagged cliffs and boulders
+  const sx = 0.85 + rng() * 0.30;
+  const sy = heightRatio * (0.90 + rng() * 0.25);
+  const sz = 0.85 + rng() * 0.30;
+  mergedGeom.scale(sx, sy, sz);
+
+  // Convert to non-indexed so each triangle has its own independent face normal
+  // Combined with flatShading: true, this creates crisp low-poly facets with zero tearing
+  const finalGeom = mergedGeom.toNonIndexed();
+  finalGeom.computeVertexNormals();
+  return finalGeom;
+}
+
+// Procedural cliff / rock cluster generator with sharp craggy facets
+function createCliffMesh(rng, isCraterRock = false, rockMat = rockMaterial, craterMat = craterRockMaterial) {
   const group = new THREE.Group();
 
-  // "еще камни короче" - make cliffs noticeably shorter, stockier, and wider boulders
-  const heightMultiplier = isCraterRock ? 0.75 : 0.40;
-  const radiusMultiplier = isCraterRock ? 2.4 : 1.25;
+  const heightMultiplier = isCraterRock ? 0.70 : 0.42;
+  const radiusMultiplier = isCraterRock ? 2.2 : 1.25;
 
-  // Main jagged cliff peak (crag spire)
-  const mainHeight = (0.32 + rng() * 0.18) * heightMultiplier;
-  const mainBottomR = (0.24 + rng() * 0.12) * radiusMultiplier;
-  const mainTopR = (0.08 + rng() * 0.08) * radiusMultiplier;
-  const segments = isCraterRock ? (6 + Math.floor(rng() * 3)) : (5 + Math.floor(rng() * 3));
+  const mainR = (0.22 + rng() * 0.08) * radiusMultiplier;
+  const mainH = (0.35 + rng() * 0.20) * heightMultiplier / (0.22 * radiusMultiplier);
 
-  const mainGeom = new THREE.CylinderGeometry(mainTopR, mainBottomR, mainHeight, segments, 2);
-  const posAttr = mainGeom.attributes.position;
-  // Perturb vertices for uneven, craggy mountain look
-  for (let i = 0; i < posAttr.count; i++) {
-    const y = posAttr.getY(i);
-    const heightFactor = (y + mainHeight / 2) / mainHeight;
-    const jx = (rng() - 0.5) * 0.16 * heightFactor * radiusMultiplier;
-    const jz = (rng() - 0.5) * 0.16 * heightFactor * radiusMultiplier;
-    posAttr.setX(i, posAttr.getX(i) + jx);
-    posAttr.setZ(i, posAttr.getZ(i) + jz);
-  }
-  mainGeom.computeVertexNormals();
+  const cliffMat = isCraterRock ? craterMat : rockMat;
 
-  const cliffMat = isCraterRock ? craterRockMaterial : rockMaterial;
+  // Main central crag / boulder (vary between 36-face dodecahedron and 80-face icosahedron)
+  const mainDetail = rng() > 0.4 ? 0 : 1;
+  const mainGeom = createBoulderGeometry(mainR, mainH, rng, mainDetail);
   const mainMesh = new THREE.Mesh(mainGeom, cliffMat);
-  mainMesh.position.y = mainHeight * 0.45;
-  mainMesh.scale.set(0.85 + rng() * 0.35, 1.0 + rng() * 0.3, 0.75 + rng() * 0.4);
+  mainMesh.position.y = mainR * mainH * 0.40;
   group.add(mainMesh);
 
-  // Secondary jagged side crags / boulders clustered at the base
-  const sideCount = isCraterRock ? (2 + Math.floor(rng() * 3)) : (1 + Math.floor(rng() * 2));
+  // Flanking boulders nestled at the base to form natural craggy rock formations
+  const sideCount = isCraterRock ? (2 + Math.floor(rng() * 2)) : (1 + Math.floor(rng() * 2));
   for (let s = 0; s < sideCount; s++) {
-    const sideH = mainHeight * (0.35 + rng() * 0.35);
-    const sideR = mainBottomR * (0.5 + rng() * 0.4);
-    const sideGeom = new THREE.CylinderGeometry(sideR * 0.2, sideR, sideH, 5, 1);
-    const sPos = sideGeom.attributes.position;
-    for (let j = 0; j < sPos.count; j++) {
-      sPos.setX(j, sPos.getX(j) + (rng() - 0.5) * 0.08 * radiusMultiplier);
-      sPos.setZ(j, sPos.getZ(j) + (rng() - 0.5) * 0.08 * radiusMultiplier);
-    }
-    sideGeom.computeVertexNormals();
-
+    const sideR = mainR * (0.42 + rng() * 0.32);
+    const sideH = 0.65 + rng() * 0.50;
+    const sideGeom = createBoulderGeometry(sideR, sideH, rng, 0);
     const sideMesh = new THREE.Mesh(sideGeom, cliffMat);
+
     const sideAngle = rng() * Math.PI * 2;
-    const dist = mainBottomR * (0.7 + rng() * 0.3);
-    sideMesh.position.set(Math.cos(sideAngle) * dist, sideH * 0.35, Math.sin(sideAngle) * dist);
-    sideMesh.rotation.set((rng() - 0.5) * 0.4, rng() * Math.PI, (rng() - 0.5) * 0.4);
+    const dist = mainR * (0.65 + rng() * 0.30);
+    sideMesh.position.set(
+      Math.cos(sideAngle) * dist,
+      sideR * sideH * 0.35,
+      Math.sin(sideAngle) * dist
+    );
+    sideMesh.rotation.set((rng() - 0.5) * 0.5, rng() * Math.PI * 2, (rng() - 0.5) * 0.5);
     group.add(sideMesh);
   }
 
@@ -589,12 +614,12 @@ export default function Planet3D({
         const seed = (((rock.x * 73856093) ^ (rock.y * 19349663)) >>> 0) || 1;
         const rng = createRng(seed);
 
-        const cliff = createCliffMesh(rng, isCraterRock);
+        const cliff = createCliffMesh(rng, isCraterRock, rockMaterial, craterRockMaterial);
 
         // Calculate surface position and normal on the planet
         // Embedded slightly into surface crust so rocks look firmly grounded
         const normal = gridToSphere(rock.x, rock.y, w, h, 1.0).normalize();
-        const basePos = normal.clone().multiplyScalar(PLANET_RADIUS - 0.04);
+        const basePos = normal.clone().multiplyScalar(PLANET_RADIUS - 0.05);
         cliff.position.copy(basePos);
 
         // 1. Initial orientation along the sphere surface normal
@@ -611,7 +636,7 @@ export default function Planet3D({
           .normalize();
 
         // Slanted / crooked tilt angle (approx 12 to 32 degrees)
-        const tiltAngle = 0.22 + rng() * 0.35;
+        const tiltAngle = 0.06 + rng() * 0.14;
         const tiltQuat = new THREE.Quaternion().setFromAxisAngle(tiltAxis, tiltAngle);
         cliff.quaternion.premultiply(tiltQuat);
 

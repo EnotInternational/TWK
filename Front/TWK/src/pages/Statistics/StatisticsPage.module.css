@@ -170,6 +170,19 @@
   color: #38bdf8;
 }
 
+.exportGeneBtn {
+  background: rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+}
+
+.exportGeneBtn:hover {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: #38bdf8;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+}
+
 .liveBtn {
   background: #090d16;
   border: 1px solid #1e293b;

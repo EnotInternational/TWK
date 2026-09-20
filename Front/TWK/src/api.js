@@ -85,6 +85,12 @@ export const simulationApi = {
     return res.json();
   },
 
+  // Метрики генов и эволюционной адаптации
+  getGeneMetrics: async () => {
+    const res = await fetch(`${BASE_URL}/api/metrics/genes`);
+    return res.json();
+  },
+
   // Лента событий (рождения, смерти)
   getEvents: async (limit = 50) => {
     const res = await fetch(`${BASE_URL}/api/events?limit=${limit}`);

@@ -8,6 +8,7 @@ import MortalityAnalysis from './components/MortalityAnalysis';
 import TopAgentsLeaderboard from './components/TopAgentsLeaderboard';
 import EventsFeed from './components/EventsFeed';
 import ReproducibilityCard from './components/ReproducibilityCard';
+import GeneOverviewCard from './components/GeneOverviewCard';
 
 export default function StatisticsPage({ onBack }) {
   const {
@@ -30,8 +31,11 @@ export default function StatisticsPage({ onBack }) {
     topAgents,
     events,
     stateHash,
+    geneStats,
     exportJSON,
-    exportCSV
+    exportCSV,
+    exportGenesCSV,
+    exportGenesJSON
   } = useStatisticsData();
 
   return (
@@ -105,6 +109,20 @@ export default function StatisticsPage({ onBack }) {
           <button className={styles.exportBtn} onClick={exportJSON} title="Скачать снимок состояния в формате JSON">
             Экспорт в JSON
           </button>
+          <button 
+            className={`${styles.exportBtn} ${styles.exportGeneBtn}`} 
+            onClick={exportGenesCSV} 
+            title="Скачать данные генофонда и адаптации всех агентов в формате CSV"
+          >
+            🧬 Гены (CSV)
+          </button>
+          <button 
+            className={`${styles.exportBtn} ${styles.exportGeneBtn}`} 
+            onClick={exportGenesJSON} 
+            title="Скачать полный датасет генома и мутаций в формате JSON"
+          >
+            🧬 Гены (JSON)
+          </button>
         </div>
       </header>
 
@@ -139,13 +157,22 @@ export default function StatisticsPage({ onBack }) {
           />
         </div>
 
-        {/* 4. Топ агентов и лента событий */}
+        {/* 4. Обзор генофонда и эволюционной адаптации */}
+        <GeneOverviewCard 
+          geneStats={geneStats}
+          agents={agents}
+          onExportCSV={exportGenesCSV}
+          onExportJSON={exportGenesJSON}
+          currentTick={currentTick}
+        />
+
+        {/* 5. Топ агентов и лента событий */}
         <div className={styles.splitGrid}>
           <TopAgentsLeaderboard agents={topAgents} />
           <EventsFeed events={events} />
         </div>
 
-        {/* 5. Проверка повторяемости (детерминизм) */}
+        {/* 6. Проверка повторяемости (детерминизм) */}
         <div style={{ marginBottom: '16px' }}>
           <ReproducibilityCard 
             currentHash={stateHash || latestMetric?.stateHash} 
