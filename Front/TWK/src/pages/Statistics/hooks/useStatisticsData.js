@@ -119,6 +119,24 @@ function initSocketListeners() {
         predationEnergy: Number((m.predation_energy ?? 0.0).toFixed(1)),
         cumPredationEnergy: Number((m.cumulative_predation_energy ?? 0.0).toFixed(1)),
         archetypes: archetypes,
+        // Character & Encounter Choices Dynamics
+        bribes: m.bribes ?? 0,
+        cumBribes: m.cumulative_bribes ?? 0,
+        flees: m.flees ?? 0,
+        cumFlees: m.cumulative_flees ?? 0,
+        retaliations: m.retaliations ?? 0,
+        cumRetaliations: m.cumulative_retaliations ?? 0,
+        friendships: m.friendships ?? 0,
+        cumFriendships: m.cumulative_friendships ?? 0,
+        castes: m.castes || { predator: 0, peaceful: 0 },
+        character: {
+          avg_ferocity: Number((m.character?.avg_ferocity ?? 0.3).toFixed(3)),
+          avg_friendliness: Number((m.character?.avg_friendliness ?? 0.2).toFixed(3)),
+          avg_courage: Number((m.character?.avg_courage ?? 0.5).toFixed(3)),
+          avg_diplomacy: Number((m.character?.avg_diplomacy ?? 0.4).toFixed(3)),
+          avg_caution: Number((m.character?.avg_caution ?? 0.5).toFixed(3)),
+        },
+        characterTitles: m.character_titles || {},
       };
 
       // Избегаем дублирования точек с одинаковым номером тика
@@ -219,7 +237,24 @@ function initSocketListeners() {
             oasis_guardian: 0,
             fleeing_prey: 0,
             opportunist: 0
-          }
+          },
+          bribes: item.bribes ?? 0,
+          cumBribes: item.cumBribes ?? item.cumulative_bribes ?? 0,
+          flees: item.flees ?? 0,
+          cumFlees: item.cumFlees ?? item.cumulative_flees ?? 0,
+          retaliations: item.retaliations ?? 0,
+          cumRetaliations: item.cumRetaliations ?? item.cumulative_retaliations ?? 0,
+          friendships: item.friendships ?? 0,
+          cumFriendships: item.cumFriendships ?? item.cumulative_friendships ?? 0,
+          castes: item.castes || { predator: 0, peaceful: 0 },
+          character: {
+            avg_ferocity: Number((item.character?.avg_ferocity ?? 0.3).toFixed(3)),
+            avg_friendliness: Number((item.character?.avg_friendliness ?? 0.2).toFixed(3)),
+            avg_courage: Number((item.character?.avg_courage ?? 0.5).toFixed(3)),
+            avg_diplomacy: Number((item.character?.avg_diplomacy ?? 0.4).toFixed(3)),
+            avg_caution: Number((item.character?.avg_caution ?? 0.5).toFixed(3)),
+          },
+          characterTitles: item.character_titles || item.characterTitles || {},
         }));
 
         updateGlobalState(prev => ({

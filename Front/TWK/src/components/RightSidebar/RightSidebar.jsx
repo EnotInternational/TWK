@@ -119,11 +119,35 @@ export default function RightSidebar({
   const generation = agent?.generation ?? 0;
   const parentId = agent?.parent_id;
 
-  // New behavioral genes, Trophic niche, Sociality, Archetypes and Stats
-  const aggression = agent?.aggression ?? agent?.learning?.aggression ?? 0.3;
-  const fear = agent?.fear ?? agent?.learning?.fear ?? 0.5;
-  const carnivore = agent?.carnivore ?? agent?.learning?.carnivore ?? 0.0;
-  const altruism = agent?.altruism ?? agent?.learning?.altruism ?? 0.1;
+  // Caste & Character formed dynamically through behavioral choices
+  const caste = agent?.caste || (agent?.carnivore >= 0.45 ? 'predator' : 'peaceful');
+  const characterTitle = agent?.character_title || (caste === 'predator' ? 'Хищник' : 'Мирный житель');
+  const character = agent?.character || {
+    ferocity: agent?.aggression ?? 0.3,
+    friendliness: agent?.altruism ?? 0.2,
+    courage: agent?.fear !== undefined ? 1.0 - agent.fear : 0.5,
+    diplomacy: 0.3,
+    caution: agent?.fear ?? 0.5,
+  };
+  const choices = agent?.choices || {
+    friend: 0,
+    fight: (agent?.fights_won ?? 0) + (agent?.fights_lost ?? 0),
+    bribe: 0,
+    flee: 0,
+    retaliate: 0,
+  };
+
+  const ferocityPercent = Math.min(100, Math.max(0, (character.ferocity ?? 0.3) * 100));
+  const friendlinessPercent = Math.min(100, Math.max(0, (character.friendliness ?? 0.2) * 100));
+  const couragePercent = Math.min(100, Math.max(0, (character.courage ?? 0.5) * 100));
+  const diplomacyPercent = Math.min(100, Math.max(0, (character.diplomacy ?? 0.3) * 100));
+  const cautionPercent = Math.min(100, Math.max(0, (character.caution ?? 0.5) * 100));
+
+  // Legacy behavioral genes & stats for backward compatibility
+  const aggression = agent?.aggression ?? agent?.learning?.aggression ?? character.ferocity;
+  const fear = agent?.fear ?? agent?.learning?.fear ?? character.caution;
+  const carnivore = agent?.carnivore ?? agent?.learning?.carnivore ?? (caste === 'predator' ? 0.7 : 0.0);
+  const altruism = agent?.altruism ?? agent?.learning?.altruism ?? character.friendliness;
   const territorial = agent?.territorial ?? agent?.learning?.territorial ?? 0.0;
   const archetype = agent?.archetype ?? agent?.learning?.archetype ?? 'opportunist';
 
@@ -336,9 +360,9 @@ export default function RightSidebar({
                             {isSelected && <span className={styles.selectedMarker}>▶ </span>}
                             <span 
                               className={styles.tableArchetypeIcon} 
-                              title={`Архетип: ${a.archetype || 'opportunist'} (Агрессия: ${a.aggression ?? 0.3}, Страх: ${a.fear ?? 0.5}, Хищник: ${a.carnivore ?? 0.0}, Альтруизм: ${a.altruism ?? 0.1}, Кратер: ${a.territorial ?? 0.0})`}
+                              title={`Каста: ${a.caste === 'predator' ? 'Хищник' : 'Мирный'} | Характер: ${a.character_title || a.archetype || 'Адаптивный'}`}
                             >
-                              {getArchetypeIcon(a)}
+                              {a.caste === 'predator' ? '🥩' : a.caste === 'peaceful' ? '🕊️' : getArchetypeIcon(a)}
                             </span>
                             {a.id}
                           </td>
@@ -417,24 +441,134 @@ export default function RightSidebar({
                   </div>
                 </div>
 
-                {/* Archetype Banner */}
+                {/* Caste & Character Title Banner */}
                 <div 
-                  className={styles.archetypeCard}
+                  className={styles.casteBanner}
                   style={{
-                    color: archetypeData.color,
-                    background: archetypeData.bg,
-                    borderColor: archetypeData.border,
+                    borderColor: caste === 'predator' ? 'rgba(255, 71, 87, 0.45)' : 'rgba(46, 213, 115, 0.45)',
+                    background: caste === 'predator' ? 'rgba(255, 71, 87, 0.12)' : 'rgba(46, 213, 115, 0.12)',
                   }}
-                  title={archetypeData.desc}
                 >
-                  <div className={styles.archetypeHeader}>
-                    <span className={styles.archetypeTitle}>{archetypeData.label}</span>
-                    <span className={styles.archetypeTag} style={{ borderColor: archetypeData.border }}>
-                      {archetypeData.tag}
+                  <div className={styles.casteRow}>
+                    <span className={styles.casteBadge} style={{ color: caste === 'predator' ? '#ff4757' : '#2ed573' }}>
+                      {caste === 'predator' ? '🥩 КАСТА: ХИЩНИК' : '🕊️ КАСТА: МИРНЫЙ'}
+                    </span>
+                    <span className={styles.characterTag}>
+                      {caste === 'predator' ? 'Охотник' : 'Травоядный'}
                     </span>
                   </div>
-                  <div className={styles.archetypeDesc}>{archetypeData.desc}</div>
+                  <div className={styles.characterMainTitle} style={{ color: caste === 'predator' ? '#ffa502' : '#00e5ff' }}>
+                    {characterTitle}
+                  </div>
+                  <div className={styles.characterExplain}>
+                    {caste === 'predator'
+                      ? 'Встречая мирных, решает: заключить союз (дружба) или начать охоту (бой). Выбор укрепляет свирепость или дружелюбие.'
+                      : 'При нападении хищника решает: откупиться данью HP, спастись бегством или дать яростный отпор.'}
+                  </div>
                 </div>
+
+                {/* Encounter Choices HUD */}
+                <div className={styles.choicesSection}>
+                  <div className={styles.choicesTitle}>
+                    <span>История выборов при встречах</span>
+                    <span style={{ fontSize: '0.68rem', color: '#94a3b8' }}>
+                      Всего: {choices.friend + choices.fight + choices.bribe + choices.flee + choices.retaliate}
+                    </span>
+                  </div>
+                  <div className={styles.choicesGrid}>
+                    <div className={styles.choiceTile} title="Дружба: выбор мира и пакта о ненападении">
+                      <span className={styles.choiceIcon}>🤝</span>
+                      <strong className={styles.choiceValue} style={{ color: '#00d2d3' }}>{choices.friend || 0}</strong>
+                      <span className={styles.choiceLabel}>Дружба</span>
+                    </div>
+                    <div className={styles.choiceTile} title="Откуп: выплата или получение дани энергией">
+                      <span className={styles.choiceIcon}>💰</span>
+                      <strong className={styles.choiceValue} style={{ color: '#e056fd' }}>{choices.bribe || 0}</strong>
+                      <span className={styles.choiceLabel}>Откуп</span>
+                    </div>
+                    <div className={styles.choiceTile} title="Бегство: уклонение от нападения на свободную клетку">
+                      <span className={styles.choiceIcon}>🏃</span>
+                      <strong className={styles.choiceValue} style={{ color: '#2ed573' }}>{choices.flee || 0}</strong>
+                      <span className={styles.choiceLabel}>Бегство</span>
+                    </div>
+                    <div className={styles.choiceTile} title="Отпор: храброе сопротивление мирного агента хищнику">
+                      <span className={styles.choiceIcon}>🛡️</span>
+                      <strong className={styles.choiceValue} style={{ color: '#ffa502' }}>{choices.retaliate || 0}</strong>
+                      <span className={styles.choiceLabel}>Отпор</span>
+                    </div>
+                    <div className={styles.choiceTile} title="Схватка: боевое столкновение за выживание">
+                      <span className={styles.choiceIcon}>⚔️</span>
+                      <strong className={styles.choiceValue} style={{ color: '#ff4757' }}>{choices.fight || 0}</strong>
+                      <span className={styles.choiceLabel}>Схватка</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Link to Statistics Dossier */}
+                <button
+                  className={styles.actionBtn}
+                  style={{
+                    width: '100%',
+                    margin: '8px 0 12px 0',
+                    background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(14, 165, 233, 0.08))',
+                    border: '1px solid #38bdf8',
+                    color: '#38bdf8',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    padding: '8px 14px',
+                    fontSize: '0.76rem',
+                    fontWeight: '700',
+                    letterSpacing: '0.04em',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onClick={() => {
+                    window.location.hash = `#/stats?tab=dossier&agent=${agent.id}`;
+                  }}
+                  title="Открыть подробное досье и всю историю выборов этого агента в Статистике"
+                >
+                  <span>📜</span>
+                  <span>Открыть хронику выборов в Статистике</span>
+                  <span>→</span>
+                </button>
+
+                {/* Mini Preview of Recent Choices if available */}
+                {agent?.choice_chronicle && agent.choice_chronicle.length > 0 && (
+                  <div className={styles.sectionBox} style={{ background: '#090d16', border: '1px solid #1e293b', marginBottom: '14px' }}>
+                    <div className={styles.sectionTitle} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>📜 Последние выборы и последствия</span>
+                      <span style={{ fontSize: '0.68rem', color: '#38bdf8' }}>
+                        {agent.choice_chronicle.length} событий
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+                      {agent.choice_chronicle.slice(-3).reverse().map((ch, idx) => {
+                        const energyDelta = ch.energy_delta ?? 0;
+                        const dColor = energyDelta > 0 ? '#10b981' : energyDelta < 0 ? '#ef4444' : '#94a3b8';
+                        const choiceLabel = ch.choice === 'friend' ? '🤝 Дружба' :
+                                            ch.choice === 'bribe' ? '💰 Откуп' :
+                                            ch.choice === 'flee' ? '🏃 Побег' :
+                                            ch.choice === 'retaliate' ? '🛡️ Отпор' : '⚔️ Схватка';
+                        return (
+                          <div key={idx} style={{ background: '#0d131f', border: '1px solid #1e293b', borderRadius: '4px', padding: '8px 10px', fontSize: '0.72rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                              <span style={{ color: '#38bdf8', fontWeight: 600 }}>Тик #{ch.tick} • {choiceLabel}</span>
+                              <span style={{ color: dColor, fontWeight: 'bold' }}>
+                                {energyDelta > 0 ? `+${energyDelta} HP` : `${energyDelta} HP`}
+                              </span>
+                            </div>
+                            <div style={{ color: '#cbd5e1', fontSize: '0.7rem', lineHeight: '1.3' }}>
+                              {ch.details}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* HP & VITALITY SECTION */}
                 <div className={styles.sectionBox}>
@@ -584,129 +718,152 @@ export default function RightSidebar({
                     </div>
                   </div>
 
-                  {/* Weight 3: Aggression Gene */}
+                  {/* Trait 1: Ferocity */}
                   <div className={styles.weightCard}>
                     <div className={styles.weightHeader}>
-                      <span className={styles.weightLabel}>⚔️ Агрессия (aggression):</span>
-                      <strong className={styles.weightValue} style={{ color: aggression >= 0.55 ? '#ff4757' : '#ffa502' }}>
-                        {(aggression * 100).toFixed(1)}% ({aggression.toFixed(3)})
+                      <span className={styles.weightLabel}>🔥 Свирепость (ferocity):</span>
+                      <strong className={styles.weightValue} style={{ color: '#ff4757' }}>
+                        {ferocityPercent.toFixed(1)}% ({character.ferocity.toFixed(3)})
                       </strong>
                     </div>
                     <div className={styles.geneTrack}>
                       <div 
                         className={styles.geneFill} 
                         style={{ 
-                          width: `${aggressionPercent}%`,
+                          width: `${ferocityPercent}%`,
                           background: 'linear-gradient(90deg, #ffa502, #ff4757)'
                         }} 
                       />
                     </div>
                     <div className={styles.meterLabels}>
-                      <span>0.0 (Миролюбивый)</span>
+                      <span>0.0 (Кроткий)</span>
                       <span>0.5</span>
-                      <span>1.0 (Бескомпромиссный)</span>
+                      <span>1.0 (Беспощадный)</span>
                     </div>
                     <div className={styles.weightExplanation}>
-                      {aggression >= 0.55 
-                        ? '✓ Высокая боевитость: нападает на занятые клетки и отбирает энергию'
-                        : aggression <= 0.3 
-                        ? '• Миролюбивый: избегает стычек и уступает клетки'
-                        : '• Умеренная: нападает только при значительном перевесе'}
+                      {character.ferocity >= 0.6 
+                        ? '✓ Усилилась схватками: предпочитает войну и силовую охоту'
+                        : '• Умеренная: нападает только при дефиците энергии или провокации'}
                     </div>
                   </div>
 
-                  {/* Weight 4: Fear Gene */}
+                  {/* Trait 2: Friendliness */}
                   <div className={styles.weightCard}>
                     <div className={styles.weightHeader}>
-                      <span className={styles.weightLabel}>🏃 Чувствительность к угрозе (fear):</span>
-                      <strong className={styles.weightValue} style={{ color: fear >= 0.55 ? '#2ed573' : '#70a1ff' }}>
-                        {(fear * 100).toFixed(1)}% ({fear.toFixed(3)})
+                      <span className={styles.weightLabel}>🤝 Дружелюбие (friendliness):</span>
+                      <strong className={styles.weightValue} style={{ color: '#00d2d3' }}>
+                        {friendlinessPercent.toFixed(1)}% ({character.friendliness.toFixed(3)})
                       </strong>
                     </div>
                     <div className={styles.geneTrack}>
                       <div 
                         className={styles.geneFill} 
                         style={{ 
-                          width: `${fearPercent}%`,
-                          background: 'linear-gradient(90deg, #70a1ff, #2ed573)'
+                          width: `${friendlinessPercent}%`,
+                          background: 'linear-gradient(90deg, #70a1ff, #00d2d3)'
+                        }} 
+                      />
+                    </div>
+                    <div className={styles.meterLabels}>
+                      <span>0.0 (Враждебный)</span>
+                      <span>0.5</span>
+                      <span>1.0 (Миротворец)</span>
+                    </div>
+                    <div className={styles.weightExplanation}>
+                      {character.friendliness >= 0.5 
+                        ? '✓ Развита выбором мира: охотно идет на союз и мирное сосуществование'
+                        : '• Обособленный: подозрительно относится к другим агентам'}
+                    </div>
+                  </div>
+
+                  {/* Trait 3: Courage */}
+                  <div className={styles.weightCard}>
+                    <div className={styles.weightHeader}>
+                      <span className={styles.weightLabel}>🛡️ Храбрость (courage):</span>
+                      <strong className={styles.weightValue} style={{ color: '#ffa502' }}>
+                        {couragePercent.toFixed(1)}% ({character.courage.toFixed(3)})
+                      </strong>
+                    </div>
+                    <div className={styles.geneTrack}>
+                      <div 
+                        className={styles.geneFill} 
+                        style={{ 
+                          width: `${couragePercent}%`,
+                          background: 'linear-gradient(90deg, #ffd000, #ffa502)'
+                        }} 
+                      />
+                    </div>
+                    <div className={styles.meterLabels}>
+                      <span>0.0 (Робкий)</span>
+                      <span>0.5</span>
+                      <span>1.0 (Бесстрашный)</span>
+                    </div>
+                    <div className={styles.weightExplanation}>
+                      {character.courage >= 0.6 
+                        ? '✓ Закалена отпором: не бежит от врага, а яростно защищает себя'
+                        : '• Склонность уступать: выбирает откуп или уклонение вместо драки'}
+                    </div>
+                  </div>
+
+                  {/* Trait 4: Diplomacy */}
+                  <div className={styles.weightCard}>
+                    <div className={styles.weightHeader}>
+                      <span className={styles.weightLabel}>📜 Дипломатичность (diplomacy):</span>
+                      <strong className={styles.weightValue} style={{ color: '#e056fd' }}>
+                        {diplomacyPercent.toFixed(1)}% ({character.diplomacy.toFixed(3)})
+                      </strong>
+                    </div>
+                    <div className={styles.geneTrack}>
+                      <div 
+                        className={styles.geneFill} 
+                        style={{ 
+                          width: `${diplomacyPercent}%`,
+                          background: 'linear-gradient(90deg, #a29bfe, #e056fd)'
+                        }} 
+                      />
+                    </div>
+                    <div className={styles.meterLabels}>
+                      <span>0.0 (Бескомпромиссный)</span>
+                      <span>0.5</span>
+                      <span>1.0 (Мастер переговоров)</span>
+                    </div>
+                    <div className={styles.weightExplanation}>
+                      {character.diplomacy >= 0.5 
+                        ? '✓ Сформирована откупами: спасает жизнь, выплачивая избыток энергии'
+                        : '• Прямолинейный: не склонен к уплате дани'}
+                    </div>
+                  </div>
+
+                  {/* Trait 5: Caution */}
+                  <div className={styles.weightCard}>
+                    <div className={styles.weightHeader}>
+                      <span className={styles.weightLabel}>👁️ Осторожность (caution):</span>
+                      <strong className={styles.weightValue} style={{ color: '#2ed573' }}>
+                        {cautionPercent.toFixed(1)}% ({character.caution.toFixed(3)})
+                      </strong>
+                    </div>
+                    <div className={styles.geneTrack}>
+                      <div 
+                        className={styles.geneFill} 
+                        style={{ 
+                          width: `${cautionPercent}%`,
+                          background: 'linear-gradient(90deg, #7bed9f, #2ed573)'
                         }} 
                       />
                     </div>
                     <div className={styles.meterLabels}>
                       <span>0.0 (Хладнокровный)</span>
                       <span>0.5</span>
-                      <span>1.0 (Панический беглец)</span>
+                      <span>1.0 (Мастер бегства)</span>
                     </div>
                     <div className={styles.weightExplanation}>
-                      {fear >= 0.55 
-                        ? '✓ Высокая тревожность: избегает агрессоров и спасается бегством'
-                        : fear <= 0.3 
-                        ? '• Хладнокровный: не боится скоплений опасных соседей'
-                        : '• Осторожный: держится на безопасной дистанции'}
+                      {character.caution >= 0.55 
+                        ? '✓ Отточена бегством: мгновенно уклоняется на свободную соседнюю клетку'
+                        : '• Уверенный в себе: не паникует при сближении хищника'}
                     </div>
                   </div>
 
-                  {/* Weight 5: Carnivore Gene (Trophic Niche) */}
-                  <div className={styles.weightCard}>
-                    <div className={styles.weightHeader}>
-                      <span className={styles.weightLabel}>🥩 Плотоядность vs Фотосинтез (carnivore):</span>
-                      <strong className={styles.weightValue} style={{ color: carnivore >= 0.45 ? '#ff4757' : '#7bed9f' }}>
-                        {(carnivore * 100).toFixed(1)}% ({carnivore.toFixed(3)})
-                      </strong>
-                    </div>
-                    <div className={styles.geneTrack}>
-                      <div 
-                        className={styles.geneFill} 
-                        style={{ 
-                          width: `${carnivorePercent}%`,
-                          background: 'linear-gradient(90deg, #7bed9f, #ffa502, #ff4757)'
-                        }} 
-                      />
-                    </div>
-                    <div className={styles.meterLabels}>
-                      <span>0.0 (🌱 Солнцеед)</span>
-                      <span>0.5</span>
-                      <span>1.0 (🥩 Хищник)</span>
-                    </div>
-                    <div className={styles.weightExplanation}>
-                      {carnivore >= 0.5 
-                        ? '✓ Облигатный хищник: не получает солнечную энергию, питается только охотой (усвоение до 90%)'
-                        : carnivore <= 0.2 
-                        ? '🌱 Солнцеед: 100% эффективность фотосинтеза в зоне Терминатора'
-                        : '• Факультативный: совмещает фотосинтез и эпизодические атаки'}
-                    </div>
-                  </div>
-
-                  {/* Weight 6: Altruism Gene (Sociality) */}
-                  <div className={styles.weightCard}>
-                    <div className={styles.weightHeader}>
-                      <span className={styles.weightLabel}>🤝 Альтруизм и взаимопомощь (altruism):</span>
-                      <strong className={styles.weightValue} style={{ color: altruism >= 0.4 ? '#00d2d3' : '#a0aec0' }}>
-                        {(altruism * 100).toFixed(1)}% ({altruism.toFixed(3)})
-                      </strong>
-                    </div>
-                    <div className={styles.geneTrack}>
-                      <div 
-                        className={styles.geneFill} 
-                        style={{ 
-                          width: `${altruismPercent}%`,
-                          background: 'linear-gradient(90deg, #718096, #70a1ff, #00d2d3)'
-                        }} 
-                      />
-                    </div>
-                    <div className={styles.meterLabels}>
-                      <span>0.0 (Эгоизм)</span>
-                      <span>0.5</span>
-                      <span>1.0 (Взаимопомощь)</span>
-                    </div>
-                    <div className={styles.weightExplanation}>
-                      {altruism >= 0.35 
-                        ? '✓ Социальный спасатель: делится избытком энергии с умирающими соседями (<25 HP)'
-                        : '• Эгоцентричный: бережет накопленные запасы энергии исключительно для себя'}
-                    </div>
-                  </div>
-
-                  {/* Weight 7: Territorial Gene (Crater / Oasis Defense) */}
+                  {/* Weight 6: Territorial Gene (Crater / Oasis Defense) */}
                   <div className={styles.weightCard}>
                     <div className={styles.weightHeader}>
                       <span className={styles.weightLabel}>🛡️ Территориальность / Оазисы (territorial):</span>
@@ -736,7 +893,7 @@ export default function RightSidebar({
                     </div>
                     <div className={styles.weightExplanation}>
                       {territorial >= 0.35 
-                        ? '✓ Страж оазиса: защищает кратер (+60% к защите в depression при обороне)'
+                        ? '✓ Страж оазиса: удерживает кратер (+60% к защите в depression при обороне)'
                         : territorial <= -0.3 
                         ? '• Кочевник: постоянно мигрирует за Терминатором, не удерживая кратеры'
                         : '• Нейтральная привязка к местности'}
