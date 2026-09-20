@@ -8,7 +8,7 @@ const BASE_URL = (hostname === 'localhost' || hostname === '127.0.0.1')
   : `http://${hostname}:5000`;
 
 export const socket = io(BASE_URL, {
-  transports: ['polling', 'websocket'],
+  transports: ['websocket'],
   reconnection: true,
   reconnectionAttempts: 20,
   reconnectionDelay: 1000,
