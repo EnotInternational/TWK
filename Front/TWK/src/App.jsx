@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar/Sidebar';
 import AgentGrid from './components/AgentGrid/AgentGrid';
 import ToolPanel from './components/ToolPanel/ToolPanel';
 import RightSidebar from './components/RightSidebar/RightSidebar';
+import BottomPanel from './components/BottomPanel/BottomPanel';
 import styles from './App.module.css';
 
 export default function App() {
@@ -42,6 +43,7 @@ export default function App() {
           disasterParams={disasterParams}
           setDisasterParams={setDisasterParams}
         />
+        <BottomPanel metrics={metrics} />
       </main>
 
       <RightSidebar 

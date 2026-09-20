@@ -16,7 +16,7 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
     windPenalty: 0.0,
     rocksCount: 0,
   });
-  
+
   const [speed, setSpeed] = useState(0.2); // seconds per tick
   const [isLoading, setIsLoading] = useState(false);
 
@@ -81,19 +81,19 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
 
   return (
     <>
-      <aside 
+      <aside
         className={styles.sidebar}
-        style={{ 
+        style={{
           marginLeft: isOpen ? '0' : '-260px',
           opacity: isOpen ? 1 : 0
         }}
       >
         <h2>Terra Nova: Mercury</h2>
         <div className={styles.statusBox}>
-           <span>Статус: {status}</span>
-           <span>Тик: {tick}</span>
+          <span>Статус: {status}</span>
+          <span>Тик: {tick}</span>
         </div>
-        
+
         {/* Панель симуляции */}
         <div className={styles.controlPanel}>
           <h3>Управление</h3>
@@ -103,16 +103,16 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
             <button className={styles.actionBtn} onClick={handleStep} disabled={status === 'running'}>⏭</button>
             <button className={styles.actionBtn} onClick={handleReset}>🔄</button>
           </div>
-          
+
           <div className={styles.inputGroup}>
             <label>Скорость (сек/тик): {speed}s</label>
-            <input 
-              type="range" 
-              min="0.01" 
-              max="1.0" 
-              step="0.05" 
-              value={speed} 
-              onChange={handleSpeedChange} 
+            <input
+              type="range"
+              min="0.01"
+              max="1.0"
+              step="0.05"
+              value={speed}
+              onChange={handleSpeedChange}
             />
           </div>
         </div>
@@ -164,22 +164,22 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
             <label>Количество скал:</label>
             <input type="number" name="rocksCount" value={spawnParams.rocksCount} onChange={handleInputChange} min="0" />
           </div>
-          
-          <button 
-            className={styles.actionBtn} 
-            onClick={handleSpawn} 
+
+          <button
+            className={styles.actionBtn}
+            onClick={handleSpawn}
             disabled={isLoading}
-            style={{marginTop: '10px'}}
+            style={{ marginTop: '10px' }}
           >
             {isLoading ? 'Генерация...' : 'Инициализировать'}
           </button>
-          
+
         </div>
       </aside>
-      
-      <button 
-        className={styles.toggleBtn} 
-        style={{ left: isOpen ? '280px' : '20px' }} 
+
+      <button
+        className={styles.toggleBtn}
+        style={{ left: isOpen ? '280px' : '20px' }}
         onClick={onToggle}
       >
         {isOpen ? 'Скрыть' : 'Меню'}

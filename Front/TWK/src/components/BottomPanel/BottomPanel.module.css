@@ -1,10 +1,11 @@
 .bottomPanel {
   background: rgba(11, 16, 26, 0.98);
-  border: 1px solid #00e5ff;
+
   border-radius: 6px;
-  padding: 10px;
+  padding: 20px;
   color: #e2e8f0;
   display: flex;
+  justify-content: stretch;
   flex-direction: column;
   margin-top: auto;
   flex-shrink: 0;

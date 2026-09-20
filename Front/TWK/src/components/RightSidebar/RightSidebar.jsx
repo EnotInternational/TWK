@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import styles from './RightSidebar.module.css';
 import { socket } from '../../api';
-import BottomPanel from '../BottomPanel/BottomPanel';
 
 export default function RightSidebar({ isOpen, agent, onToggle, metrics }) {
   const [agentsList, setAgentsList] = useState([]);
@@ -9,7 +8,7 @@ export default function RightSidebar({ isOpen, agent, onToggle, metrics }) {
 
   useEffect(() => {
     if (!isOpen || agent) return; // Only fetch if we are showing the table
-    
+
     let lastUpdate = 0;
     const handleTick = (data) => {
       const now = Date.now();
@@ -18,10 +17,10 @@ export default function RightSidebar({ isOpen, agent, onToggle, metrics }) {
         lastUpdate = now;
       }
     };
-    
+
     socket.on('simulation:tick', handleTick);
     socket.emit('request_field'); // Immediate fetch
-    
+
     return () => socket.off('simulation:tick', handleTick);
   }, [isOpen, agent]);
 
@@ -52,52 +51,51 @@ export default function RightSidebar({ isOpen, agent, onToggle, metrics }) {
   if (!agent && isOpen) {
     return (
       <>
-        <aside 
-        className={styles.rightSidebar}
-        style={{ 
-          marginRight: isOpen ? '0' : '-320px',
-          opacity: isOpen ? 1 : 0
-        }}
-      >
+        <aside
+          className={styles.rightSidebar}
+          style={{
+            marginRight: isOpen ? '0' : '-320px',
+            opacity: isOpen ? 1 : 0
+          }}
+        >
           <div className={styles.tableContainer}>
-             <h3>Все агенты ({agentsList.length})</h3>
-             <div className={styles.tableScroll}>
-               <table className={styles.agentsTable}>
-                 <thead>
-                   <tr>
-                     <th onClick={() => requestSort('id')}>ID {sortConfig.key === 'id' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}</th>
-                     <th onClick={() => requestSort('age')}>Возр. {sortConfig.key === 'age' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}</th>
-                     <th onClick={() => requestSort('energy')}>Энергия {sortConfig.key === 'energy' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}</th>
-                     <th onClick={() => requestSort('generation')}>Пок. {sortConfig.key === 'generation' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}</th>
-                   </tr>
-                 </thead>
-                 <tbody>
-                   {sortedAgents.length > 0 ? sortedAgents.map(a => (
-                     <tr key={a.id}>
-                       <td>{a.id}</td>
-                       <td>{a.age}</td>
-                       <td style={{ color: a.energy > 120 ? '#00ff88' : a.energy < 60 ? '#ff3344' : '#ffd000' }}>
-                         {a.energy ? a.energy.toFixed(1) : '0'}
-                       </td>
-                       <td>{a.generation}</td>
-                     </tr>
-                   )) : (
-                     <tr>
-                       <td colSpan="4" style={{textAlign: 'center', padding: '15px'}}>Нет данных</td>
-                     </tr>
-                   )}
-                 </tbody>
-               </table>
-             </div>
+            <h3>Все агенты ({agentsList.length})</h3>
+            <div className={styles.tableScroll}>
+              <table className={styles.agentsTable}>
+                <thead>
+                  <tr>
+                    <th onClick={() => requestSort('id')}>ID {sortConfig.key === 'id' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}</th>
+                    <th onClick={() => requestSort('age')}>Возр. {sortConfig.key === 'age' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}</th>
+                    <th onClick={() => requestSort('energy')}>Энергия {sortConfig.key === 'energy' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}</th>
+                    <th onClick={() => requestSort('generation')}>Пок. {sortConfig.key === 'generation' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedAgents.length > 0 ? sortedAgents.map(a => (
+                    <tr key={a.id}>
+                      <td>{a.id}</td>
+                      <td>{a.age}</td>
+                      <td style={{ color: a.energy > 120 ? '#00ff88' : a.energy < 60 ? '#ff3344' : '#ffd000' }}>
+                        {a.energy ? a.energy.toFixed(1) : '0'}
+                      </td>
+                      <td>{a.generation}</td>
+                    </tr>
+                  )) : (
+                    <tr>
+                      <td colSpan="4" style={{ textAlign: 'center', padding: '15px' }}>Нет данных</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-          <BottomPanel metrics={metrics} />
         </aside>
-        <button 
-          className={styles.rightToggleBtn} 
+        <button
+          className={styles.rightToggleBtn}
           style={{ right: isOpen ? '340px' : '20px' }}
           onClick={onToggle}
         >
-          Закрыть
+          Скрыть
         </button>
       </>
     );
@@ -105,9 +103,9 @@ export default function RightSidebar({ isOpen, agent, onToggle, metrics }) {
 
   return (
     <>
-      <aside 
+      <aside
         className={styles.rightSidebar}
-        style={{ 
+        style={{
           marginRight: isOpen ? '0' : '-320px',
           opacity: isOpen ? 1 : 0
         }}
@@ -142,9 +140,9 @@ export default function RightSidebar({ isOpen, agent, onToggle, metrics }) {
           </div>
           <div className={styles.dataRow}>
             <span>Темп. зона:</span>
-            <strong style={{textTransform: 'capitalize'}}>{agent?.zone || 'unknown'}</strong>
+            <strong style={{ textTransform: 'capitalize' }}>{agent?.zone || 'unknown'}</strong>
           </div>
-          
+
           {agent?.death_reason && (
             <div className={`${styles.dataRow} ${styles.deadRow}`}>
               <span>Причина смерти:</span>
@@ -152,15 +150,14 @@ export default function RightSidebar({ isOpen, agent, onToggle, metrics }) {
             </div>
           )}
         </div>
-        <BottomPanel metrics={metrics} />
       </aside>
-      
-      <button 
-        className={styles.rightToggleBtn} 
+
+      <button
+        className={styles.rightToggleBtn}
         style={{ right: isOpen ? '340px' : '20px' }}
         onClick={onToggle}
       >
-        {isOpen ? 'Закрыть' : 'Агент'}
+        {isOpen ? 'Скрыть' : 'Агенты'}
       </button>
     </>
   );

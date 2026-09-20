@@ -43,7 +43,7 @@
 /* View Switcher Bar */
 .viewToggleBar {
   position: absolute;
-  top: 16px;
+  bottom: 16px;
   right: 16px;
   z-index: 30;
   display: flex;
@@ -86,7 +86,7 @@
 /* Planet HUD Controls */
 .planetOverlay {
   position: absolute;
-  top: 16px;
+  top: 65px;
   left: 16px;
   z-index: 20;
   display: flex;
