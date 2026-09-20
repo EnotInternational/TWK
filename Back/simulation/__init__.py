@@ -13,6 +13,7 @@ from .environment import MercuryEnvironment, Zone
 from .events import EventLogger, SimulationEvent, EventType
 from .metrics import MetricsCollector, TickMetrics
 from .engine import SimulationEngine, SimulationConfig
+from .terrain import PerlinNoise2D, generate_rock_clusters
 
 __all__ = [
     "Agent",
@@ -25,4 +26,6 @@ __all__ = [
     "TickMetrics",
     "SimulationEngine",
     "SimulationConfig",
+    "PerlinNoise2D",
+    "generate_rock_clusters",
 ]

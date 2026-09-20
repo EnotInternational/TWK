@@ -85,15 +85,30 @@ class Agent:
 
     def as_dict(self, current_zone: Optional[str] = None) -> Dict[str, Any]:
         """Сериализация агента в словарь для API."""
+        strategy = "Кооперация (термофоб)" if self.w_swarm > 0 and self.w_temp < 0 else (
+            "Одиночка (термофоб)" if self.w_swarm <= 0 and self.w_temp < 0 else (
+                "Экстремал-стайный" if self.w_swarm > 0 else "Экстремал-одиночка"
+            )
+        )
         data = {
             "id": self.id,
             "x": self.x,
             "y": self.y,
             "energy": round(self.energy, 2),
+            "hp": round(self.energy, 2),
             "age": self.age,
             "generation": self.generation,
             "parent_id": self.parent_id,
             "is_alive": self.is_alive,
+            "w_temp": round(self.w_temp, 4),
+            "w_swarm": round(self.w_swarm, 4),
+            "learning": {
+                "w_temp": round(self.w_temp, 4),
+                "w_swarm": round(self.w_swarm, 4),
+                "generation": self.generation,
+                "strategy": strategy,
+                "mutation_rate": 0.5,
+            },
         }
         if current_zone is not None:
             data["zone"] = current_zone
