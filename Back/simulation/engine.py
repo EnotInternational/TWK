@@ -63,20 +63,20 @@ class SimulationConfig:
             seed=int(data.get("seed", 42)),
             width=int(data.get("width", 60)),
             height=int(data.get("height", 30)),
-            initial_agents=int(data.get("initial_agents", 40)),
-            starting_energy=float(data.get("starting_energy", 100.0)),
-            base_metabolism=float(data.get("base_metabolism", 1.0)),
-            penalty_hot=float(data.get("penalty_hot", 3.0)),
-            penalty_cold=float(data.get("penalty_cold", 3.0)),
-            penalty_terminator=float(data.get("penalty_terminator", 0.0)),
-            cycle_ticks=int(data.get("cycle_ticks", 200)),
-            terminator_width=int(data.get("terminator_width", 4)),
-            reproduction_threshold=float(data.get("reproduction_threshold", 140.0)),
-            reproduction_cost=float(data.get("reproduction_cost", 50.0)),
-            require_partner=bool(data.get("require_partner", True)),
-            max_ticks=data.get("max_ticks"),
-            wind_penalty=float(data.get("wind_penalty", 0.0)),
-            rocks_count=int(data.get("rocks_count", 0)),
+            initial_agents=int(data.get("initial_agents", data.get("initialAgents", 40))),
+            starting_energy=float(data.get("starting_energy", data.get("startingEnergy", 100.0))),
+            base_metabolism=float(data.get("base_metabolism", data.get("baseMetabolism", 1.0))),
+            penalty_hot=float(data.get("penalty_hot", data.get("penaltyHot", 3.0))),
+            penalty_cold=float(data.get("penalty_cold", data.get("penaltyCold", 3.0))),
+            penalty_terminator=float(data.get("penalty_terminator", data.get("penaltyTerminator", 0.0))),
+            cycle_ticks=int(data.get("cycle_ticks", data.get("cycleTicks", 200))),
+            terminator_width=int(data.get("terminator_width", data.get("terminatorWidth", 4))),
+            reproduction_threshold=float(data.get("reproduction_threshold", data.get("reproductionThreshold", 140.0))),
+            reproduction_cost=float(data.get("reproduction_cost", data.get("reproductionCost", 50.0))),
+            require_partner=bool(data.get("require_partner", data.get("requirePartner", True))),
+            max_ticks=data.get("max_ticks", data.get("maxTicks")),
+            wind_penalty=float(data.get("wind_penalty", data.get("windPenalty", 0.0))),
+            rocks_count=int(data.get("rocks_count", data.get("rocksCount", 0))),
         )
 
     def as_dict(self) -> Dict[str, Any]:
@@ -1359,6 +1359,29 @@ class SimulationEngine:
             y=target_y,
             details=f"Added {added} rocks around ({target_x}, {target_y}) with size {size}"
         )
+
+    def generate_random_rocks(self, count: int = 30, seed: Optional[int] = None) -> int:
+        """Сгенерировать случайные скалы кучками по алгоритму Перлина и добавить к текущим."""
+        if count <= 0:
+            return 0
+        gen_seed = seed if seed is not None else self.rng.randint(0, 1_000_000)
+        new_rocks = generate_rock_clusters(
+            width=self.config.width,
+            height=self.config.height,
+            rocks_count=count,
+            seed=gen_seed,
+        )
+        before_count = len(self.rocks)
+        self.rocks.update(new_rocks)
+        added = len(self.rocks) - before_count
+        self.events.log(
+            tick=self.tick,
+            event_type=EventType.ROCKS,
+            x=self.config.width // 2,
+            y=self.config.height // 2,
+            details=f"Procedurally generated {len(new_rocks)} rock clusters ({added} newly added cells)"
+        )
+        return added
 
     def add_depression(self, target_x: int, target_y: int, level: int = 1, size: int = 1) -> None:
         """Добавить углубление (уровень 1 - обычная, уровень 2 - глубокая) размера size."""

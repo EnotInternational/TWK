@@ -97,10 +97,24 @@ export default function ToolPanel({
               </label>
             )}
             {selectedDisaster === 'rocks' && (
-              <label>
-                Размер (клетки):
-                <input type="number" name="size" value={disasterParams.size || 0} onChange={handleParamChange} min="1" max="10" />
-              </label>
+              <>
+                <label>
+                  Размер (клетки):
+                  <input type="number" name="size" value={disasterParams.size || 0} onChange={handleParamChange} min="1" max="10" />
+                </label>
+                <button
+                  className={styles.button}
+                  style={{ marginLeft: 8, background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white', border: 'none' }}
+                  onClick={() => {
+                    if (window.generateRandomRocks) {
+                      window.generateRandomRocks(30);
+                    }
+                  }}
+                  title="Сгенерировать процедурные скалы кучками (Перлин)"
+                >
+                  🎲 Россыпь скал
+                </button>
+              </>
             )}
             {selectedDisaster === 'depression' && (
               <>

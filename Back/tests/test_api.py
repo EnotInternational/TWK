@@ -134,3 +134,18 @@ def test_backward_compatibility_field_api(client):
 
     res = client.delete("/api/field")
     assert res.status_code == 200
+
+
+def test_environment_random_rocks_api(client):
+    # Тест специального эндпоинта /api/environment/rocks/random
+    res = client.post("/api/environment/rocks/random", json={"count": 20, "seed": 42})
+    assert res.status_code == 200
+    data = res.get_json()
+    assert data["success"] is True
+    assert data["added"] > 0
+    assert data["total_rocks"] >= data["added"]
+
+    # Тест через универсальный катастрофический эндпоинт
+    res_dis = client.post("/api/environment/disaster", json={"type": "random_rocks", "params": {"count": 10}})
+    assert res_dis.status_code == 200
+    assert res_dis.get_json()["success"] is True

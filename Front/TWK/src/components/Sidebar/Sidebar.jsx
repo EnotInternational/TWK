@@ -14,7 +14,7 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
     cycleTicks: 200,
     terminatorWidth: 8,
     windPenalty: 0.0,
-    rocksCount: 0,
+    rocksCount: 30,
   });
 
   const [speed, setSpeed] = useState(0.2); // seconds per tick
