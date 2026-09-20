@@ -53,14 +53,16 @@ export default function App() {
             disasterParams={disasterParams}
           />
         </div>
-        <ToolPanel
-          selectedDisaster={selectedDisaster}
-          setSelectedDisaster={setSelectedDisaster}
-          disasterParams={disasterParams}
-          setDisasterParams={setDisasterParams}
-          onOpenRandomizer={() => setIsRandomizerOpen(true)}
-        />
-        <BottomPanel metrics={metrics} />
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', background: 'rgba(11, 16, 26, 0.98)', borderTop: '2px solid #00e5ff' }}>
+          <ToolPanel
+            selectedDisaster={selectedDisaster}
+            setSelectedDisaster={setSelectedDisaster}
+            disasterParams={disasterParams}
+            setDisasterParams={setDisasterParams}
+            onOpenRandomizer={() => setIsRandomizerOpen(true)}
+          />
+          <BottomPanel metrics={metrics} />
+        </div>
       </main>
 
       <Randomizer isOpen={isRandomizerOpen} onClose={() => setIsRandomizerOpen(false)} metrics={metrics} />

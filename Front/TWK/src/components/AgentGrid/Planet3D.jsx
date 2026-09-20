@@ -1252,11 +1252,16 @@ export default function Planet3D({
       if (!container) return;
       const w = container.clientWidth;
       const h = container.clientHeight;
+      if (w === 0 || h === 0) return;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
     };
-    window.addEventListener('resize', handleResize);
+    
+    const resizeObserver = new ResizeObserver(() => {
+      handleResize();
+    });
+    resizeObserver.observe(container);
 
     // --- Animation Loop (60 FPS) ---
     let animationFrameId;
@@ -1392,8 +1397,8 @@ export default function Planet3D({
 
     return () => {
       cancelAnimationFrame(animationFrameId);
+      resizeObserver.disconnect();
       window.removeEventListener('autoDisaster', handleAutoDisasterEffect);
-      window.removeEventListener('resize', handleResize);
       domElem.removeEventListener('mousedown', handleMouseDown);
       domElem.removeEventListener('mouseup', handleMouseUp);
 
