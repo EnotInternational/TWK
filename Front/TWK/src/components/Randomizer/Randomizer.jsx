@@ -203,7 +203,6 @@ export default function Randomizer({ isOpen, onClose, metrics }) {
         <button 
           className={`${styles.spinBtn} ${config.enabled ? styles.btnActive : ''}`} 
           onClick={() => setConfig({ ...config, enabled: !config.enabled })}
-          style={{ background: config.enabled ? '#ff4a4a' : 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)' }}
         >
           {config.enabled ? 'Остановить все' : 'Запустить все'}
         </button>

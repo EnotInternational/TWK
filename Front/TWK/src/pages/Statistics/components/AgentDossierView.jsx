@@ -5,36 +5,36 @@ import ValidatedInput from '../../../components/ValidatedInput/ValidatedInput';
 
 const CHOICE_META = {
   friend: {
-    label: 'Мир / Союз',
+    label: 'Кооперация',
     icon: '',
     badgeClass: styles.choiceBadgeFriend,
     cardClass: styles.cardChoiceFriend,
     color: '#00d2d3',
   },
   bribe: {
-    label: 'Откуп данью',
+    label: 'Уступка ресурсов',
     icon: '',
     badgeClass: styles.choiceBadgeBribe,
     cardClass: styles.cardChoiceBribe,
     color: '#e056fd',
   },
   flee: {
-    label: 'Побег / Уклонение',
+    label: 'Уклонение',
     icon: '',
     badgeClass: styles.choiceBadgeFlee,
     cardClass: styles.cardChoiceFlee,
     color: '#2ed573',
   },
   retaliate: {
-    label: 'Дать отпор',
-    icon: '️',
+    label: 'Защита',
+    icon: '',
     badgeClass: styles.choiceBadgeRetaliate,
     cardClass: styles.cardChoiceRetaliate,
     color: '#ffa502',
   },
   fight: {
-    label: 'Схватка / Охота',
-    icon: '️',
+    label: 'Атака',
+    icon: '',
     badgeClass: styles.choiceBadgeFight,
     cardClass: styles.cardChoiceFight,
     color: '#ff4757',
@@ -42,23 +42,23 @@ const CHOICE_META = {
 };
 
 const OUTCOME_META = {
-  pact: { title: ' Заключен союз и мирный пакт', type: 'success' },
-  paid_bribe: { title: ' Откуп выплачен: хищник удовлетворен', type: 'warning' },
-  received_bribe: { title: ' Откуп принят: получена дань от мирного', type: 'success' },
-  escaped: { title: ' Успешный маневр: уклонение от атаки', type: 'success' },
-  caught: { title: '️ Перехвачен хищником при попытке бегства', type: 'danger' },
-  counter_win: { title: '️ Отпор успешен! Хищник обращен в бегство', type: 'success' },
-  counter_loss: { title: '️ Отпор сломлен: хищник пробил защиту', type: 'danger' },
-  killed_prey: { title: ' Добыча повержена: поглощена биомасса', type: 'success' },
-  died_combat: { title: '️ Погиб в яростной схватке', type: 'danger' },
+  pact: { title: 'Установлена кооперация', type: 'success' },
+  paid_bribe: { title: 'Ресурсы переданы агрессору', type: 'warning' },
+  received_bribe: { title: 'Получены ресурсы от цели', type: 'success' },
+  escaped: { title: 'Уклонение выполнено успешно', type: 'success' },
+  caught: { title: 'Уклонение не удалось', type: 'danger' },
+  counter_win: { title: 'Успешное отражение атаки', type: 'success' },
+  counter_loss: { title: 'Защита прорвана', type: 'danger' },
+  killed_prey: { title: 'Цель уничтожена, ресурсы ассимилированы', type: 'success' },
+  died_combat: { title: 'Агент уничтожен в бою', type: 'danger' },
 };
 
 const TRAITS_CONFIG = [
-  { key: 'ferocity', label: 'Свирепость', icon: '', color: '#ff4757' },
-  { key: 'friendliness', label: 'Дружелюбие', icon: '', color: '#00d2d3' },
-  { key: 'courage', label: 'Храбрость', icon: '️', color: '#ffa502' },
-  { key: 'diplomacy', label: 'Дипломатия', icon: '', color: '#e056fd' },
-  { key: 'caution', label: 'Осторожность', icon: '️', color: '#2ed573' },
+  { key: 'ferocity', label: 'Агрессивность', icon: '', color: '#ff4757' },
+  { key: 'friendliness', label: 'Кооперативность', icon: '', color: '#00d2d3' },
+  { key: 'courage', label: 'Резистентность', icon: '', color: '#ffa502' },
+  { key: 'diplomacy', label: 'Адаптивность', icon: '', color: '#e056fd' },
+  { key: 'caution', label: 'Осторожность', icon: '', color: '#2ed573' },
 ];
 
 export default function AgentDossierView({
@@ -231,16 +231,16 @@ export default function AgentDossierView({
       <aside className={styles.selectorPanel}>
         <div className={styles.selectorHeader}>
           <h3 className={styles.selectorTitle}>
-            <span> Реестр особей</span>
+            <span>Реестр агентов</span>
             <span className={styles.agentCountBadge}>{filteredAgents.length}</span>
           </h3>
           <button 
             className={styles.chip} 
             onClick={fetchAllAgents} 
-            title="Обновить список агентов с сервера"
+            title="Синхронизировать данные с сервером"
             style={{ padding: '3px 6px' }}
           >
-            {isLoadingAgents ? '⏳' : ''}
+            {isLoadingAgents ? '...' : 'Обновить'}
           </button>
         </div>
 
@@ -249,7 +249,7 @@ export default function AgentDossierView({
           <ValidatedInput
             type="text"
             className={styles.searchInput}
-            placeholder="Поиск по ID или титулу..."
+            placeholder="Поиск по ID или классу..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -268,13 +268,13 @@ export default function AgentDossierView({
             className={`${styles.chip} ${statusFilter === 'alive' ? styles.active : ''}`}
             onClick={() => setStatusFilter('alive')}
           >
-             Живые
+            Активные
           </button>
           <button 
             className={`${styles.chip} ${statusFilter === 'dead' ? styles.active : ''}`}
             onClick={() => setStatusFilter('dead')}
           >
-             Погибшие
+            Уничтоженные
           </button>
 
           {/* Caste filters */}
@@ -282,22 +282,22 @@ export default function AgentDossierView({
             className={`${styles.chip} ${casteFilter === 'predator' ? styles.active : ''}`}
             onClick={() => setCasteFilter(casteFilter === 'predator' ? 'all' : 'predator')}
           >
-             Хищники
+            Агрессоры
           </button>
           <button 
             className={`${styles.chip} ${casteFilter === 'peaceful' ? styles.active : ''}`}
             onClick={() => setCasteFilter(casteFilter === 'peaceful' ? 'all' : 'peaceful')}
           >
-            ️ Мирные
+            Пассивные
           </button>
 
           {/* Having chronicle */}
           <button 
             className={`${styles.chip} ${onlyWithChoices ? styles.active : ''}`}
             onClick={() => setOnlyWithChoices(!onlyWithChoices)}
-            title="Показывать только тех, кто делал выбор в столкновениях"
+            title="Отображать только агентов с историей взаимодействий"
           >
-             С выборами
+            С историей
           </button>
         </div>
 
@@ -316,25 +316,24 @@ export default function AgentDossierView({
                 >
                   <div className={styles.itemTopRow}>
                     <div className={styles.itemIdArea}>
-                      <span className={styles.itemCasteIcon} title={`Каста: ${aCaste === 'predator' ? 'Хищник' : 'Мирный'}`}>
-                        {aCaste === 'predator' ? '' : '️'}
+                      <span className={styles.itemCasteIcon} title={`Класс: ${aCaste === 'predator' ? 'Агрессор' : 'Пассивный'}`}>
                       </span>
                       <span className={styles.itemId}>#{a.id}</span>
                     </div>
                     <span className={`${styles.statusIndicator} ${a.is_alive ? styles.statusAlive : styles.statusDead}`}>
-                      {a.is_alive ? 'В строю' : 'Погиб'}
+                      {a.is_alive ? 'Активен' : 'Уничтожен'}
                     </span>
                   </div>
 
                   <div className={styles.itemTitle}>
-                    {a.character_title || (aCaste === 'predator' ? 'Охотник стаи' : 'Мирный житель')}
+                    {a.character_title || (aCaste === 'predator' ? 'Агрессор' : 'Пассивный агент')}
                   </div>
 
                   <div className={styles.itemMetaRow}>
                     <span>HP: {typeof a.energy === 'number' ? a.energy.toFixed(1) : a.energy || 0}</span>
                     <span>Возраст: {a.age || 0}т</span>
                     {chronicleCount > 0 ? (
-                      <span className={styles.chronicleCountTag} title="Количество выборов в хронике">
+                      <span className={styles.chronicleCountTag} title="Количество записей в журнале">
                          {chronicleCount}
                       </span>
                     ) : (
@@ -346,7 +345,7 @@ export default function AgentDossierView({
             })
           ) : (
             <div className={styles.emptyState} style={{ padding: '24px 12px' }}>
-              <p>Особей по заданным фильтрам не найдено</p>
+              <p>Агенты, соответствующие критериям, не найдены</p>
             </div>
           )}
         </div>
@@ -359,7 +358,7 @@ export default function AgentDossierView({
             <div className={styles.emptyState}>
               <div className={styles.emptyIcon}></div>
               <h4>Агент не выбран</h4>
-              <p>Выберите особь из левого списка для просмотра подробного досье и хронологии принятых решений.</p>
+              <p>Выберите агента из реестра для просмотра подробного профиля и журнала действий.</p>
             </div>
           </div>
         ) : (
@@ -369,24 +368,23 @@ export default function AgentDossierView({
               <div className={styles.dossierHeader}>
                 <div className={styles.agentIdentity}>
                   <div className={`${styles.agentAvatar} ${isPredator ? styles.avatarPredator : styles.avatarPeaceful}`}>
-                    {isPredator ? '' : '️'}
                   </div>
                   <div className={styles.identityText}>
                     <div className={styles.agentMainTitle}>
-                      <span>Особь #{currentAgent.id}</span>
+                      <span>Агент #{currentAgent.id}</span>
                       <span className={`${styles.castePill} ${isPredator ? styles.castePredator : styles.castePeaceful}`}>
-                        {isPredator ? 'Хищник' : 'Мирный житель'}
+                        {isPredator ? 'Агрессор' : 'Пассивный агент'}
                       </span>
                     </div>
                     <div className={styles.agentSubTitle}>
-                      {currentAgent.character_title || 'Адаптивный организм'}
+                      {currentAgent.character_title || 'Базовый агент'}
                     </div>
                   </div>
                 </div>
 
                 <div className={styles.headerBadges}>
                   <span className={`${styles.statusIndicator} ${isAlive ? styles.statusAlive : styles.statusDead}`} style={{ fontSize: '0.72rem', padding: '4px 10px' }}>
-                    {isAlive ? ' В строю' : `️ Погиб на тике ${currentAgent.death_tick ?? currentTick}`}
+                    {isAlive ? 'Активен' : `Уничтожен на итерации ${currentAgent.death_tick ?? currentTick}`}
                   </span>
                   <div className={styles.metaBadge}>
                     Поколение: <strong>G{currentAgent.generation ?? 0}</strong>
@@ -400,7 +398,7 @@ export default function AgentDossierView({
               {/* Vitality indicators */}
               <div className={styles.vitalityGrid}>
                 <div className={styles.vitalityTile}>
-                  <span className={styles.vitalityLabel}>Энергия (HP)</span>
+                  <span className={styles.vitalityLabel}>Биомасса (HP)</span>
                   <strong className={styles.vitalityValue} style={{ color: (currentAgent.energy || 0) > 120 ? '#10b981' : (currentAgent.energy || 0) < 60 ? '#ef4444' : '#f59e0b' }}>
                     {typeof currentAgent.energy === 'number' ? currentAgent.energy.toFixed(1) : currentAgent.energy || 0} HP
                   </strong>
@@ -409,7 +407,7 @@ export default function AgentDossierView({
                 <div className={styles.vitalityTile}>
                   <span className={styles.vitalityLabel}>Возраст</span>
                   <strong className={styles.vitalityValue} style={{ color: '#f1f5f9' }}>
-                    {currentAgent.age || 0} тиков
+                    {currentAgent.age || 0} итераций
                   </strong>
                 </div>
 
@@ -428,7 +426,7 @@ export default function AgentDossierView({
                 </div>
 
                 <div className={styles.vitalityTile}>
-                  <span className={styles.vitalityLabel}>Всего выборов</span>
+                  <span className={styles.vitalityLabel}>Всего действий</span>
                   <strong className={styles.vitalityValue} style={{ color: '#e056fd' }}>
                     {choiceCounts.total}
                   </strong>
@@ -438,7 +436,7 @@ export default function AgentDossierView({
               {/* Character Traits Breakdown */}
               <div className={styles.traitsSection}>
                 <div className={styles.traitsTitle}>
-                   Черты характера, сформированные жизненным опытом:
+                  Поведенческие характеристики (адаптивные):
                 </div>
                 <div className={styles.traitsGrid}>
                   {TRAITS_CONFIG.map(t => {
@@ -474,26 +472,26 @@ export default function AgentDossierView({
               {/* Cumulative Choice Breakdown Pills */}
               <div className={styles.countersRow}>
                 <span style={{ fontSize: '0.72rem', color: '#64748b', alignSelf: 'center', fontWeight: 600 }}>
-                  Статистика решений:
+                  Сводка взаимодействий:
                 </span>
-                <div className={styles.counterPill} title="Сколько раз агент выбирал мирное сосуществование">
-                  <span> Дружба:</span>
+                <div className={styles.counterPill} title="Частота выбора кооперации">
+                  <span>Кооперация:</span>
                   <strong>{choiceCounts.friend}</strong>
                 </div>
-                <div className={styles.counterPill} title="Сколько раз агент откупался данью или принимал дань">
-                  <span> Откуп:</span>
+                <div className={styles.counterPill} title="Частота уступки ресурсов">
+                  <span>Уступка:</span>
                   <strong>{choiceCounts.bribe}</strong>
                 </div>
-                <div className={styles.counterPill} title="Сколько раз агент спасался бегством на соседнюю клетку">
-                  <span> Побег:</span>
+                <div className={styles.counterPill} title="Частота выбора уклонения">
+                  <span>Уклонение:</span>
                   <strong>{choiceCounts.flee}</strong>
                 </div>
-                <div className={styles.counterPill} title="Сколько раз мирный давал смелый отпор хищнику">
-                  <span>️ Отпор:</span>
+                <div className={styles.counterPill} title="Частота выбора защиты">
+                  <span>Защита:</span>
                   <strong>{choiceCounts.retaliate}</strong>
                 </div>
-                <div className={styles.counterPill} title="Сколько раз хищник выбирал атаку в столкновении">
-                  <span>️ Схватка:</span>
+                <div className={styles.counterPill} title="Частота инициации атаки">
+                  <span>Атака:</span>
                   <strong>{choiceCounts.fight}</strong>
                 </div>
               </div>
@@ -503,7 +501,7 @@ export default function AgentDossierView({
             <div className={styles.chronicleSection}>
               <div className={styles.chronicleTopBar}>
                 <h3 className={styles.chronicleTitle}>
-                  <span> Хроника выборов и последствий</span>
+                  <span>Журнал действий и результатов</span>
                   <span className={styles.agentCountBadge}>
                     {filteredChronicle.length}
                   </span>
@@ -521,37 +519,37 @@ export default function AgentDossierView({
                     <button
                       className={`${styles.choiceFilterBtn} ${choiceTypeFilter === 'friend' ? styles.active : ''}`}
                       onClick={() => setChoiceTypeFilter('friend')}
-                      title="Только мирные союзы"
+                      title="Только кооперация"
                     >
-                       Мир
+                      Кооперация
                     </button>
                     <button
                       className={`${styles.choiceFilterBtn} ${choiceTypeFilter === 'bribe' ? styles.active : ''}`}
                       onClick={() => setChoiceTypeFilter('bribe')}
-                      title="Только откупы данью"
+                      title="Только уступка ресурсов"
                     >
-                       Откуп
+                      Уступка
                     </button>
                     <button
                       className={`${styles.choiceFilterBtn} ${choiceTypeFilter === 'flee' ? styles.active : ''}`}
                       onClick={() => setChoiceTypeFilter('flee')}
-                      title="Только бегство"
+                      title="Только уклонение"
                     >
-                       Побег
+                      Уклонение
                     </button>
                     <button
                       className={`${styles.choiceFilterBtn} ${choiceTypeFilter === 'retaliate' ? styles.active : ''}`}
                       onClick={() => setChoiceTypeFilter('retaliate')}
-                      title="Только смелый отпор"
+                      title="Только защита"
                     >
-                      ️ Отпор
+                      Защита
                     </button>
                     <button
                       className={`${styles.choiceFilterBtn} ${choiceTypeFilter === 'fight' ? styles.active : ''}`}
                       onClick={() => setChoiceTypeFilter('fight')}
-                      title="Только схватки"
+                      title="Только атака"
                     >
-                      ️ Схватка
+                      Атака
                     </button>
                   </div>
 
@@ -608,27 +606,27 @@ export default function AgentDossierView({
                         {/* Header: Tick, Choice, Opponent */}
                         <div className={styles.cardHeader}>
                           <div className={styles.cardHeaderLeft}>
-                            <span className={styles.tickBadge}>Тик #{item.tick}</span>
+                            <span className={styles.tickBadge}>Итерация #{item.tick}</span>
                             <span className={`${styles.choiceBadge} ${choiceInfo.badgeClass}`}>
                               <span>{choiceInfo.icon}</span>
-                              <span>ВЫБОР: {choiceInfo.label}</span>
+                              <span>ДЕЙСТВИЕ: {choiceInfo.label}</span>
                             </span>
                           </div>
 
                           <div className={styles.opponentBadge}>
-                            <span>Оппонент:</span>
+                            <span>Цель / Угроза:</span>
                             <strong style={{ color: '#f1f5f9' }}>
                               #{item.opponent_id}
                             </strong>
                             <span style={{ color: '#64748b' }}>
-                              ({item.opponent_title || (item.opponent_caste === 'predator' ? 'Хищник' : 'Мирный')})
+                              ({item.opponent_title || (item.opponent_caste === 'predator' ? 'Агрессор' : 'Пассивный')})
                             </span>
                             <button
                               className={styles.opponentLinkBtn}
                               onClick={() => handleSelectAgent(item.opponent_id)}
-                              title={`Перейти к досье оппонента #${item.opponent_id}`}
+                              title={`Перейти к профилю агента #${item.opponent_id}`}
                             >
-                               Досье
+                              Профиль
                             </button>
                           </div>
                         </div>
@@ -663,14 +661,14 @@ export default function AgentDossierView({
                               Object.entries(traitDeltas).map(([tName, deltaStr]) => {
                                 const trConfig = TRAITS_CONFIG.find(c => c.key === tName);
                                 return (
-                                  <span key={tName} className={styles.traitDeltaPill} title={`Изменение черты ${trConfig?.label || tName}`}>
+                                  <span key={tName} className={styles.traitDeltaPill} title={`Изменение характеристики ${trConfig?.label || tName}`}>
                                     {trConfig?.icon || '•'} {trConfig?.label || tName} {deltaStr}
                                   </span>
                                 );
                               })
                             ) : (
                               <span style={{ fontSize: '0.68rem', color: '#475569' }}>
-                                Черты не изменились
+                                Характеристики стабильны
                               </span>
                             )}
                           </div>
@@ -678,7 +676,7 @@ export default function AgentDossierView({
                           {/* Resulting Title */}
                           {item.resulting_title && (
                             <div className={styles.resultingTitleArea}>
-                              Итог характера: <strong>«{item.resulting_title}»</strong>
+                              Обновленный профиль: <strong>«{item.resulting_title}»</strong>
                             </div>
                           )}
                         </div>
@@ -687,12 +685,12 @@ export default function AgentDossierView({
                   })
                 ) : (
                   <div className={styles.emptyState}>
-                    <div className={styles.emptyIcon}>️</div>
-                    <h4>История столкновений пуста</h4>
+                    <div className={styles.emptyIcon}></div>
+                    <h4>Журнал взаимодействий пуст</h4>
                     <p>
                       {choiceTypeFilter !== 'all'
-                        ? `У данной особи нет выборов категории «${CHOICE_META[choiceTypeFilter]?.label || choiceTypeFilter}».`
-                        : 'Эта особь еще не вступала в непосредственные столкновения с другими агентами на поле. При сближении с хищником или мирным сородичем здесь появится хроника ее решений и их последствий.'}
+                        ? `Отсутствуют записи в категории «${CHOICE_META[choiceTypeFilter]?.label || choiceTypeFilter}».`
+                        : 'У данного агента отсутствуют записи о взаимодействиях. Журнал будет обновлен при контакте с другими сущностями на карте.'}
                     </p>
                   </div>
                 )}

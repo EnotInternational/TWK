@@ -14,7 +14,6 @@ export const INTENT_CONFIG = {
   ATTACK: {
     label: 'Охота / Нападение',
     shortLabel: 'Атака',
-    icon: '🥩',
     color: '#ff4757',
     bgColor: 'rgba(255, 71, 87, 0.14)',
     borderColor: 'rgba(255, 71, 87, 0.45)',
@@ -23,7 +22,6 @@ export const INTENT_CONFIG = {
   FLEE: {
     label: 'Тактическое бегство',
     shortLabel: 'Бегство',
-    icon: '🏃',
     color: '#2ed573',
     bgColor: 'rgba(46, 213, 115, 0.12)',
     borderColor: 'rgba(46, 213, 115, 0.4)',
@@ -32,7 +30,6 @@ export const INTENT_CONFIG = {
   EXPLORE: {
     label: 'Разведка территории',
     shortLabel: 'Разведка',
-    icon: '🧭',
     color: '#70a1ff',
     bgColor: 'rgba(112, 161, 255, 0.12)',
     borderColor: 'rgba(112, 161, 255, 0.4)',
@@ -41,7 +38,6 @@ export const INTENT_CONFIG = {
   REST: {
     label: 'Отдых / Удержание позиции',
     shortLabel: 'Отдых',
-    icon: '💤',
     color: '#a4b0be',
     bgColor: 'rgba(164, 176, 190, 0.12)',
     borderColor: 'rgba(164, 176, 190, 0.35)',
@@ -50,7 +46,6 @@ export const INTENT_CONFIG = {
   SHARE: {
     label: 'Альтруизм / Помощь',
     shortLabel: 'Помощь',
-    icon: '🤝',
     color: '#00d2d3',
     bgColor: 'rgba(0, 210, 211, 0.14)',
     borderColor: 'rgba(0, 210, 211, 0.45)',
@@ -126,21 +121,18 @@ export default function EdmDecisionHud({ agent, currentTick = null }) {
     if (t < 0.25) {
       return {
         label: 'Жадный выбор',
-        icon: '🎯',
         color: '#00e5ff',
         desc: 'Строго выбирает действие с максимальным баллом utility (прагматичный детерминизм)',
       };
     } else if (t <= 0.75) {
       return {
         label: 'Адаптивный баланс',
-        icon: '⚖️',
         color: '#00ff88',
         desc: 'Сбалансированный выбор: высокий приоритет оптимума с долей стохастического поиска',
       };
     } else {
       return {
         label: 'Поисковый шум',
-        icon: '🎲',
         color: '#ffa502',
         desc: 'Высокая стохастичность: намерения выбираются с повышенной случайностью (exploration)',
       };
@@ -176,7 +168,7 @@ export default function EdmDecisionHud({ agent, currentTick = null }) {
       <div className={styles.hudHeader}>
         <div className={styles.hudTitleGroup}>
           <span className={styles.hudTitle}>
-            <span>🧠 Мозг EDM: Выбор действия</span>
+            <span> Мозг EDM: Выбор действия</span>
           </span>
         </div>
         <span className={styles.liveBadge}>

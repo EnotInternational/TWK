@@ -4,8 +4,8 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
+  background: rgba(10, 13, 20, 0.6);
+  backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -15,17 +15,17 @@
 }
 
 .randomizerModal {
-  background: #1a1a2e;
-  border-radius: 16px;
+  background: rgba(5, 5, 8, 0.98);
+  border-radius: 12px;
   padding: 24px;
   width: 400px;
   max-width: 90vw;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  border: 1px solid #3a3a5c;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(0, 229, 255, 0.2);
   display: flex;
   flex-direction: column;
   gap: 20px;
-  color: #fff;
+  color: #e2e8f0;
   transform: translateY(20px);
   animation: slideUp 0.3s forwards ease-out;
 }
@@ -38,31 +38,33 @@
 
 .header h2 {
   margin: 0;
-  font-size: 1.5rem;
-  color: #a8a8ff;
+  font-size: 1.2rem;
+  color: #00e5ff;
+  text-transform: uppercase;
 }
 
 .closeBtn {
   background: transparent;
   border: none;
-  color: #888;
+  color: #a0aec0;
   font-size: 1.5rem;
   cursor: pointer;
   transition: color 0.2s;
+  line-height: 1;
 }
 
 .closeBtn:hover {
-  color: #fff;
+  color: #00e5ff;
 }
 
 .checkboxGroup {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background: #2a2a4a;
+  background: rgba(0, 229, 255, 0.05);
   padding: 16px;
   border-radius: 8px;
-  border: 1px solid #4a4a7a;
+  border: 1px solid rgba(0, 229, 255, 0.2);
 }
 
 .disasterRow {
@@ -82,14 +84,15 @@
 
 .intervalControl span {
   font-size: 0.9rem;
-  color: #a8a8ff;
+  color: #a0aec0;
   min-width: 50px;
   text-align: right;
 }
 
 .sliderSmall {
   width: 100px;
-  accent-color: #a8a8ff;
+  accent-color: #00e5ff;
+  cursor: pointer;
 }
 
 .checkboxLabel {
@@ -97,50 +100,53 @@
   align-items: center;
   gap: 10px;
   cursor: pointer;
-  font-size: 1.1rem;
+  font-size: 1rem;
+  color: #a0aec0;
   transition: color 0.2s;
-  min-width: 140px;
+  min-width: 120px;
 }
 
 .checkboxLabel:hover {
-  color: #a8a8ff;
+  color: #00e5ff;
 }
 
 .checkboxLabel input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   cursor: pointer;
-  accent-color: #a8a8ff;
+  accent-color: #00e5ff;
 }
 
 .spinBtn {
-  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-  border: none;
-  border-radius: 8px;
-  padding: 14px;
-  color: white;
-  font-size: 1.2rem;
+  background: transparent;
+  border: 1px solid #00e5ff;
+  border-radius: 6px;
+  padding: 12px;
+  color: #00e5ff;
+  font-size: 1rem;
   font-weight: bold;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
-  box-shadow: 0 4px 15px rgba(37, 117, 252, 0.4);
+  transition: all 0.2s;
 }
 
 .spinBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(37, 117, 252, 0.6);
+  background: rgba(0, 229, 255, 0.1);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
 }
 
 .spinBtn:active {
-  transform: translateY(0);
+  transform: translateY(1px);
 }
 
 .btnActive {
-  box-shadow: 0 4px 15px rgba(255, 74, 74, 0.4);
+  border-color: #ef4444;
+  color: #ef4444;
 }
 
 .btnActive:hover {
-  box-shadow: 0 6px 20px rgba(255, 74, 74, 0.6);
+  background: rgba(239, 68, 68, 0.1);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
 }
 
 @keyframes fadeIn {

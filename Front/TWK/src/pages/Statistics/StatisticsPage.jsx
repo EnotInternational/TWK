@@ -129,13 +129,6 @@ export default function StatisticsPage({ onBack }) {
             </button>
           </div>
 
-          <button
-            className={`${styles.liveBtn} ${!isLive ? styles.paused : ''}`}
-            onClick={() => setIsLive(!isLive)}
-            title={isLive ? "Приостановить автообновление данных" : "Возобновить автообновление данных"}
-          >
-            {isLive ? '● LIVE' : '⏸ ПАУЗА'}
-          </button>
 
           <button className={styles.exportBtn} onClick={exportCSV} title="Скачать историю показателей в формате CSV">
             Экспорт в CSV
