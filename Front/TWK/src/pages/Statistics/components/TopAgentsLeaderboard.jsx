@@ -75,7 +75,7 @@ export default function TopAgentsLeaderboard({ agents = [], onSelectAgent = null
                     {agent.id}
                     {onSelectAgent && (
                       <span style={{ marginLeft: '6px', fontSize: '0.72rem' }} title="Открыть досье">
-                        📜
+                        
                       </span>
                     )}
                   </td>

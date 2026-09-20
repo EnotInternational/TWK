@@ -4,12 +4,12 @@ import { socket } from '../../api';
 import Planet3D from './Planet3D';
 
 export const ARCHETYPE_INFO = {
-  predator: { label: 'Хищник', icon: '🥩', color: '#ff4757', desc: 'Плотоядный охотник' },
-  grazer: { label: 'Солнцеед', icon: '🌱', color: '#7bed9f', desc: 'Чистый фотосинтез' },
-  altruist_swarm: { label: 'Альтруист', icon: '🤝', color: '#00d2d3', desc: 'Спасатель сородичей' },
-  oasis_guardian: { label: 'Страж оазиса', icon: '🛡️', color: '#e056fd', desc: 'Оборона кратеров' },
-  fleeing_prey: { label: 'Беглец', icon: '🕊️', color: '#2ed573', desc: 'Пацифист-беглец' },
-  opportunist: { label: 'Оппортунист', icon: '⚖️', color: '#ffa502', desc: 'Сбалансированный' },
+  predator: { label: 'Хищник', icon: '', color: '#ff4757', desc: 'Плотоядный охотник' },
+  grazer: { label: 'Солнцеед', icon: '', color: '#7bed9f', desc: 'Чистый фотосинтез' },
+  altruist_swarm: { label: 'Альтруист', icon: '', color: '#00d2d3', desc: 'Спасатель сородичей' },
+  oasis_guardian: { label: 'Страж оазиса', icon: '️', color: '#e056fd', desc: 'Оборона кратеров' },
+  fleeing_prey: { label: 'Беглец', icon: '️', color: '#2ed573', desc: 'Пацифист-беглец' },
+  opportunist: { label: 'Оппортунист', icon: '️', color: '#ffa502', desc: 'Сбалансированный' },
 };
 
 export function resolveAgentArchetype(a) {
@@ -767,28 +767,28 @@ export default function AgentGrid({
               onClick={() => setColorMode('archetypes')}
               title="Цвета по 6 эволюционным архетипам (Хищник, Солнцеед, Альтруист и др.)"
             >
-              🧬 Архетипы
+               Архетипы
             </button>
             <button 
               className={`${styles.colorModeBtn} ${colorMode === 'energy' ? styles.colorModeBtnActive : ''}`}
               onClick={() => setColorMode('energy')}
               title="Цвета по уровню энергии (Зеленый / Желтый / Красный)"
             >
-              ⚡ HP
+               HP
             </button>
             <button 
               className={`${styles.colorModeBtn} ${colorMode === 'trophic' ? styles.colorModeBtnActive : ''}`}
               onClick={() => setColorMode('trophic')}
               title="Цвета по трофической специализации (Солнцеед ↔ Хищник)"
             >
-              🥩 Трофика
+               Трофика
             </button>
             <button 
               className={`${styles.legendToggleBtn} ${isLegendOpen ? styles.legendToggleBtnActive : ''}`}
               onClick={() => setIsLegendOpen(prev => !prev)}
               title="Показать / скрыть легенду цветов"
             >
-              🎨 Легенда
+               Легенда
             </button>
           </div>
         </div>
@@ -798,11 +798,11 @@ export default function AgentGrid({
           <div className={styles.legendPanel}>
             <div className={styles.legendHeader}>
               <span className={styles.legendTitle}>
-                {colorMode === 'archetypes' ? '🧬 Легенда архетипов' :
-                 colorMode === 'energy' ? '⚡ Шкала энергии (HP)' :
-                 '🥩 Трофический градиент'}
+                {colorMode === 'archetypes' ? ' Легенда архетипов' :
+                 colorMode === 'energy' ? ' Шкала энергии (HP)' :
+                 ' Трофический градиент'}
               </span>
-              <button className={styles.legendCloseBtn} onClick={() => setIsLegendOpen(false)}>✕</button>
+              <button className={styles.legendCloseBtn} onClick={() => setIsLegendOpen(false)}></button>
             </div>
 
             {colorMode === 'archetypes' && (
@@ -842,9 +842,9 @@ export default function AgentGrid({
               <div className={styles.trophicLegend}>
                 <div className={styles.trophicBar} />
                 <div className={styles.trophicLabels}>
-                  <span>🌱 0.0 Солнцеед</span>
-                  <span>⚖️ 0.5 Смешанный</span>
-                  <span>🥩 1.0 Хищник</span>
+                  <span> 0.0 Солнцеед</span>
+                  <span>️ 0.5 Смешанный</span>
+                  <span> 1.0 Хищник</span>
                 </div>
               </div>
             )}
@@ -859,7 +859,7 @@ export default function AgentGrid({
           onClick={() => setViewMode('3d')}
           title="3D Сферическая модель Меркурия"
         >
-          🪐 3D
+           3D
         </button>
         <button 
           className={`${styles.viewToggleBtn} ${viewMode === '2d' ? styles.viewToggleBtnActive : ''}`}
@@ -869,7 +869,7 @@ export default function AgentGrid({
           }}
           title="2D Цилиндрическая развертка"
         >
-          🗺️ 2D
+          ️ 2D
         </button>
       </div>
 

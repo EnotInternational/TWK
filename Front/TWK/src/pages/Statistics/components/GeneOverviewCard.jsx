@@ -87,7 +87,7 @@ export default function GeneOverviewCard({
       <div className={styles.cardHeader}>
         <div className={styles.titleGroup}>
           <h3 className={styles.title}>
-            <span>🧬 Обзор генофонда и эволюционной адаптации</span>
+            <span> Обзор генофонда и эволюционной адаптации</span>
           </h3>
           <div className={styles.tagGroup}>
             <span className={styles.tag}>Популяция: {stats.count}</span>
@@ -169,7 +169,7 @@ export default function GeneOverviewCard({
             <div className={styles.microStat}>
               <span className={styles.microLabel}>Эволюционный тренд</span>
               <strong className={styles.microValue} style={{ color: stats.avgWTemp < 0 ? '#10b981' : '#f59e0b' }}>
-                {stats.avgWTemp < 0 ? '✓ Селекция в Терминатор' : 'Размытый отбор'}
+                {stats.avgWTemp < 0 ? ' Селекция в Терминатор' : 'Размытый отбор'}
               </strong>
             </div>
           </div>
@@ -227,7 +227,7 @@ export default function GeneOverviewCard({
             <div className={styles.microStat}>
               <span className={styles.microLabel}>Социальный фактор</span>
               <strong className={styles.microValue} style={{ color: stats.avgWSwarm > 0 ? '#10b981' : '#94a3b8' }}>
-                {stats.avgWSwarm > 0 ? '✓ Кооперация популяции' : 'Обособленность'}
+                {stats.avgWSwarm > 0 ? ' Кооперация популяции' : 'Обособленность'}
               </strong>
             </div>
           </div>
@@ -292,7 +292,7 @@ export default function GeneOverviewCard({
           <div className={styles.stratCard}>
             <div className={styles.stratTop}>
               <span className={styles.stratDot} style={{ background: '#38bdf8' }} />
-              <span className={styles.stratLabel}>🧬 Термофоб-кооператор</span>
+              <span className={styles.stratLabel}> Термофоб-кооператор</span>
               <strong className={styles.stratPercent} style={{ color: '#38bdf8' }}>{coopPercent}%</strong>
             </div>
             <span className={styles.stratSub}>w_temp &lt; 0, w_swarm &gt; 0 • Стремится в Терминатор, собирается в стаю</span>
@@ -301,7 +301,7 @@ export default function GeneOverviewCard({
           <div className={styles.stratCard}>
             <div className={styles.stratTop}>
               <span className={styles.stratDot} style={{ background: '#3b82f6' }} />
-              <span className={styles.stratLabel}>🎯 Термофоб-одиночка</span>
+              <span className={styles.stratLabel}> Термофоб-одиночка</span>
               <strong className={styles.stratPercent} style={{ color: '#3b82f6' }}>{loneThermPercent}%</strong>
             </div>
             <span className={styles.stratSub}>w_temp &lt; 0, w_swarm ≤ 0 • Избегает перепадов температур, держит дистанцию</span>
@@ -310,7 +310,7 @@ export default function GeneOverviewCard({
           <div className={styles.stratCard}>
             <div className={styles.stratTop}>
               <span className={styles.stratDot} style={{ background: '#f59e0b' }} />
-              <span className={styles.stratLabel}>🔥 Экстремал-стайный</span>
+              <span className={styles.stratLabel}> Экстремал-стайный</span>
               <strong className={styles.stratPercent} style={{ color: '#f59e0b' }}>{swarmExtremPercent}%</strong>
             </div>
             <span className={styles.stratSub}>w_temp ≥ 0, w_swarm &gt; 0 • Толерантен к жаре/холоду, следует за сородичами</span>
@@ -319,7 +319,7 @@ export default function GeneOverviewCard({
           <div className={styles.stratCard}>
             <div className={styles.stratTop}>
               <span className={styles.stratDot} style={{ background: '#ef4444' }} />
-              <span className={styles.stratLabel}>⚡ Экстремал-одиночка</span>
+              <span className={styles.stratLabel}> Экстремал-одиночка</span>
               <strong className={styles.stratPercent} style={{ color: '#ef4444' }}>{loneExtremPercent}%</strong>
             </div>
             <span className={styles.stratSub}>w_temp ≥ 0, w_swarm ≤ 0 • Автономный исследователь экстремальных зон</span>

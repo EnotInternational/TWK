@@ -2,11 +2,11 @@ import { useRef, useEffect, useState, useCallback } from 'react';
 import styles from './GeneEvolutionChart.module.css';
 
 const GENES_META = [
-  { key: 'avgAggression', label: 'Агрессия', icon: '⚔️', color: '#ff4757', min: 0.0, max: 1.0 },
-  { key: 'avgFear', label: 'Страх', icon: '🏃', color: '#70a1ff', min: 0.0, max: 1.0 },
-  { key: 'avgCarnivore', label: 'Плотоядность', icon: '🥩', color: '#ff9f43', min: 0.0, max: 1.0 },
-  { key: 'avgAltruism', label: 'Альтруизм', icon: '🤝', color: '#00d2d3', min: 0.0, max: 1.0 },
-  { key: 'avgTerritorial', label: 'Оазисы', icon: '🛡️', color: '#e056fd', min: -1.0, max: 1.0 },
+  { key: 'avgAggression', label: 'Агрессия', icon: '️', color: '#ff4757', min: 0.0, max: 1.0 },
+  { key: 'avgFear', label: 'Страх', icon: '', color: '#70a1ff', min: 0.0, max: 1.0 },
+  { key: 'avgCarnivore', label: 'Плотоядность', icon: '', color: '#ff9f43', min: 0.0, max: 1.0 },
+  { key: 'avgAltruism', label: 'Альтруизм', icon: '', color: '#00d2d3', min: 0.0, max: 1.0 },
+  { key: 'avgTerritorial', label: 'Оазисы', icon: '️', color: '#e056fd', min: -1.0, max: 1.0 },
 ];
 
 export default function GeneEvolutionChart({ history = [] }) {
@@ -215,7 +215,7 @@ export default function GeneEvolutionChart({ history = [] }) {
       <div className={styles.chartHeader}>
         <div className={styles.titleArea}>
           <h2 className={styles.title}>
-            <span>📈</span> ГЕНЕТИЧЕСКИЙ ДРЕЙФ И ЭВОЛЮЦИОННЫЙ ОТБОР
+            <span></span> ГЕНЕТИЧЕСКИЙ ДРЕЙФ И ЭВОЛЮЦИОННЫЙ ОТБОР
           </h2>
           <span className={styles.subtitle}>
             Динамика средних популяционных частот поведенческих, трофических и социальных генов
@@ -292,25 +292,25 @@ export default function GeneEvolutionChart({ history = [] }) {
       {/* Evolutionary & Behavioral Activity Summary */}
       <div className={styles.activityStrip}>
         <div className={styles.activityCard} title="Суммарное количество боевых столкновений">
-          <span className={styles.activityLabel}>⚔️ Всего стычек</span>
+          <span className={styles.activityLabel}>️ Всего стычек</span>
           <span className={styles.activityValue} style={{ color: '#ff4757' }}>
             {latest?.cumFights ?? 0}
           </span>
         </div>
         <div className={styles.activityCard} title="Гибель агентов в результате боевых столкновений">
-          <span className={styles.activityLabel}>💀 Боевых потерь</span>
+          <span className={styles.activityLabel}> Боевых потерь</span>
           <span className={styles.activityValue} style={{ color: '#ff6b81' }}>
             {latest?.cumCombatDeaths ?? 0}
           </span>
         </div>
         <div className={styles.activityCard} title="Энергия, переданная альтруистами голодающим сородичам">
-          <span className={styles.activityLabel}>🤝 Энергия помощи</span>
+          <span className={styles.activityLabel}> Энергия помощи</span>
           <span className={styles.activityValue} style={{ color: '#00d2d3' }}>
             {latest?.cumEnergyShared ? Number(latest.cumEnergyShared).toFixed(1) : '0.0'} HP
           </span>
         </div>
         <div className={styles.activityCard} title="Энергия, поглощенная хищниками при охоте и каннибализме">
-          <span className={styles.activityLabel}>🥩 Энергия охоты</span>
+          <span className={styles.activityLabel}> Энергия охоты</span>
           <span className={styles.activityValue} style={{ color: '#ffa502' }}>
             {latest?.cumPredationEnergy ? Number(latest.cumPredationEnergy).toFixed(1) : '0.0'} HP
           </span>

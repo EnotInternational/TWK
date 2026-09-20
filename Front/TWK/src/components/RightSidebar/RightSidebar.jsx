@@ -164,23 +164,23 @@ export default function RightSidebar({
   let strategyTitle = 'Кооперация (термофоб)';
   let strategyDesc = 'Избегает опасных зон температуры (Hot/Cold) и стремится к стае сородичей';
   if (wTemp < 0 && wSwarm > 0) {
-    strategyTitle = '🧬 Термофоб-кооператор';
+    strategyTitle = ' Термофоб-кооператор';
     strategyDesc = 'Эффективно избегает экстремальных зон и активно ищет группу для размножения';
   } else if (wTemp < 0 && wSwarm <= 0) {
-    strategyTitle = '🎯 Термофоб-одиночка';
+    strategyTitle = ' Термофоб-одиночка';
     strategyDesc = 'Избегает температурных штрафов, но держится на безопасной дистанции от сородичей';
   } else if (wTemp >= 0 && wSwarm > 0) {
-    strategyTitle = '🔥 Экстремал-стайный';
+    strategyTitle = ' Экстремал-стайный';
     strategyDesc = 'Толерантен к температурному стрессу, держится вместе со стаей';
   } else {
-    strategyTitle = '⚡ Экстремал-одиночка';
+    strategyTitle = ' Экстремал-одиночка';
     strategyDesc = 'Автономно исследует экстремальные температурные регионы';
   }
 
   // Archetype Data Banner (6 emerging evolutionary archetypes)
   let archetypeData = {
     key: 'opportunist',
-    label: '⚖️ Оппортунист',
+    label: '️ Оппортунист',
     tag: 'Сбалансированный',
     color: '#ffa502',
     bg: 'rgba(255, 165, 2, 0.12)',
@@ -191,7 +191,7 @@ export default function RightSidebar({
   if (archetype === 'oasis_guardian' || (territorial >= 0.35 && aggression >= 0.35 && carnivore < 0.6)) {
     archetypeData = {
       key: 'oasis_guardian',
-      label: '🛡️ Страж оазиса',
+      label: '️ Страж оазиса',
       tag: 'Территориальный',
       color: '#e056fd',
       bg: 'rgba(224, 86, 253, 0.14)',
@@ -201,7 +201,7 @@ export default function RightSidebar({
   } else if (archetype === 'predator' || (carnivore >= 0.45 && aggression >= 0.4) || (aggression >= 0.75 && aggression > fear)) {
     archetypeData = {
       key: 'predator',
-      label: '🥩 Хищник-мясоед',
+      label: ' Хищник-мясоед',
       tag: 'Трофический хищник',
       color: '#ff4757',
       bg: 'rgba(255, 71, 87, 0.16)',
@@ -211,7 +211,7 @@ export default function RightSidebar({
   } else if (archetype === 'altruist_swarm' || (altruism >= 0.45 && wSwarm > 0)) {
     archetypeData = {
       key: 'altruist_swarm',
-      label: '🤝 Альтруист-роевик',
+      label: ' Альтруист-роевик',
       tag: 'Социальная помощь',
       color: '#00d2d3',
       bg: 'rgba(0, 210, 211, 0.14)',
@@ -221,7 +221,7 @@ export default function RightSidebar({
   } else if (archetype === 'fleeing_prey' || archetype === 'passive' || (fear >= 0.55 && fear > aggression)) {
     archetypeData = {
       key: 'fleeing_prey',
-      label: '🕊️ Беглец-пацифист',
+      label: '️ Беглец-пацифист',
       tag: 'Защитное бегство',
       color: '#2ed573',
       bg: 'rgba(46, 213, 115, 0.14)',
@@ -231,7 +231,7 @@ export default function RightSidebar({
   } else if (archetype === 'grazer' || (carnivore <= 0.2 && aggression <= 0.25 && territorial <= 0.2)) {
     archetypeData = {
       key: 'grazer',
-      label: '🌱 Солнцеед-пастбищник',
+      label: ' Солнцеед-пастбищник',
       tag: 'Чистый фотосинтез',
       color: '#7bed9f',
       bg: 'rgba(123, 237, 159, 0.14)',
@@ -248,12 +248,12 @@ export default function RightSidebar({
     const carn = a?.carnivore ?? 0.0;
     const altr = a?.altruism ?? 0.1;
     const terr = a?.territorial ?? 0.0;
-    if (arc === 'oasis_guardian' || (terr >= 0.35 && aggr >= 0.35 && carn < 0.6)) return '🛡️';
-    if (arc === 'predator' || (carn >= 0.45 && aggr >= 0.4) || aggr >= 0.75) return '🥩';
-    if (arc === 'altruist_swarm' || altr >= 0.45) return '🤝';
-    if (arc === 'fleeing_prey' || arc === 'passive' || (f >= 0.55 && f > aggr)) return '🕊️';
-    if (arc === 'grazer' || (carn <= 0.2 && aggr <= 0.25 && terr <= 0.2)) return '🌱';
-    return '⚖️';
+    if (arc === 'oasis_guardian' || (terr >= 0.35 && aggr >= 0.35 && carn < 0.6)) return '️';
+    if (arc === 'predator' || (carn >= 0.45 && aggr >= 0.4) || aggr >= 0.75) return '';
+    if (arc === 'altruist_swarm' || altr >= 0.45) return '';
+    if (arc === 'fleeing_prey' || arc === 'passive' || (f >= 0.55 && f > aggr)) return '️';
+    if (arc === 'grazer' || (carn <= 0.2 && aggr <= 0.25 && terr <= 0.2)) return '';
+    return '️';
   };
 
   // Bi-directional and uni-directional meter calculations
@@ -283,14 +283,14 @@ export default function RightSidebar({
               onClick={() => setActiveTab('all')}
               title="Режим: список всех агентов"
             >
-              👥 Все ({agentsList.length})
+               Все ({agentsList.length})
             </button>
             <button
               className={`${styles.tabBtn} ${activeTab === 'agent' ? styles.tabBtnActive : ''}`}
               onClick={() => setActiveTab('agent')}
               title="Режим: данные выбранного агента"
             >
-              🧬 {agent ? `Агент #${agent.id}` : 'Данные агента'}
+               {agent ? `Агент #${agent.id}` : 'Данные агента'}
             </button>
           </div>
         </div>
@@ -313,7 +313,7 @@ export default function RightSidebar({
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 {searchQuery && (
-                  <button className={styles.clearSearchBtn} onClick={() => setSearchQuery('')}>✕</button>
+                  <button className={styles.clearSearchBtn} onClick={() => setSearchQuery('')}></button>
                 )}
               </div>
 
@@ -353,7 +353,7 @@ export default function RightSidebar({
                               className={styles.tableArchetypeIcon}
                               title={`Каста: ${a.caste === 'predator' ? 'Хищник' : 'Мирный'} | Характер: ${a.character_title || a.archetype || 'Адаптивный'}`}
                             >
-                              {a.caste === 'predator' ? '🥩' : a.caste === 'peaceful' ? '🕊️' : getArchetypeIcon(a)}
+                              {a.caste === 'predator' ? '' : a.caste === 'peaceful' ? '️' : getArchetypeIcon(a)}
                             </span>
                             {a.id}
                           </td>
@@ -402,14 +402,14 @@ export default function RightSidebar({
                   onClick={handleDeselect}
                   title="Снять выбор агента"
                 >
-                  ✕ Снять выбор
+                   Снять выбор
                 </button>
               </div>
             )}
 
             {!agent ? (
               <div className={styles.emptyState}>
-                <div className={styles.emptyIcon}>🧬</div>
+                <div className={styles.emptyIcon}></div>
                 <h4>Агент не выбран</h4>
                 <p>Выберите нужного агента в списке «Все агенты» или кликните по объекту на карте планеты.</p>
                 <button
@@ -428,7 +428,7 @@ export default function RightSidebar({
                     <strong className={styles.idValue}>{agent.id}</strong>
                   </div>
                   <div className={`${styles.statusPill} ${isAlive ? styles.statusAlive : styles.statusDead}`}>
-                    {isAlive ? '🟢 В строю' : '🔴 Погиб'}
+                    {isAlive ? ' В строю' : ' Погиб'}
                   </div>
                 </div>
 
@@ -442,7 +442,7 @@ export default function RightSidebar({
                 >
                   <div className={styles.casteRow}>
                     <span className={styles.casteBadge} style={{ color: caste === 'predator' ? '#ff4757' : '#2ed573' }}>
-                      {caste === 'predator' ? '🥩 КАСТА: ХИЩНИК' : '🕊️ КАСТА: МИРНЫЙ'}
+                      {caste === 'predator' ? ' КАСТА: ХИЩНИК' : '️ КАСТА: МИРНЫЙ'}
                     </span>
                     <span className={styles.characterTag}>
                       {caste === 'predator' ? 'Охотник' : 'Травоядный'}
@@ -468,27 +468,27 @@ export default function RightSidebar({
                   </div>
                   <div className={styles.choicesGrid}>
                     <div className={styles.choiceTile} title="Дружба: выбор мира и пакта о ненападении">
-                      <span className={styles.choiceIcon}>🤝</span>
+                      <span className={styles.choiceIcon}></span>
                       <strong className={styles.choiceValue} style={{ color: '#00d2d3' }}>{choices.friend || 0}</strong>
                       <span className={styles.choiceLabel}>Дружба</span>
                     </div>
                     <div className={styles.choiceTile} title="Откуп: выплата или получение дани энергией">
-                      <span className={styles.choiceIcon}>💰</span>
+                      <span className={styles.choiceIcon}></span>
                       <strong className={styles.choiceValue} style={{ color: '#e056fd' }}>{choices.bribe || 0}</strong>
                       <span className={styles.choiceLabel}>Откуп</span>
                     </div>
                     <div className={styles.choiceTile} title="Бегство: уклонение от нападения на свободную клетку">
-                      <span className={styles.choiceIcon}>🏃</span>
+                      <span className={styles.choiceIcon}></span>
                       <strong className={styles.choiceValue} style={{ color: '#2ed573' }}>{choices.flee || 0}</strong>
                       <span className={styles.choiceLabel}>Бегство</span>
                     </div>
                     <div className={styles.choiceTile} title="Отпор: храброе сопротивление мирного агента хищнику">
-                      <span className={styles.choiceIcon}>🛡️</span>
+                      <span className={styles.choiceIcon}>️</span>
                       <strong className={styles.choiceValue} style={{ color: '#ffa502' }}>{choices.retaliate || 0}</strong>
                       <span className={styles.choiceLabel}>Отпор</span>
                     </div>
                     <div className={styles.choiceTile} title="Схватка: боевое столкновение за выживание">
-                      <span className={styles.choiceIcon}>⚔️</span>
+                      <span className={styles.choiceIcon}>️</span>
                       <strong className={styles.choiceValue} style={{ color: '#ff4757' }}>{choices.fight || 0}</strong>
                       <span className={styles.choiceLabel}>Схватка</span>
                     </div>
@@ -521,7 +521,7 @@ export default function RightSidebar({
                   }}
                   title="Открыть подробное досье и всю историю выборов этого агента в Статистике"
                 >
-                  <span>📜</span>
+                  <span></span>
                   <span>Открыть хронику выборов в Статистике</span>
                   <span>→</span>
                 </button>
@@ -530,7 +530,7 @@ export default function RightSidebar({
                 {agent?.choice_chronicle && agent.choice_chronicle.length > 0 && (
                   <div className={styles.sectionBox} style={{ background: '#090d16', border: '1px solid #1e293b', marginBottom: '14px' }}>
                     <div className={styles.sectionTitle} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span>📜 Последние выборы и последствия</span>
+                      <span> Последние выборы и последствия</span>
                       <span style={{ fontSize: '0.68rem', color: '#38bdf8' }}>
                         {agent.choice_chronicle.length} событий
                       </span>
@@ -539,10 +539,10 @@ export default function RightSidebar({
                       {agent.choice_chronicle.slice(-3).reverse().map((ch, idx) => {
                         const energyDelta = ch.energy_delta ?? 0;
                         const dColor = energyDelta > 0 ? '#10b981' : energyDelta < 0 ? '#ef4444' : '#94a3b8';
-                        const choiceLabel = ch.choice === 'friend' ? '🤝 Дружба' :
-                          ch.choice === 'bribe' ? '💰 Откуп' :
-                            ch.choice === 'flee' ? '🏃 Побег' :
-                              ch.choice === 'retaliate' ? '🛡️ Отпор' : '⚔️ Схватка';
+                        const choiceLabel = ch.choice === 'friend' ? ' Дружба' :
+                          ch.choice === 'bribe' ? ' Откуп' :
+                            ch.choice === 'flee' ? ' Побег' :
+                              ch.choice === 'retaliate' ? '️ Отпор' : '️ Схватка';
                         return (
                           <div key={idx} style={{ background: '#0d131f', border: '1px solid #1e293b', borderRadius: '4px', padding: '8px 10px', fontSize: '0.72rem' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
@@ -564,7 +564,7 @@ export default function RightSidebar({
                 {/* HP & VITALITY SECTION */}
                 <div className={styles.sectionBox}>
                   <div className={styles.sectionTitle}>
-                    <span>❤️ Здоровье и Жизненные показатели (HP)</span>
+                    <span>️ Здоровье и Жизненные показатели (HP)</span>
                   </div>
 
                   <div className={styles.hpMainRow}>
@@ -618,7 +618,7 @@ export default function RightSidebar({
                 {/* TRAINING & EVOLUTIONARY DATA SECTION */}
                 <div className={styles.sectionBox}>
                   <div className={styles.sectionTitle}>
-                    <span>🧠 Данные обучения и Эволюции</span>
+                    <span> Данные обучения и Эволюции</span>
                   </div>
 
                   {/* Lineage */}
@@ -669,8 +669,8 @@ export default function RightSidebar({
                     </div>
                     <div className={styles.weightExplanation}>
                       {wTemp < 0
-                        ? '✓ Выучено поведение: избегать перегрева/холода и стремиться в Терминатор'
-                        : '⚠ Выучено поведение: безразличие к тепловым штрафам'}
+                        ? ' Выучено поведение: избегать перегрева/холода и стремиться в Терминатор'
+                        : ' Выучено поведение: безразличие к тепловым штрафам'}
                     </div>
                   </div>
 
@@ -704,7 +704,7 @@ export default function RightSidebar({
                     </div>
                     <div className={styles.weightExplanation}>
                       {wSwarm > 0
-                        ? '✓ Выучено поведение: группировка и совместный поиск партнеров'
+                        ? ' Выучено поведение: группировка и совместный поиск партнеров'
                         : '• Выучено поведение: обособленное выживание без скоплений'}
                     </div>
                   </div>
@@ -712,7 +712,7 @@ export default function RightSidebar({
                   {/* Trait 1: Ferocity */}
                   <div className={styles.weightCard}>
                     <div className={styles.weightHeader}>
-                      <span className={styles.weightLabel}>🔥 Свирепость (ferocity):</span>
+                      <span className={styles.weightLabel}> Свирепость (ferocity):</span>
                       <strong className={styles.weightValue} style={{ color: '#ff4757' }}>
                         {ferocityPercent.toFixed(1)}% ({character.ferocity.toFixed(3)})
                       </strong>
@@ -733,7 +733,7 @@ export default function RightSidebar({
                     </div>
                     <div className={styles.weightExplanation}>
                       {character.ferocity >= 0.6
-                        ? '✓ Усилилась схватками: предпочитает войну и силовую охоту'
+                        ? ' Усилилась схватками: предпочитает войну и силовую охоту'
                         : '• Умеренная: нападает только при дефиците энергии или провокации'}
                     </div>
                   </div>
@@ -741,7 +741,7 @@ export default function RightSidebar({
                   {/* Trait 2: Friendliness */}
                   <div className={styles.weightCard}>
                     <div className={styles.weightHeader}>
-                      <span className={styles.weightLabel}>🤝 Дружелюбие (friendliness):</span>
+                      <span className={styles.weightLabel}> Дружелюбие (friendliness):</span>
                       <strong className={styles.weightValue} style={{ color: '#00d2d3' }}>
                         {friendlinessPercent.toFixed(1)}% ({character.friendliness.toFixed(3)})
                       </strong>
@@ -762,7 +762,7 @@ export default function RightSidebar({
                     </div>
                     <div className={styles.weightExplanation}>
                       {character.friendliness >= 0.5
-                        ? '✓ Развита выбором мира: охотно идет на союз и мирное сосуществование'
+                        ? ' Развита выбором мира: охотно идет на союз и мирное сосуществование'
                         : '• Обособленный: подозрительно относится к другим агентам'}
                     </div>
                   </div>
@@ -770,7 +770,7 @@ export default function RightSidebar({
                   {/* Trait 3: Courage */}
                   <div className={styles.weightCard}>
                     <div className={styles.weightHeader}>
-                      <span className={styles.weightLabel}>🛡️ Храбрость (courage):</span>
+                      <span className={styles.weightLabel}>️ Храбрость (courage):</span>
                       <strong className={styles.weightValue} style={{ color: '#ffa502' }}>
                         {couragePercent.toFixed(1)}% ({character.courage.toFixed(3)})
                       </strong>
@@ -791,7 +791,7 @@ export default function RightSidebar({
                     </div>
                     <div className={styles.weightExplanation}>
                       {character.courage >= 0.6
-                        ? '✓ Закалена отпором: не бежит от врага, а яростно защищает себя'
+                        ? ' Закалена отпором: не бежит от врага, а яростно защищает себя'
                         : '• Склонность уступать: выбирает откуп или уклонение вместо драки'}
                     </div>
                   </div>
@@ -799,7 +799,7 @@ export default function RightSidebar({
                   {/* Trait 4: Diplomacy */}
                   <div className={styles.weightCard}>
                     <div className={styles.weightHeader}>
-                      <span className={styles.weightLabel}>📜 Дипломатичность (diplomacy):</span>
+                      <span className={styles.weightLabel}> Дипломатичность (diplomacy):</span>
                       <strong className={styles.weightValue} style={{ color: '#e056fd' }}>
                         {diplomacyPercent.toFixed(1)}% ({character.diplomacy.toFixed(3)})
                       </strong>
@@ -820,7 +820,7 @@ export default function RightSidebar({
                     </div>
                     <div className={styles.weightExplanation}>
                       {character.diplomacy >= 0.5
-                        ? '✓ Сформирована откупами: спасает жизнь, выплачивая избыток энергии'
+                        ? ' Сформирована откупами: спасает жизнь, выплачивая избыток энергии'
                         : '• Прямолинейный: не склонен к уплате дани'}
                     </div>
                   </div>
@@ -828,7 +828,7 @@ export default function RightSidebar({
                   {/* Trait 5: Caution */}
                   <div className={styles.weightCard}>
                     <div className={styles.weightHeader}>
-                      <span className={styles.weightLabel}>👁️ Осторожность (caution):</span>
+                      <span className={styles.weightLabel}>️ Осторожность (caution):</span>
                       <strong className={styles.weightValue} style={{ color: '#2ed573' }}>
                         {cautionPercent.toFixed(1)}% ({character.caution.toFixed(3)})
                       </strong>
@@ -849,7 +849,7 @@ export default function RightSidebar({
                     </div>
                     <div className={styles.weightExplanation}>
                       {character.caution >= 0.55
-                        ? '✓ Отточена бегством: мгновенно уклоняется на свободную соседнюю клетку'
+                        ? ' Отточена бегством: мгновенно уклоняется на свободную соседнюю клетку'
                         : '• Уверенный в себе: не паникует при сближении хищника'}
                     </div>
                   </div>
@@ -857,7 +857,7 @@ export default function RightSidebar({
                   {/* Weight 6: Territorial Gene (Crater / Oasis Defense) */}
                   <div className={styles.weightCard}>
                     <div className={styles.weightHeader}>
-                      <span className={styles.weightLabel}>🛡️ Территориальность / Оазисы (territorial):</span>
+                      <span className={styles.weightLabel}>️ Территориальность / Оазисы (territorial):</span>
                       <strong className={styles.weightValue} style={{ color: territorial >= 0.35 ? '#e056fd' : territorial <= -0.3 ? '#ffa502' : '#cbd5e0' }}>
                         {territorial >= 0 ? `+${territorial.toFixed(3)}` : territorial.toFixed(3)}
                       </strong>
@@ -884,7 +884,7 @@ export default function RightSidebar({
                     </div>
                     <div className={styles.weightExplanation}>
                       {territorial >= 0.35
-                        ? '✓ Страж оазиса: удерживает кратер (+60% к защите в depression при обороне)'
+                        ? ' Страж оазиса: удерживает кратер (+60% к защите в depression при обороне)'
                         : territorial <= -0.3
                           ? '• Кочевник: постоянно мигрирует за Терминатором, не удерживая кратеры'
                           : '• Нейтральная привязка к местности'}
@@ -894,7 +894,7 @@ export default function RightSidebar({
                   {/* Combat Track Record */}
                   <div className={styles.combatStatsCard}>
                     <div className={styles.combatTitle}>
-                      <span>⚔️ Боевой послужной список</span>
+                      <span>️ Боевой послужной список</span>
                       <span className={styles.combatWinRate} style={{ color: fightsWon > fightsLost ? '#2ed573' : fightsLost > fightsWon ? '#ff4757' : '#ffa502' }}>
                         Винрейт: {winRate}
                       </span>
@@ -918,24 +918,24 @@ export default function RightSidebar({
                   {/* Social & Trophic Energy Balance */}
                   <div className={styles.socialStatsCard}>
                     <div className={styles.socialTitle}>
-                      <span>🌱 Трофический и Социальный баланс</span>
+                      <span> Трофический и Социальный баланс</span>
                       <span style={{ fontSize: '0.72rem', color: '#00d2d3' }}>HP поток</span>
                     </div>
                     <div className={styles.socialGrid}>
                       <div className={styles.socialTile} title="Энергия, переданная умирающим сородичам">
-                        <span className={styles.socialLabel}>🤝 Отдано</span>
+                        <span className={styles.socialLabel}> Отдано</span>
                         <strong className={styles.socialValue} style={{ color: '#00d2d3' }}>
                           {energyShared ? energyShared.toFixed(1) : '0.0'}
                         </strong>
                       </div>
                       <div className={styles.socialTile} title="Энергия, полученная от альтруистов">
-                        <span className={styles.socialLabel}>💚 Получено</span>
+                        <span className={styles.socialLabel}> Получено</span>
                         <strong className={styles.socialValue} style={{ color: '#2ed573' }}>
                           {energyReceived ? energyReceived.toFixed(1) : '0.0'}
                         </strong>
                       </div>
                       <div className={styles.socialTile} title="Энергия, усвоенная при хищничестве в боях">
-                        <span className={styles.socialLabel}>🥩 Охота</span>
+                        <span className={styles.socialLabel}> Охота</span>
                         <strong className={styles.socialValue} style={{ color: '#ff4757' }}>
                           {predationEnergy ? predationEnergy.toFixed(1) : '0.0'}
                         </strong>
@@ -958,7 +958,7 @@ export default function RightSidebar({
                 {agent.death_reason && (
                   <div className={styles.deathReportBox}>
                     <div className={styles.deathHeader}>
-                      <span>☠️ Отчет о гибели</span>
+                      <span>️ Отчет о гибели</span>
                     </div>
                     <div className={styles.dataRow}>
                       <span>Причина:</span>

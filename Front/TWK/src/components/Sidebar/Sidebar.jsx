@@ -102,7 +102,7 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
             <button className={styles.controlBtn} onClick={handleStart} disabled={status === 'running'} title="Старт">▶</button>
             <button className={styles.controlBtn} onClick={handlePause} disabled={status !== 'running'} title="Пауза">⏸</button>
             <button className={styles.controlBtn} onClick={handleStep} disabled={status === 'running'} title="Шаг">⏭</button>
-            <button className={styles.controlBtn} onClick={handleReset} title="Обнулить">🔄</button>
+            <button className={styles.controlBtn} onClick={handleReset} title="Обнулить"></button>
           </div>
 
           <div className={styles.inputGroup}>

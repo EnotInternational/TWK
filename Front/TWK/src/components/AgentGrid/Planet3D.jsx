@@ -1256,6 +1256,7 @@ export default function Planet3D({
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
+      renderer.render(scene, camera);
     };
     
     const resizeObserver = new ResizeObserver(() => {
@@ -1445,10 +1446,10 @@ export default function Planet3D({
       {/* Floating HUD Controls */}
       <div className={styles.planetOverlay}>
         <div className={styles.hudBadge}>
-          <span className={styles.hudTitle}>🪐 Меркурий 3D</span>
+          <span className={styles.hudTitle}> Меркурий 3D</span>
           <span className={styles.hudSub}>
-            ☀️ Солнце: {envRef.current?.sun_x !== undefined ? `${Math.round((envRef.current.sun_x / (envRef.current.width || 60)) * 360)}°` : '—'} | 
-            👥 Агенты: {agents.length}
+            ️ Солнце: {envRef.current?.sun_x !== undefined ? `${Math.round((envRef.current.sun_x / (envRef.current.width || 60)) * 360)}°` : '—'} | 
+             Агенты: {agents.length}
           </span>
         </div>
       </div>

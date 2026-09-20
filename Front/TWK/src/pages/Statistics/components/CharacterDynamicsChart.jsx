@@ -2,11 +2,11 @@ import { useRef, useEffect, useState, useCallback } from 'react';
 import styles from './CharacterDynamicsChart.module.css';
 
 const TRAITS_META = [
-  { key: 'avg_ferocity', label: 'Свирепость', icon: '🔥', color: '#ff4757', desc: 'Усиливается боями и охотой' },
-  { key: 'avg_friendliness', label: 'Дружелюбие', icon: '🤝', color: '#00d2d3', desc: 'Растет при выборе союза' },
-  { key: 'avg_courage', label: 'Храбрость', icon: '🛡️', color: '#ffa502', desc: 'Закаляется при отпоре хищнику' },
-  { key: 'avg_diplomacy', label: 'Дипломатия', icon: '📜', color: '#e056fd', desc: 'Развивается при откупе данью' },
-  { key: 'avg_caution', label: 'Осторожность', icon: '👁️', color: '#2ed573', desc: 'Формируется успешным бегством' },
+  { key: 'avg_ferocity', label: 'Свирепость', icon: '', color: '#ff4757', desc: 'Усиливается боями и охотой' },
+  { key: 'avg_friendliness', label: 'Дружелюбие', icon: '', color: '#00d2d3', desc: 'Растет при выборе союза' },
+  { key: 'avg_courage', label: 'Храбрость', icon: '️', color: '#ffa502', desc: 'Закаляется при отпоре хищнику' },
+  { key: 'avg_diplomacy', label: 'Дипломатия', icon: '', color: '#e056fd', desc: 'Развивается при откупе данью' },
+  { key: 'avg_caution', label: 'Осторожность', icon: '️', color: '#2ed573', desc: 'Формируется успешным бегством' },
 ];
 
 export default function CharacterDynamicsChart({ history = [] }) {
@@ -221,7 +221,7 @@ export default function CharacterDynamicsChart({ history = [] }) {
       <div className={styles.chartHeader}>
         <div className={styles.titleArea}>
           <h3 className={styles.chartTitle}>
-            <span>🎭 ДИНАМИКА ХАРАКТЕРА И ВЫБОРОВ</span>
+            <span> ДИНАМИКА ХАРАКТЕРА И ВЫБОРОВ</span>
           </h3>
           <p className={styles.chartSubtitle}>
             Характер формируется поведенческим выбором в столкновениях (хищники: дружба vs бой; мирные: откуп vs побег vs отпор)
@@ -231,23 +231,23 @@ export default function CharacterDynamicsChart({ history = [] }) {
         {/* Real-time choice HUD counters */}
         <div className={styles.hudBar}>
           <div className={styles.hudPill} title="Всего решений хищников о дружбе">
-            <span>🤝 Дружба:</span>
+            <span> Дружба:</span>
             <strong style={{ color: '#00d2d3' }}>{latest?.cumFriendships ?? 0}</strong>
           </div>
           <div className={styles.hudPill} title="Всего мирных откупилось данью энергией">
-            <span>💰 Откупы:</span>
+            <span> Откупы:</span>
             <strong style={{ color: '#e056fd' }}>{latest?.cumBribes ?? 0}</strong>
           </div>
           <div className={styles.hudPill} title="Всего успешных уклонений и побегов">
-            <span>🏃 Побеги:</span>
+            <span> Побеги:</span>
             <strong style={{ color: '#2ed573' }}>{latest?.cumFlees ?? 0}</strong>
           </div>
           <div className={styles.hudPill} title="Всего мирных дали решительный отпор хищнику">
-            <span>🛡️ Отпор:</span>
+            <span>️ Отпор:</span>
             <strong style={{ color: '#ffa502' }}>{latest?.cumRetaliations ?? 0}</strong>
           </div>
           <div className={styles.hudPill} title="Всего боевых схваток">
-            <span>⚔️ Схватки:</span>
+            <span>️ Схватки:</span>
             <strong style={{ color: '#ff4757' }}>{latest?.cumFights ?? 0}</strong>
           </div>
         </div>
@@ -256,7 +256,7 @@ export default function CharacterDynamicsChart({ history = [] }) {
       {/* Caste Balance Split */}
       <div className={styles.casteBar}>
         <div className={styles.casteItem} style={{ color: '#ff4757' }}>
-          <span>🥩 Хищники:</span>
+          <span> Хищники:</span>
           <strong>{castes.predator || 0} ({predatorPct}%)</strong>
         </div>
         <div className={styles.casteTrack} title="Соотношение каст: Хищники vs Мирные">
@@ -266,7 +266,7 @@ export default function CharacterDynamicsChart({ history = [] }) {
           />
         </div>
         <div className={styles.casteItem} style={{ color: '#2ed573' }}>
-          <span>🕊️ Мирные:</span>
+          <span>️ Мирные:</span>
           <strong>{castes.peaceful || 0} ({peacefulPct}%)</strong>
         </div>
       </div>
@@ -318,7 +318,7 @@ export default function CharacterDynamicsChart({ history = [] }) {
               );
             })}
             <div style={{ marginTop: '4px', paddingTop: '4px', borderTop: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem', color: '#94a3b8' }}>
-              Выборы к тику: 🤝 {tooltip.cumFriendships} | 💰 {tooltip.cumBribes} | 🏃 {tooltip.cumFlees} | 🛡️ {tooltip.cumRetaliations}
+              Выборы к тику:  {tooltip.cumFriendships} |  {tooltip.cumBribes} |  {tooltip.cumFlees} | ️ {tooltip.cumRetaliations}
             </div>
           </div>
         )}
@@ -328,7 +328,7 @@ export default function CharacterDynamicsChart({ history = [] }) {
       <div className={styles.loreCards}>
         <div className={styles.loreCard}>
           <div className={styles.loreTitle} style={{ color: '#ff4757' }}>
-            <span>⚔️ Кровожадный хищник</span>
+            <span>️ Кровожадный хищник</span>
           </div>
           <div className={styles.loreDesc}>
             Высокая свирепость. Предпочитает охоту и схватки, подавляя попытки союза.
@@ -336,7 +336,7 @@ export default function CharacterDynamicsChart({ history = [] }) {
         </div>
         <div className={styles.loreCard}>
           <div className={styles.loreTitle} style={{ color: '#00d2d3' }}>
-            <span>🤝 Благородный хищник</span>
+            <span> Благородный хищник</span>
           </div>
           <div className={styles.loreDesc}>
             Высокое дружелюбие. Заключает пакты о ненападении и мирно сосуществует с мирными.
@@ -344,7 +344,7 @@ export default function CharacterDynamicsChart({ history = [] }) {
         </div>
         <div className={styles.loreCard}>
           <div className={styles.loreTitle} style={{ color: '#ffa502' }}>
-            <span>🛡️ Боевой защитник</span>
+            <span>️ Боевой защитник</span>
           </div>
           <div className={styles.loreDesc}>
             Мирный с высокой храбростью. Не откупается, а дает яростный отпор нападающим хищникам.
@@ -352,7 +352,7 @@ export default function CharacterDynamicsChart({ history = [] }) {
         </div>
         <div className={styles.loreCard}>
           <div className={styles.loreTitle} style={{ color: '#e056fd' }}>
-            <span>💰 Хитрый дипломат</span>
+            <span> Хитрый дипломат</span>
           </div>
           <div className={styles.loreDesc}>
             Высокая дипломатия. Избегает смертоносных боев, откупаясь небольшой данью энергией.
@@ -360,7 +360,7 @@ export default function CharacterDynamicsChart({ history = [] }) {
         </div>
         <div className={styles.loreCard}>
           <div className={styles.loreTitle} style={{ color: '#2ed573' }}>
-            <span>🏃 Осторожный беглец</span>
+            <span> Осторожный беглец</span>
           </div>
           <div className={styles.loreDesc}>
             Высокая осторожность. Мгновенно уклоняется на свободную соседнюю клетку при угрозе.

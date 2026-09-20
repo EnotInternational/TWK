@@ -2,12 +2,12 @@ import { useRef, useEffect, useState, useCallback } from 'react';
 import styles from './ArchetypeDistributionChart.module.css';
 
 const ARCHETYPES_META = [
-  { key: 'predator', label: 'Хищник', icon: '🥩', color: '#ff4757' },
-  { key: 'grazer', label: 'Солнцеед', icon: '🌱', color: '#7bed9f' },
-  { key: 'altruist_swarm', label: 'Альтруист', icon: '🤝', color: '#00d2d3' },
-  { key: 'oasis_guardian', label: 'Страж оазиса', icon: '🛡️', color: '#e056fd' },
-  { key: 'fleeing_prey', label: 'Беглец', icon: '🕊️', color: '#2ed573' },
-  { key: 'opportunist', label: 'Оппортунист', icon: '⚖️', color: '#ffa502' },
+  { key: 'predator', label: 'Хищник', icon: '', color: '#ff4757' },
+  { key: 'grazer', label: 'Солнцеед', icon: '', color: '#7bed9f' },
+  { key: 'altruist_swarm', label: 'Альтруист', icon: '', color: '#00d2d3' },
+  { key: 'oasis_guardian', label: 'Страж оазиса', icon: '️', color: '#e056fd' },
+  { key: 'fleeing_prey', label: 'Беглец', icon: '️', color: '#2ed573' },
+  { key: 'opportunist', label: 'Оппортунист', icon: '️', color: '#ffa502' },
 ];
 
 export default function ArchetypeDistributionChart({ history = [] }) {
@@ -229,7 +229,7 @@ export default function ArchetypeDistributionChart({ history = [] }) {
       <div className={styles.chartHeader}>
         <div className={styles.titleArea}>
           <h2 className={styles.title}>
-            <span>🧬</span> ДИНАМИКА ЭВОЛЮЦИОННЫХ АРХЕТИПОВ (ТРОФИКА И СОЦИАЛЬНОСТЬ)
+            <span></span> ДИНАМИКА ЭВОЛЮЦИОННЫХ АРХЕТИПОВ (ТРОФИКА И СОЦИАЛЬНОСТЬ)
           </h2>
           <span className={styles.subtitle}>
             Временные ряды распределения 6 устойчивых жизненных стратегий в популяции

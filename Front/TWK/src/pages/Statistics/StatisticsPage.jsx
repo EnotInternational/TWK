@@ -148,14 +148,14 @@ export default function StatisticsPage({ onBack }) {
             onClick={exportGenesCSV}
             title="Скачать данные генофонда и адаптации всех агентов в формате CSV"
           >
-            🧬 Гены (CSV)
+             Гены (CSV)
           </button>
           <button
             className={`${styles.exportBtn} ${styles.exportGeneBtn}`}
             onClick={exportGenesJSON}
             title="Скачать полный датасет генома и мутаций в формате JSON"
           >
-            🧬 Гены (JSON)
+             Гены (JSON)
           </button>
         </div>
       </header>
@@ -169,7 +169,7 @@ export default function StatisticsPage({ onBack }) {
             window.location.hash = '#/stats?tab=overview';
           }}
         >
-          <span>📊 Общий обзор симуляции</span>
+          <span> Общий обзор симуляции</span>
         </button>
 
         <button
@@ -181,7 +181,7 @@ export default function StatisticsPage({ onBack }) {
               : '#/stats?tab=dossier';
           }}
         >
-          <span>🕵️ Досье агента и Хроника выборов</span>
+          <span>️ Досье агента и Хроника выборов</span>
           {agents.length > 0 && (
             <span className={styles.tabBadge}>{agents.length} в строю</span>
           )}

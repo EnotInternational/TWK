@@ -44,7 +44,7 @@ export default function ToolPanel({
             onClick={onOpenRandomizer}
             style={{ background: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)', color: 'white', border: 'none' }}
           >
-            🎲 Рандомайзер
+             Рандомайзер
           </button>
           <button 
             className={`${styles.button} ${selectedDisaster === 'wind' ? styles.active : ''}`}
