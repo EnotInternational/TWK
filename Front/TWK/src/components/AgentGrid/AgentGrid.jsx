@@ -556,11 +556,11 @@ export default function AgentGrid({
   }, [gridWidth, gridHeight, addCrater, removeCratersNear]);
 
   useEffect(() => {
+    if (viewMode !== '2d') return;
     const handleAutoDisaster = (e) => {
       const { type, x, y, params } = e.detail;
       applyDisasterLocal(type, x, y, params);
-      // Let Planet3D or draw2D handle visuals on next tick, but force 2D draw here just in case:
-      if (viewMode === '2d') draw2D();
+      draw2D();
     };
     window.addEventListener('autoDisaster', handleAutoDisaster);
     return () => window.removeEventListener('autoDisaster', handleAutoDisaster);

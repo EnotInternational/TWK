@@ -1193,9 +1193,143 @@ export default function Planet3D({
       const { type, x, y, params } = e.detail;
       const w = envRef.current?.width || gridWidthRef.current || 60;
       const h = envRef.current?.height || gridHeightRef.current || 30;
+      
       const normal = gridToSphere(x, y, w, h, 1.0).normalize();
       const pos = normal.clone().multiplyScalar(PLANET_RADIUS);
-      trigger3DEffect(type, pos, normal, params, x, y, null);
+
+      let craterId = null;
+
+      if (type === 'meteorite') {
+        const rad = params?.radius || 3.0;
+        craterId = `crater_${x}_${y}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+        const newCrater = {
+          id: craterId,
+          x: x,
+          y: y,
+          radius: rad,
+          createdAt: Date.now(),
+          duration: 25000,
+        };
+        onAddCraterRef.current?.(newCrater);
+        if (craterEpicentersRef?.current) {
+          craterEpicentersRef.current.add(`${x},${y}`);
+        }
+
+        if (envRef.current) {
+          if (!envRef.current.rocks) envRef.current.rocks = [];
+          envRef.current.rocks = envRef.current.rocks.filter(r => {
+            let dx = Math.abs(r.x - x);
+            dx = Math.min(dx, w - dx);
+            const dy = Math.abs(r.y - y);
+            return Math.sqrt(dx * dx + dy * dy) > rad;
+          });
+          envRef.current.rocks.push({ x: x, y: y });
+          update3DRocks();
+
+          if (!envRef.current.depressions) envRef.current.depressions = [];
+          const rInt = Math.ceil(rad);
+          for (let dy = -rInt; dy <= rInt; dy++) {
+            for (let dx = -rInt; dx <= rInt; dx++) {
+              const d = Math.sqrt(dx * dx + dy * dy);
+              if (d <= rad) {
+                const nx = (x + dx + w) % w;
+                const ny = y + dy;
+                if (ny >= 0 && ny < h) {
+                  const lvl = d <= rad * 0.5 ? 2 : 1;
+                  const ex = envRef.current.depressions.findIndex(dep => dep.x === nx && dep.y === ny);
+                  if (ex >= 0) {
+                    envRef.current.depressions[ex].level = Math.max(envRef.current.depressions[ex].level, lvl);
+                  } else {
+                    envRef.current.depressions.push({ x: nx, y: ny, level: lvl });
+                  }
+                }
+              }
+            }
+          }
+          lastRenderedDepressions = null;
+          updatePlanetTexture();
+        }
+      } else if (type === 'depression') {
+        const lvl = parseInt(params?.level || 1);
+        const sz = parseInt(params?.size || 2);
+        const offset = Math.floor(sz / 2);
+        if (envRef.current) {
+          if (!envRef.current.depressions) envRef.current.depressions = [];
+          for (let dy = -offset; dy < sz - offset; dy++) {
+            for (let dx = -offset; dx < sz - offset; dx++) {
+              const nx = (x + dx + w) % w;
+              const ny = y + dy;
+              if (ny >= 0 && ny < h) {
+                const ex = envRef.current.depressions.findIndex(d => d.x === nx && d.y === ny);
+                if (ex >= 0) {
+                  envRef.current.depressions[ex].level = lvl;
+                } else {
+                  envRef.current.depressions.push({ x: nx, y: ny, level: lvl });
+                }
+              }
+            }
+          }
+          lastRenderedDepressions = null;
+          updatePlanetTexture();
+        }
+      } else if (type === 'rocks') {
+        const size = params?.size || 3;
+        const half = Math.floor(size / 2);
+        if (envRef.current) {
+          if (!envRef.current.rocks) envRef.current.rocks = [];
+          for (let dy = -half; dy <= half; dy++) {
+            for (let dx = -half; dx <= half; dx++) {
+              const rx = (x + dx + w) % w;
+              const ry = y + dy;
+              if (ry >= 0 && ry < h) {
+                if (!envRef.current.rocks.some(r => r.x === rx && r.y === ry)) {
+                  envRef.current.rocks.push({ x: rx, y: ry });
+                }
+              }
+            }
+          }
+          update3DRocks();
+        }
+      } else if (type === 'eraser') {
+        const rad = params?.radius || 2.0;
+        if (envRef.current && envRef.current.rocks) {
+          envRef.current.rocks = envRef.current.rocks.filter(r => {
+            let dx = Math.abs(r.x - x);
+            dx = Math.min(dx, w - dx);
+            const dy = Math.abs(r.y - y);
+            return Math.sqrt(dx * dx + dy * dy) > rad;
+          });
+          update3DRocks();
+        }
+        if (envRef.current && envRef.current.depressions) {
+          envRef.current.depressions = envRef.current.depressions.filter(d => {
+            let dx = Math.abs(d.x - x);
+            dx = Math.min(dx, w - dx);
+            const dy = Math.abs(d.y - y);
+            return Math.sqrt(dx * dx + dy * dy) > rad;
+          });
+          lastRenderedDepressions = null;
+          updatePlanetTexture();
+        }
+        onRemoveCratersNearRef.current?.(x, y, rad, w);
+        const eraseWorldDist = (rad / (gridWidthRef.current || 60)) * 2 * Math.PI * PLANET_RADIUS * 0.65;
+        for (let i = activeCraters.length - 1; i >= 0; i--) {
+          const c = activeCraters[i];
+          if (c.position.distanceTo(pos) < eraseWorldDist) {
+            cratersGroup.remove(c.group);
+            c.group.traverse((child) => {
+              if (child.geometry) child.geometry.dispose();
+              if (child.material) child.material.dispose();
+            });
+            activeCraters.splice(i, 1);
+          }
+        }
+      }
+
+      if (window.triggerDisaster) {
+        window.triggerDisaster(type, x, y, params);
+      }
+      trigger3DEffect(type, pos, normal, params, x, y, craterId);
     };
     window.addEventListener('autoDisaster', handleAutoDisasterEffect);
 

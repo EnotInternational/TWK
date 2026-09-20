@@ -6,7 +6,9 @@ export default function Randomizer({ isOpen, onClose, metrics }) {
     const saved = localStorage.getItem('disasterRandomizerConfigV2');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // Никогда не запускать автоматически при загрузке страницы
+        return { ...parsed, enabled: false };
       } catch (e) {
         // default
       }
