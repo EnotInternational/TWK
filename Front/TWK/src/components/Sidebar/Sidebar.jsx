@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import styles from './Sidebar.module.css';
 import { simulationApi, socket } from '../../api';
+import ValidatedInput from '../ValidatedInput/ValidatedInput';
 
 export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0 }) {
   const [spawnParams, setSpawnParams] = useState({
@@ -102,16 +104,20 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
             <button className={styles.controlBtn} onClick={handleStart} disabled={status === 'running'} title="Старт">▶</button>
             <button className={styles.controlBtn} onClick={handlePause} disabled={status !== 'running'} title="Пауза">⏸</button>
             <button className={styles.controlBtn} onClick={handleStep} disabled={status === 'running'} title="Шаг">⏭</button>
-            <button className={styles.controlBtn} onClick={handleReset} title="Обнулить"></button>
+            <button className={styles.controlBtn} onClick={handleReset} title="Обнулить">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style={{ display: 'block', margin: 'auto' }}>
+                <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0 0 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 0 0 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+              </svg>
+            </button>
           </div>
 
-          <div className={styles.inputGroup}>
+          <div className={styles.sliderGroup}>
             <label>Скорость (сек/тик): {speed}s</label>
             <input
               type="range"
               min="0.01"
               max="1.0"
-              step="0.05"
+              step="0.01"
               value={speed}
               onChange={handleSpeedChange}
             />
@@ -139,27 +145,27 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
           <div className={styles.tabContent}>
             {activeTab === 'map' && (
               <>
-                <div className={styles.inputGroup}><label>Seed:</label><input type="number" name="seed" value={spawnParams.seed} onChange={handleInputChange} /></div>
-                <div className={styles.inputGroup}><label>Ширина:</label><input type="number" name="width" value={spawnParams.width} onChange={handleInputChange} min="10" /></div>
-                <div className={styles.inputGroup}><label>Высота:</label><input type="number" name="height" value={spawnParams.height} onChange={handleInputChange} min="10" /></div>
-                <div className={styles.inputGroup}><label>Кол-во скал:</label><input type="number" name="rocksCount" value={spawnParams.rocksCount} onChange={handleInputChange} min="0" /></div>
+                <div className={styles.inputGroup}><label>Seed:</label><ValidatedInput name="seed" value={spawnParams.seed} onChange={handleInputChange} /></div>
+                <div className={styles.inputGroup}><label>Ширина:</label><ValidatedInput name="width" value={spawnParams.width} onChange={handleInputChange} min="10" /></div>
+                <div className={styles.inputGroup}><label>Высота:</label><ValidatedInput name="height" value={spawnParams.height} onChange={handleInputChange} min="10" /></div>
+                <div className={styles.inputGroup}><label>Кол-во скал:</label><ValidatedInput name="rocksCount" value={spawnParams.rocksCount} onChange={handleInputChange} min="0" /></div>
               </>
             )}
 
             {activeTab === 'agents' && (
               <>
-                <div className={styles.inputGroup}><label>Нач. Популяция:</label><input type="number" name="initialAgents" value={spawnParams.initialAgents} onChange={handleInputChange} min="1" /></div>
-                <div className={styles.inputGroup}><label>Нач. Энергия:</label><input type="number" name="startingEnergy" value={spawnParams.startingEnergy} onChange={handleInputChange} min="10" /></div>
-                <div className={styles.inputGroup}><label>Порог деления:</label><input type="number" name="reproductionThreshold" value={spawnParams.reproductionThreshold} onChange={handleInputChange} min="10" /></div>
-                <div className={styles.inputGroup}><label>Стоимость дел.:</label><input type="number" name="reproductionCost" value={spawnParams.reproductionCost} onChange={handleInputChange} min="1" /></div>
+                <div className={styles.inputGroup}><label>Нач. Популяция:</label><ValidatedInput name="initialAgents" value={spawnParams.initialAgents} onChange={handleInputChange} min="1" /></div>
+                <div className={styles.inputGroup}><label>Нач. Энергия:</label><ValidatedInput name="startingEnergy" value={spawnParams.startingEnergy} onChange={handleInputChange} min="10" /></div>
+                <div className={styles.inputGroup}><label>Порог деления:</label><ValidatedInput name="reproductionThreshold" value={spawnParams.reproductionThreshold} onChange={handleInputChange} min="10" /></div>
+                <div className={styles.inputGroup}><label>Стоимость дел.:</label><ValidatedInput name="reproductionCost" value={spawnParams.reproductionCost} onChange={handleInputChange} min="1" /></div>
               </>
             )}
 
             {activeTab === 'env' && (
               <>
-                <div className={styles.inputGroup}><label>Цикл (тиков):</label><input type="number" name="cycleTicks" value={spawnParams.cycleTicks} onChange={handleInputChange} min="10" /></div>
-                <div className={styles.inputGroup}><label>Ширина Терм.:</label><input type="number" name="terminatorWidth" value={spawnParams.terminatorWidth} onChange={handleInputChange} min="1" /></div>
-                <div className={styles.inputGroup}><label>Штраф за ветер:</label><input type="number" name="windPenalty" value={spawnParams.windPenalty} onChange={handleInputChange} step="0.1" /></div>
+                <div className={styles.inputGroup}><label>Цикл (тиков):</label><ValidatedInput name="cycleTicks" value={spawnParams.cycleTicks} onChange={handleInputChange} min="10" /></div>
+                <div className={styles.inputGroup}><label>Ширина Терм.:</label><ValidatedInput name="terminatorWidth" value={spawnParams.terminatorWidth} onChange={handleInputChange} min="1" /></div>
+                <div className={styles.inputGroup}><label>Штраф за ветер:</label><ValidatedInput name="windPenalty" value={spawnParams.windPenalty} onChange={handleInputChange} step="0.1" /></div>
               </>
             )}
           </div>
@@ -183,6 +189,14 @@ export default function Sidebar({ isOpen, onToggle, status = 'stopped', tick = 0
       >
         {isOpen ? 'Скрыть' : 'Меню'}
       </button>
+
+      {isLoading && createPortal(
+        <div className={styles.globalLoaderOverlay}>
+          <div className={styles.spinner}></div>
+          <div className={styles.loadingText}>Создание мира...</div>
+        </div>,
+        document.body
+      )}
     </>
   );
 }

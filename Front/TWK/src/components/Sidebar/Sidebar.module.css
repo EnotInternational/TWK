@@ -80,6 +80,29 @@
   border-color: #00e5ff;
 }
 
+.sliderGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  margin-bottom: 15px;
+  margin-top: 15px;
+  text-align: start;
+}
+
+.sliderGroup label {
+  font-size: 0.9rem;
+  color: #a0aec0;
+}
+
+.sliderGroup input[type="range"] {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  accent-color: #00e5ff; /* Optional modern styling for range */
+}
+
 .actionBtn {
   width: 100%;
   margin-top: 10px;
@@ -195,4 +218,45 @@
 .toggleBtn:hover {
   background: rgba(0, 229, 255, 0.1);
   box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+}.globalLoaderOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(10, 13, 20, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 999999;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #00e5ff;
+}
+
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(0, 229, 255, 0.2);
+  border-top-color: #00e5ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+.loadingText {
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }

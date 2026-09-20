@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import styles from './AgentDossierView.module.css';
 import { simulationApi } from '../../../api';
+import ValidatedInput from '../../../components/ValidatedInput/ValidatedInput';
 
 const CHOICE_META = {
   friend: {
@@ -245,7 +246,7 @@ export default function AgentDossierView({
 
         {/* Search Input */}
         <div className={styles.searchBox}>
-          <input
+          <ValidatedInput
             type="text"
             className={styles.searchInput}
             placeholder="Поиск по ID или титулу..."

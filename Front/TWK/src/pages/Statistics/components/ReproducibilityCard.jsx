@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import styles from './ReproducibilityCard.module.css';
 import { simulationApi } from '../../../api';
+import ValidatedInput from '../../../components/ValidatedInput/ValidatedInput';
 
 export default function ReproducibilityCard({ currentHash = '—', currentTick = 0 }) {
   const [seed, setSeed] = useState(42);
@@ -44,8 +45,8 @@ export default function ReproducibilityCard({ currentHash = '—', currentTick =
       <div className={styles.bodyGrid}>
         <div className={styles.inputGroup}>
           <label className={styles.inputLabel}>Сид генератора (Seed)</label>
-          <input 
-            type="number" 
+          <ValidatedInput 
+            name="seed"
             className={styles.inputField}
             value={seed} 
             onChange={(e) => setSeed(e.target.value)} 
@@ -54,8 +55,8 @@ export default function ReproducibilityCard({ currentHash = '—', currentTick =
 
         <div className={styles.inputGroup}>
           <label className={styles.inputLabel}>Количество тиков</label>
-          <input 
-            type="number" 
+          <ValidatedInput 
+            name="ticks"
             className={styles.inputField}
             value={ticks} 
             onChange={(e) => setTicks(e.target.value)} 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import styles from './RightSidebar.module.css';
 import { socket } from '../../api';
+import ValidatedInput from '../ValidatedInput/ValidatedInput';
 
 export default function RightSidebar({
   isOpen,
@@ -305,7 +306,7 @@ export default function RightSidebar({
               </div>
 
               <div className={styles.searchRow}>
-                <input
+                <ValidatedInput
                   type="text"
                   className={styles.searchInput}
                   placeholder="Поиск по ID или зоне..."

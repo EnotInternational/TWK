@@ -1,4 +1,5 @@
 import styles from './ToolPanel.module.css';
+import ValidatedInput from '../ValidatedInput/ValidatedInput';
 
 export default function ToolPanel({
   selectedDisaster, setSelectedDisaster,
@@ -93,13 +94,13 @@ export default function ToolPanel({
             {selectedDisaster === 'wind' && (
               <label>
                 Сила (от центра клика):
-                <input type="number" name="strength" value={disasterParams.strength ?? 7} onChange={handleParamChange} min="1" max="100" />
+                <ValidatedInput name="strength" value={disasterParams.strength ?? 7} onChange={handleParamChange} min="1" max="100" />
               </label>
             )}
             {selectedDisaster === 'rocks' && (
               <label>
                 Размер (клетки):
-                <input type="number" name="size" value={disasterParams.size || 0} onChange={handleParamChange} min="1" max="10" />
+                <ValidatedInput name="size" value={disasterParams.size || 0} onChange={handleParamChange} min="1" max="10" />
               </label>
             )}
             {selectedDisaster === 'depression' && (
@@ -113,25 +114,25 @@ export default function ToolPanel({
                 </label>
                 <label>
                   Размер (клетки):
-                  <input type="number" name="size" value={disasterParams.size || 2} onChange={handleParamChange} min="1" max="8" />
+                  <ValidatedInput name="size" value={disasterParams.size || 2} onChange={handleParamChange} min="1" max="8" />
                 </label>
               </>
             )}
             {selectedDisaster === 'eraser' && (
               <label>
                 Радиус удаления:
-                <input type="number" name="radius" value={disasterParams.radius || 0} onChange={handleParamChange} min="1" max="10" />
+                <ValidatedInput name="radius" value={disasterParams.radius || 0} onChange={handleParamChange} min="1" max="10" />
               </label>
             )}
             {selectedDisaster === 'meteorite' && (
               <>
                 <label>
                   Радиус:
-                  <input type="number" name="radius" value={disasterParams.radius || 0} onChange={handleParamChange} min="1" max="20" />
+                  <ValidatedInput name="radius" value={disasterParams.radius || 0} onChange={handleParamChange} min="1" max="20" />
                 </label>
                 <label>
                   Урон:
-                  <input type="number" name="damage" value={disasterParams.damage || 0} onChange={handleParamChange} min="10" max="1000" />
+                  <ValidatedInput name="damage" value={disasterParams.damage || 0} onChange={handleParamChange} min="10" max="1000" />
                 </label>
               </>
             )}

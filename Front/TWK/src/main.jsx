@@ -131,8 +131,12 @@ function Root() {
   );
 }
 
+import { ToastProvider } from './components/Toast/ToastContext.jsx';
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <Root />
+    <ToastProvider>
+      <Root />
+    </ToastProvider>
   </StrictMode>,
 );
