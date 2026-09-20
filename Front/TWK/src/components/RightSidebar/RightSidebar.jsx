@@ -149,7 +149,7 @@ export default function RightSidebar({
           opacity: isOpen ? 1 : 0
         }}
       >
-        {/* Top Header: Mode Switcher Tabs + Close Button */}
+        {/* Top Header: Mode Switcher Tabs */}
         <div className={styles.sidebarHeader}>
           <div className={styles.tabsContainer}>
             <button 
@@ -167,14 +167,6 @@ export default function RightSidebar({
               🧬 {agent ? `Агент #${agent.id}` : 'Данные агента'}
             </button>
           </div>
-
-          <button 
-            className={styles.closeBtn} 
-            onClick={handleClose} 
-            title="Закрыть сайдбар"
-          >
-            ✕
-          </button>
         </div>
 
         {/* MODE: ALL AGENTS */}
@@ -487,17 +479,15 @@ export default function RightSidebar({
         )}
       </aside>
 
-      {/* Floating Toggle Button when sidebar is collapsed */}
-      {!isOpen && (
-        <button 
-          className={styles.rightToggleBtn} 
-          style={{ right: '20px' }}
-          onClick={onToggle}
-          title="Развернуть боковую панель"
-        >
-          {activeTab === 'agent' && agent ? `Агент #${agent.id} ◀` : `Агенты (${agentsList.length}) ◀`}
-        </button>
-      )}
+      {/* Floating Toggle Button on the side */}
+      <button 
+        className={styles.rightToggleBtn} 
+        style={{ right: isOpen ? '380px' : '20px' }}
+        onClick={onToggle}
+        title={isOpen ? "Скрыть панель" : "Развернуть панель"}
+      >
+        {isOpen ? 'Скрыть' : (activeTab === 'agent' && agent ? `Агент #${agent.id} ◀` : `Агенты (${agentsList.length}) ◀`)}
+      </button>
     </>
   );
 }
