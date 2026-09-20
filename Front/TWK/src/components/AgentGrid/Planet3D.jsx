@@ -412,26 +412,62 @@ export default function Planet3D({
     let lastRenderedTerminators = null;
     let lastRenderedDepressions = null;
 
+    let smoothedSunX = null;
+    let smoothedTerminators = null;
+
+    const lerpWrap = (current, target, w, factor = 0.05) => {
+      let diff = target - current;
+      if (diff > w / 2) diff -= w;
+      if (diff < -w / 2) diff += w;
+      return (current + diff * factor + w) % w;
+    };
+
     const updatePlanetTexture = () => {
       const env = envRef.current;
       const w = env?.width || gridWidth;
       const h = env?.height || gridHeight;
 
-      const sunX = env?.sun_x ?? 0;
-      const terminators = env?.terminator_bands || [];
+      const targetSunX = env?.sun_x ?? 0;
+      if (smoothedSunX === null) smoothedSunX = targetSunX;
+      smoothedSunX = lerpWrap(smoothedSunX, targetSunX, w);
+
+      const targetTerminators = env?.terminator_bands || [];
+      if (!smoothedTerminators || smoothedTerminators.length !== targetTerminators.length) {
+        smoothedTerminators = targetTerminators.map(t => ({ ...t }));
+      } else {
+        targetTerminators.forEach((tTarget, i) => {
+          let tSmooth = smoothedTerminators[i];
+          tSmooth.min_x = lerpWrap(tSmooth.min_x, tTarget.min_x, w);
+          tSmooth.width += (tTarget.width - tSmooth.width) * 0.05;
+          if (tTarget.center_x !== undefined) {
+             if (tSmooth.center_x === undefined) tSmooth.center_x = tTarget.center_x;
+             tSmooth.center_x = lerpWrap(tSmooth.center_x, tTarget.center_x, w);
+          }
+        });
+      }
+
+      const sunX = smoothedSunX;
+      const terminators = smoothedTerminators;
       const depressions = env?.depressions || [];
       const depressionsKey = depressions.map(d => `${d.x},${d.y},${d.level}`).join('|');
 
+      const renderedSunX = Math.round(sunX * 100);
+      const renderedTerm = JSON.stringify(terminators.map(t => ({
+          min_x: Math.round(t.min_x * 100),
+          width: Math.round(t.width * 100),
+          center_x: t.center_x !== undefined ? Math.round(t.center_x * 100) : undefined
+      })));
+
       if (
-        sunX === lastRenderedSunX &&
-        JSON.stringify(terminators) === lastRenderedTerminators &&
+        renderedSunX === lastRenderedSunX &&
+        renderedTerm === lastRenderedTerminators &&
         depressionsKey === lastRenderedDepressions
       ) {
         return;
       }
 
-      lastRenderedSunX = sunX;
-      lastRenderedTerminators = JSON.stringify(terminators);
+      lastRenderedSunX = renderedSunX;
+      lastRenderedTerminators = renderedTerm;
       lastRenderedDepressions = depressionsKey;
 
       const tw = textureCanvas.width;
@@ -768,16 +804,28 @@ export default function Planet3D({
     };
 
     // --- Update Sun Position Aligned With Surface Subsolar Point ---
+    let currentSunAlpha = null;
+
     const updateSun = () => {
       const env = envRef.current;
       const w = env?.width || gridWidth;
       const sunX = env?.sun_x ?? 0;
 
-      const alphaSun = (sunX / w) * Math.PI * 2;
+      const targetAlpha = (sunX / w) * Math.PI * 2;
+      
+      if (currentSunAlpha === null) {
+        currentSunAlpha = targetAlpha;
+      } else {
+        let diff = targetAlpha - currentSunAlpha;
+        // Normalize diff to [-PI, PI] to find shortest rotation path
+        diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+        currentSunAlpha += diff * 0.05; // smooth interpolation
+      }
+
       const dist = 32;
 
-      const sx = -dist * Math.cos(alphaSun);
-      const sz = dist * Math.sin(alphaSun);
+      const sx = -dist * Math.cos(currentSunAlpha);
+      const sz = dist * Math.sin(currentSunAlpha);
       const sy = 4;
 
       sunLight.position.set(sx, sy, sz);
@@ -1238,9 +1286,143 @@ export default function Planet3D({
       const { type, x, y, params } = e.detail;
       const w = envRef.current?.width || gridWidthRef.current || 60;
       const h = envRef.current?.height || gridHeightRef.current || 30;
+      
       const normal = gridToSphere(x, y, w, h, 1.0).normalize();
       const pos = normal.clone().multiplyScalar(PLANET_RADIUS);
-      trigger3DEffect(type, pos, normal, params, x, y, null);
+
+      let craterId = null;
+
+      if (type === 'meteorite') {
+        const rad = params?.radius || 3.0;
+        craterId = `crater_${x}_${y}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+        const newCrater = {
+          id: craterId,
+          x: x,
+          y: y,
+          radius: rad,
+          createdAt: Date.now(),
+          duration: 25000,
+        };
+        onAddCraterRef.current?.(newCrater);
+        if (craterEpicentersRef?.current) {
+          craterEpicentersRef.current.add(`${x},${y}`);
+        }
+
+        if (envRef.current) {
+          if (!envRef.current.rocks) envRef.current.rocks = [];
+          envRef.current.rocks = envRef.current.rocks.filter(r => {
+            let dx = Math.abs(r.x - x);
+            dx = Math.min(dx, w - dx);
+            const dy = Math.abs(r.y - y);
+            return Math.sqrt(dx * dx + dy * dy) > rad;
+          });
+          envRef.current.rocks.push({ x: x, y: y });
+          update3DRocks();
+
+          if (!envRef.current.depressions) envRef.current.depressions = [];
+          const rInt = Math.ceil(rad);
+          for (let dy = -rInt; dy <= rInt; dy++) {
+            for (let dx = -rInt; dx <= rInt; dx++) {
+              const d = Math.sqrt(dx * dx + dy * dy);
+              if (d <= rad) {
+                const nx = (x + dx + w) % w;
+                const ny = y + dy;
+                if (ny >= 0 && ny < h) {
+                  const lvl = d <= rad * 0.5 ? 2 : 1;
+                  const ex = envRef.current.depressions.findIndex(dep => dep.x === nx && dep.y === ny);
+                  if (ex >= 0) {
+                    envRef.current.depressions[ex].level = Math.max(envRef.current.depressions[ex].level, lvl);
+                  } else {
+                    envRef.current.depressions.push({ x: nx, y: ny, level: lvl });
+                  }
+                }
+              }
+            }
+          }
+          lastRenderedDepressions = null;
+          updatePlanetTexture();
+        }
+      } else if (type === 'depression') {
+        const lvl = parseInt(params?.level || 1);
+        const sz = parseInt(params?.size || 2);
+        const offset = Math.floor(sz / 2);
+        if (envRef.current) {
+          if (!envRef.current.depressions) envRef.current.depressions = [];
+          for (let dy = -offset; dy < sz - offset; dy++) {
+            for (let dx = -offset; dx < sz - offset; dx++) {
+              const nx = (x + dx + w) % w;
+              const ny = y + dy;
+              if (ny >= 0 && ny < h) {
+                const ex = envRef.current.depressions.findIndex(d => d.x === nx && d.y === ny);
+                if (ex >= 0) {
+                  envRef.current.depressions[ex].level = lvl;
+                } else {
+                  envRef.current.depressions.push({ x: nx, y: ny, level: lvl });
+                }
+              }
+            }
+          }
+          lastRenderedDepressions = null;
+          updatePlanetTexture();
+        }
+      } else if (type === 'rocks') {
+        const size = params?.size || 3;
+        const half = Math.floor(size / 2);
+        if (envRef.current) {
+          if (!envRef.current.rocks) envRef.current.rocks = [];
+          for (let dy = -half; dy <= half; dy++) {
+            for (let dx = -half; dx <= half; dx++) {
+              const rx = (x + dx + w) % w;
+              const ry = y + dy;
+              if (ry >= 0 && ry < h) {
+                if (!envRef.current.rocks.some(r => r.x === rx && r.y === ry)) {
+                  envRef.current.rocks.push({ x: rx, y: ry });
+                }
+              }
+            }
+          }
+          update3DRocks();
+        }
+      } else if (type === 'eraser') {
+        const rad = params?.radius || 2.0;
+        if (envRef.current && envRef.current.rocks) {
+          envRef.current.rocks = envRef.current.rocks.filter(r => {
+            let dx = Math.abs(r.x - x);
+            dx = Math.min(dx, w - dx);
+            const dy = Math.abs(r.y - y);
+            return Math.sqrt(dx * dx + dy * dy) > rad;
+          });
+          update3DRocks();
+        }
+        if (envRef.current && envRef.current.depressions) {
+          envRef.current.depressions = envRef.current.depressions.filter(d => {
+            let dx = Math.abs(d.x - x);
+            dx = Math.min(dx, w - dx);
+            const dy = Math.abs(d.y - y);
+            return Math.sqrt(dx * dx + dy * dy) > rad;
+          });
+          lastRenderedDepressions = null;
+          updatePlanetTexture();
+        }
+        onRemoveCratersNearRef.current?.(x, y, rad, w);
+        const eraseWorldDist = (rad / (gridWidthRef.current || 60)) * 2 * Math.PI * PLANET_RADIUS * 0.65;
+        for (let i = activeCraters.length - 1; i >= 0; i--) {
+          const c = activeCraters[i];
+          if (c.position.distanceTo(pos) < eraseWorldDist) {
+            cratersGroup.remove(c.group);
+            c.group.traverse((child) => {
+              if (child.geometry) child.geometry.dispose();
+              if (child.material) child.material.dispose();
+            });
+            activeCraters.splice(i, 1);
+          }
+        }
+      }
+
+      if (window.triggerDisaster) {
+        window.triggerDisaster(type, x, y, params);
+      }
+      trigger3DEffect(type, pos, normal, params, x, y, craterId);
     };
     window.addEventListener('autoDisaster', handleAutoDisasterEffect);
 

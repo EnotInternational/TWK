@@ -129,14 +129,19 @@ export const simulationApi = {
     return res.json();
   },
 
-  // Заглушка для вызова катастрофы на бэкенде
+  // Вызов катастрофы на бэкенде
   triggerDisaster: async (disasterType, x, y, params) => {
-    console.warn(`[Stub API] Вызвана катастрофа: ${disasterType} в (${x}, ${y}) с параметрами`, params);
-    console.warn('В бэкенде пока нет эндпоинта для этого. Нужна реализация POST /api/environment/disaster');
-    // В будущем здесь будет:
-    // const res = await fetch(`${BASE_URL}/api/environment/disaster`, { ... })
-    // return res.json();
-    return { success: true };
+    try {
+      const res = await fetch(`${BASE_URL}/api/environment/disaster`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: disasterType, x, y, params }),
+      });
+      return res.json();
+    } catch (err) {
+      console.error('[API] Ошибка при вызове катастрофы:', err);
+      return { success: false, error: err.message };
+    }
   }
 };
 
